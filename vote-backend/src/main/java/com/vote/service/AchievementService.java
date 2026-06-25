@@ -52,28 +52,69 @@ public class AchievementService {
     }
 
     /**
-     * 新增成果
+     * 新增成果（含文件上传）
      */
-    public void add(Achievement achievement) {
+    public void add(Achievement achievement, MultipartFile file) throws IOException {
+        if (file != null && !file.isEmpty()) {
+            String filename = saveFile(file);
+            achievement.setFileSrc(filename);
+        }
+        if (achievement.getStatus() == null) {
+            achievement.setStatus(1);
+        }
         achievementMapper.insert(achievement);
     }
 
     /**
-     * 编辑成果
+     * 新增成果（不含文件）
      */
-    public void update(Achievement achievement) {
+    public void add(Achievement achievement) {
+        try {
+            add(achievement, null);
+        } catch (IOException e) {
+            throw new RuntimeException("文件保存失败", e);
+        }
+    }
+
+    /**
+     * 编辑成果（含文件上传）
+     */
+    public void update(Achievement achievement, MultipartFile file) throws IOException {
+        if (file != null && !file.isEmpty()) {
+            // 删除旧文件
+            Achievement old = achievementMapper.selectById(achievement.getId());
+            if (old != null && old.getFileSrc() != null && !old.getFileSrc().isEmpty()) {
+                try {
+                    File oldFile = new File(uploadDir, old.getFileSrc());
+                    if (oldFile.exists()) {
+                        oldFile.delete();
+                    }
+                } catch (Exception ignored) {}
+            }
+            String filename = saveFile(file);
+            achievement.setFileSrc(filename);
+        }
         achievementMapper.updateById(achievement);
     }
 
     /**
+     * 编辑成果（不含文件）
+     */
+    public void update(Achievement achievement) {
+        try {
+            update(achievement, null);
+        } catch (IOException e) {
+            throw new RuntimeException("文件保存失败", e);
+        }
+    }
+
+    /**
      * 删除成果（批量）
-     * [P2修复] 删除成果时同步清理关联的上传文件
      */
     public void delete(DeleteReq req) {
         if (req.getObjectIds() == null || req.getObjectIds().isEmpty()) {
             throw new IllegalArgumentException("请选择要删除的成果");
         }
-        // [P2修复] 先查询成果信息，获取关联文件路径
         List<Achievement> achievements = achievementMapper.selectBatchIds(req.getObjectIds());
         for (Achievement a : achievements) {
             if (a.getFileSrc() != null && !a.getFileSrc().isEmpty()) {
@@ -82,9 +123,7 @@ public class AchievementService {
                     if (file.exists()) {
                         file.delete();
                     }
-                } catch (Exception ignored) {
-                    // 文件删除失败不影响成果删除
-                }
+                } catch (Exception ignored) {}
             }
         }
         achievementMapper.deleteBatchIds(req.getObjectIds());
@@ -108,6 +147,13 @@ public class AchievementService {
      * 文件上传
      */
     public String uploadFile(MultipartFile file) throws IOException {
+        return saveFile(file);
+    }
+
+    /**
+     * 保存文件到磁盘
+     */
+    private String saveFile(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("文件不能为空");
         }

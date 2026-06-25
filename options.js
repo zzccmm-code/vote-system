@@ -16,5 +16,6 @@ window._$recommends = [
   { id: 3, value: "三等奖", label: "三等奖" },
 ];
 
+window._$base_url = "http://localhost:7003";
 // window._$base_url = "http://192.168.2.188:7003";
 // window._$base_url = "/";
