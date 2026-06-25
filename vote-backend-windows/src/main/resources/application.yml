@@ -41,7 +41,7 @@ mybatis-plus:
     db-config:
       id-type: auto
 
-# 文件存储路径（Windows下使用相对路径，在JAR同级目录创建uploads文件夹）
+# 文件存储路径
 app:
   upload-dir: ./uploads
   base-url: http://localhost:7003

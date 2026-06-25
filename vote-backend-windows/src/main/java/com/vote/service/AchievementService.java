@@ -15,10 +15,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+
+import javax.annotation.PostConstruct;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,19 @@ public class AchievementService {
 
     @Value("${app.upload-dir:./uploads}")
     private String uploadDir;
+
+    /** 解析为绝对路径后的上传目录 */
+    private File uploadDirFile;
+
+    @PostConstruct
+    public void init() {
+        // 将相对路径解析为绝对路径，避免 Spring Boot fat JAR 中 user.dir 指向临时目录
+        Path path = Paths.get(uploadDir).toAbsolutePath().normalize();
+        uploadDirFile = path.toFile();
+        if (!uploadDirFile.exists()) {
+            uploadDirFile.mkdirs();
+        }
+    }
 
     /**
      * 分页查询成果列表
@@ -85,7 +102,7 @@ public class AchievementService {
             Achievement old = achievementMapper.selectById(achievement.getId());
             if (old != null && old.getFileSrc() != null && !old.getFileSrc().isEmpty()) {
                 try {
-                    File oldFile = new File(uploadDir, old.getFileSrc());
+                    File oldFile = new File(uploadDirFile, old.getFileSrc());
                     if (oldFile.exists()) {
                         oldFile.delete();
                     }
@@ -119,7 +136,7 @@ public class AchievementService {
         for (Achievement a : achievements) {
             if (a.getFileSrc() != null && !a.getFileSrc().isEmpty()) {
                 try {
-                    File file = new File(uploadDir, a.getFileSrc());
+                    File file = new File(uploadDirFile, a.getFileSrc());
                     if (file.exists()) {
                         file.delete();
                     }
@@ -164,11 +181,10 @@ public class AchievementService {
         }
         String filename = UUID.randomUUID().toString().replace("-", "") + ext;
 
-        File dir = new File(uploadDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
+        if (!uploadDirFile.exists()) {
+            uploadDirFile.mkdirs();
         }
-        File dest = new File(dir, filename);
+        File dest = new File(uploadDirFile, filename);
         file.transferTo(dest);
         return filename;
     }
