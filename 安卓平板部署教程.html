@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科技奖评审表决系统 · 安卓平板部署教程</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    color: #2c2c2a;
+    background: #f6f7f9;
+  }
+
+  /* 顶部 Banner */
+  .banner {
+    background: #1a3a5c;
+    color: #fff;
+    padding: 40px 0 32px;
+    text-align: center;
+  }
+  .banner .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+  .banner h1 { font-size: 26px; font-weight: 600; margin-bottom: 8px; }
+  .banner p  { font-size: 14px; opacity: 0.75; }
+
+  /* 进度导航 */
+  .progress-bar {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 14px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .progress-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .progress-inner::-webkit-scrollbar { display: none; }
+  .step-dot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-size: 13px;
+    color: #888;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .step-dot:hover .dot { background: #185fa5; }
+  .step-dot .dot {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #d3d1c7;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .step-dot.active .dot { background: #185fa5; }
+  .step-dot.active { color: #185fa5; font-weight: 500; }
+  .step-arrow {
+    color: #d3d1c7;
+    font-size: 12px;
+    padding: 0 6px;
+    line-height: 24px;
+    align-self: center;
+  }
+
+  /* 主内容区 */
+  .container {
+    max-width: 860px;
+    margin: 32px auto;
+    padding: 0 20px 60px;
+  }
+
+  /* 概览卡片 */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .overview-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 16px;
+    border: 0.5px solid #e2e4e8;
+  }
+  .overview-card .icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .overview-card .label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+  .overview-card .value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a3a5c;
+  }
+
+  /* 章节卡片 */
+  .section {
+    background: #fff;
+    border-radius: 14px;
+    border: 0.5px solid #e2e4e8;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #f0f1f3;
+  }
+  .section-num {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: #185fa5;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-num.green  { background: #3b6d11; }
+  .section-num.amber  { background: #854f0b; }
+  .section-num.purple { background: #534ab7; }
+  .section-num.teal   { background: #0f6e56; }
+  .section-num.coral  { background: #993c1d; }
+  .section-header h2  { font-size: 17px; font-weight: 600; }
+  .section-header p   { font-size: 13px; color: #888; margin-top: 2px; }
+
+  .section-body { padding: 20px 24px 24px; }
+
+  /* 步骤列表 */
+  .steps { list-style: none; }
+  .steps li {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .steps li:last-child { margin-bottom: 0; }
+  .step-n {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: #e6f1fb;
+    color: #185fa5;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-content h3 {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #1a1a18;
+  }
+  .step-content p  { font-size: 14px; color: #444; line-height: 1.7; }
+
+  /* 代码块 */
+  .code-block {
+    background: #1e2a38;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 10px 0;
+    overflow-x: auto;
+    position: relative;
+  }
+  .code-block pre {
+    font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    color: #a8c8f0;
+    white-space: pre;
+    margin: 0;
+  }
+  .code-block .comment { color: #6a8fa8; }
+  .code-block .cmd     { color: #7ed8a0; }
+  .code-block .str     { color: #f0c080; }
+  .code-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6a8fa8;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+
+  /* 提示框 */
+  .tip, .warn, .info {
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 12px 0;
+    font-size: 14px;
+    line-height: 1.65;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .tip  { background: #eaf3de; border-left: 3px solid #639922; color: #27500a; }
+  .warn { background: #faeeda; border-left: 3px solid #ba7517; color: #633806; }
+  .info { background: #e6f1fb; border-left: 3px solid #185fa5; color: #0c447c; }
+  .tip .icon, .warn .icon, .info .icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* 表格 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 12px 0;
+  }
+  th {
+    background: #f6f7f9;
+    color: #444;
+    font-weight: 500;
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e2e4e8;
+    font-size: 13px;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 0.5px solid #f0f1f3;
+    color: #444;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td code, th code {
+    background: #f0f1f3;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: monospace;
+    color: #185fa5;
+  }
+
+  /* 检查清单 */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 0.5px solid #f0f1f3;
+    font-size: 14px;
+    color: #444;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist .chk {
+    width: 20px; height: 20px;
+    border-radius: 5px;
+    border: 1.5px solid #c0dd97;
+    background: #eaf3de;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    color: #3b6d11;
+  }
+
+  /* 架构图简版 */
+  .arch-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 16px 0;
+  }
+  .arch-box {
+    background: #f6f7f9;
+    border: 0.5px solid #d3d1c7;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: #2c2c2a;
+    text-align: center;
+    min-width: 120px;
+  }
+  .arch-box.blue  { background: #e6f1fb; border-color: #85b7eb; color: #0c447c; }
+  .arch-box.green { background: #eaf3de; border-color: #97c459; color: #27500a; }
+  .arch-box small { display: block; font-size: 11px; opacity: 0.7; margin-top: 2px; }
+  .arch-arrow {
+    padding: 0 10px;
+    color: #888;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  /* FAQ */
+  .faq-item {
+    border-bottom: 0.5px solid #f0f1f3;
+    padding: 14px 0;
+  }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-q { font-size: 14px; font-weight: 500; color: #185fa5; margin-bottom: 6px; }
+  .faq-a { font-size: 14px; color: #555; line-height: 1.7; }
+
+  /* 完成横幅 */
+  .done-banner {
+    background: linear-gradient(135deg, #1a3a5c 0%, #185fa5 100%);
+    border-radius: 14px;
+    padding: 30px 28px;
+    color: #fff;
+    text-align: center;
+    margin-top: 32px;
+  }
+  .done-banner h2 { font-size: 20px; margin-bottom: 8px; }
+  .done-banner p  { font-size: 14px; opacity: 0.85; }
+
+  /* 分割线 */
+  hr { border: none; border-top: 1px solid #f0f1f3; margin: 20px 0; }
+
+  @media (max-width: 600px) {
+    .banner h1 { font-size: 20px; }
+    .section-body { padding: 16px; }
+    .section-header { padding: 16px; }
+    .arch-row { flex-direction: column; align-items: flex-start; }
+    .arch-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部 Banner -->
+<div class="banner">
+  <div class="badge">新手友好 · 图文详解</div>
+  <h1>科技奖评审表决系统</h1>
+  <p>安卓平板 · 局域网部署教程 &nbsp;|&nbsp; 2024 年度科学技术奖评审委员会</p>
+</div>
+
+<!-- 步骤导航 -->
+<div class="progress-bar">
+  <div class="progress-inner">
+    <a class="step-dot active" href="#s0"><span class="dot">✦</span>读我</a>
+    <span class="step-arrow">›</span>
+    <a class="step-dot" href="#s1"><span class="dot">1</span>准备材料</a>
+    <span class="step-arrow">›</span>
+    <a class="step-dot" href="#s2"><span class="dot">2</span>安装环境</a>
+    <span class="step-arrow">›</span>
+    <a class="step-dot" href="#s3"><span class="dot">3</span>后端服务</a>
+    <span class="step-arrow">›</span>
+    <a class="step-dot" href="#s4"><span class="dot">4</span>前端部署</a>
+    <span class="step-arrow">›</span>
+    <a class="step-dot" href="#s5"><span class="dot">5</span>配置地址</a>
+    <span class="step-arrow">›</span>
+    <a class="step-dot" href="#s6"><span class="dot">6</span>验证上线</a>
+    <span class="step-arrow">›</span>
+    <a class="step-dot" href="#s7"><span class="dot">?</span>常见问题</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 概览 -->
+  <div class="overview-grid">
+    <div class="overview-card">
+      <div class="icon">🖥️</div>
+      <div class="label">部署形式</div>
+      <div class="value">局域网 · B/S 架构</div>
+    </div>
+    <div class="overview-card">
+      <div class="icon">📱</div>
+      <div class="label">服务端设备</div>
+      <div class="value">安卓平板（服务器）</div>
+    </div>
+    <div class="overview-card">
+      <div class="icon">🌐</div>
+      <div class="label">客户端</div>
+      <div class="value">同局域网任意浏览器</div>
+    </div>
+    <div class="overview-card">
+      <div class="icon">⏱️</div>
+      <div class="label">预计耗时</div>
+      <div class="value">约 30–60 分钟</div>
+    </div>
+  </div>
+
+  <!-- 读我 -->
+  <div class="section" id="s0">
+    <div class="section-header">
+      <div class="section-num" style="background:#534ab7;">✦</div>
+      <div>
+        <h2>部署前必读：整体架构说明</h2>
+        <p>搞清楚"什么东西装在哪里"，后面操作不会晕</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <p style="margin-bottom:14px;">本系统分为两部分：<strong>后端服务</strong>（处理数据、保存投票）和<strong>前端页面</strong>（委员看到的网页）。两者都需要运行在安卓平板上，其他人用手机 / 电脑 / 平板的浏览器打开网址即可投票。</p>
+
+      <div class="arch-row">
+        <div class="arch-box blue">安卓平板<br><small>运行后端 + 前端服务</small></div>
+        <div class="arch-arrow">⟶</div>
+        <div class="arch-box">局域网 Wi-Fi<br><small>所有设备同一网络</small></div>
+        <div class="arch-arrow">⟶</div>
+        <div class="arch-box green">评委手机 / 电脑<br><small>浏览器打开网址</small></div>
+      </div>
+
+      <div class="info">
+        <span class="icon">ℹ</span>
+        <span><strong>核心概念：</strong>安卓平板相当于一台"小服务器"。后端服务监听 <code>7003</code> 端口（处理数据），前端静态页面监听 <code>8080</code> 端口（展示界面）。评委只需在浏览器里输入平板的 IP 地址 + 端口号，就能访问。</span>
+      </div>
+
+      <table>
+        <tr><th>组件</th><th>作用</th><th>端口</th><th>技术</th></tr>
+        <tr><td>后端服务</td><td>存储成果、处理投票逻辑</td><td><code>7003</code></td><td>Java Spring Boot（JAR 包）</td></tr>
+        <tr><td>前端页面</td><td>浏览器里看到的界面</td><td><code>8080</code></td><td>静态 HTML/JS/CSS 文件</td></tr>
+        <tr><td>数据库</td><td>持久化保存数据</td><td><code>3306</code></td><td>MySQL（随后端一起配置）</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 步骤1：准备材料 -->
+  <div class="section" id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div>
+        <h2>准备材料清单</h2>
+        <p>在开始之前，确认以下东西都已就位</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <ul class="checklist">
+        <li><span class="chk">✓</span><span><strong>安卓平板一台</strong>，Android 8.0 及以上，建议内存 4GB+，存储空间剩余 10GB+</span></li>
+        <li><span class="chk">✓</span><span><strong>稳定的局域网环境</strong>（Wi-Fi 路由器），平板与所有评委设备连接同一个 Wi-Fi</span></li>
+        <li><span class="chk">✓</span><span><strong>前端文件包</strong>：即本文件夹中的 <code>app.*.css</code>、<code>app.*.js</code>、<code>chunk-vendors.*.css</code>、<code>chunk-vendors.*.js</code>、<code>options.js</code> 五个文件</span></li>
+        <li><span class="chk">✓</span><span><strong>后端 JAR 包</strong>：向系统开发方索取 <code>vote-system.jar</code>（或类似名称）及数据库初始化 SQL 文件</span></li>
+        <li><span class="chk">✓</span><span><strong>U 盘或文件传输工具</strong>：用于将文件拷贝到平板（也可用 QQ/微信文件传输）</span></li>
+        <li><span class="chk">✓</span><span><strong>蓝牙键鼠（推荐）</strong>：在平板上操作命令行时更方便，也可直接用屏幕键盘</span></li>
+      </ul>
+
+      <div class="warn">
+        <span class="icon">⚠</span>
+        <span><strong>重要：</strong>评审当天请将平板设置为"不自动休眠"，否则服务会在屏幕熄灭后停止。路径：设置 → 显示 → 屏幕超时 → 设置为"永不"。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 步骤2：安装 Termux 环境 -->
+  <div class="section" id="s2">
+    <div class="section-header">
+      <div class="section-num green">2</div>
+      <div>
+        <h2>在平板上安装 Termux 终端</h2>
+        <p>Termux 让安卓平板拥有"Linux 命令行"，是整个部署的基础</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="info">
+        <span class="icon">ℹ</span>
+        <span><strong>什么是 Termux？</strong>可以把它理解成安卓上的"命令行工具箱"。通过它我们可以在平板上安装 Java、Nginx 等服务器软件。</span>
+      </div>
+
+      <ul class="steps">
+        <li>
+          <span class="step-n">1</span>
+          <div class="step-content">
+            <h3>下载 Termux 安装包</h3>
+            <p>在平板浏览器中打开下面的地址，下载最新版 Termux APK（注意：<strong>不要从 Google Play 安装</strong>，Play 上的版本已停更）：</p>
+            <div class="code-block">
+              <div class="code-label">下载地址（在平板浏览器打开）</div>
+              <pre><span class="str">https://github.com/termux/termux-app/releases/latest</span>
+
+<span class="comment"># 如果 GitHub 访问慢，也可以用这个镜像地址：</span>
+<span class="str">https://f-droid.org/packages/com.termux/</span></pre>
+            </div>
+            <p>找到文件名类似 <code>termux-app_v0.119.0+apt-android-7-github-debug_arm64-v8a.apk</code> 的文件，点击下载。</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div class="step-content">
+            <h3>允许安装来自未知来源的应用</h3>
+            <p>下载完成后点击安装，平板会提示"未知来源"。按照提示进入设置，打开"允许安装未知应用"，然后返回点击安装。安装完成后可以关闭该权限。</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div class="step-content">
+            <h3>打开 Termux，更新软件源</h3>
+            <p>安装好后打开 Termux，会看到黑色命令行界面。依次输入以下命令（每行输完按回车）：</p>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="comment"># 更新软件包列表</span>
+<span class="cmd">pkg update -y</span>
+
+<span class="comment"># 升级已安装的包</span>
+<span class="cmd">pkg upgrade -y</span></pre>
+            </div>
+            <div class="tip">
+              <span class="icon">✓</span>
+              <span>过程中如果出现询问"是否保留当前配置文件？"（y/n），直接按回车（默认 N，即使用新版本）即可。整个过程需要 2–5 分钟。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">4</span>
+          <div class="step-content">
+            <h3>安装 Java 运行环境</h3>
+            <p>后端 JAR 包需要 Java 运行，执行以下命令安装：</p>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">pkg install openjdk-17 -y</span>
+
+<span class="comment"># 安装完成后验证（能看到版本号即成功）</span>
+<span class="cmd">java -version</span></pre>
+            </div>
+            <p>成功输出示例：<code>openjdk version "17.0.x"</code></p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">5</span>
+          <div class="step-content">
+            <h3>安装 Nginx（前端静态文件服务器）</h3>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">pkg install nginx -y</span>
+
+<span class="comment"># 验证安装</span>
+<span class="cmd">nginx -v</span></pre>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">6</span>
+          <div class="step-content">
+            <h3>安装 MySQL 数据库</h3>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">pkg install mariadb -y</span>
+
+<span class="comment"># 初始化数据库目录（首次必须执行）</span>
+<span class="cmd">mysql_install_db</span>
+
+<span class="comment"># 启动数据库服务</span>
+<span class="cmd">mysqld_safe &</span></pre>
+            </div>
+            <div class="tip">
+              <span class="icon">✓</span>
+              <span>最后一行命令末尾有个 <code>&</code>，代表"在后台运行"。输完按回车后，会看到一些提示信息，再次按回车即可回到命令行。</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 步骤3：后端部署 -->
+  <div class="section" id="s3">
+    <div class="section-header">
+      <div class="section-num amber">3</div>
+      <div>
+        <h2>部署后端服务（Java）</h2>
+        <p>配置数据库、导入数据、启动后端 JAR 包</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <ul class="steps">
+        <li>
+          <span class="step-n">1</span>
+          <div class="step-content">
+            <h3>将后端 JAR 包传到平板</h3>
+            <p>用 QQ/微信"文件传输助手"或 U 盘，将 <code>vote-system.jar</code> 和数据库初始化文件 <code>init.sql</code> 传输到平板，保存到"下载"文件夹。</p>
+            <p style="margin-top:8px;">然后在 Termux 中，把文件复制到工作目录：</p>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="comment"># 在 Termux 的 home 目录创建一个专用文件夹</span>
+<span class="cmd">mkdir -p ~/vote-app/backend</span>
+
+<span class="comment"># 从下载目录复制 JAR 包</span>
+<span class="cmd">cp /sdcard/Download/vote-system.jar ~/vote-app/backend/</span>
+<span class="cmd">cp /sdcard/Download/init.sql ~/vote-app/backend/</span></pre>
+            </div>
+            <div class="tip">
+              <span class="icon">✓</span>
+              <span>如果复制命令报错"Permission denied"，先在 Termux 中执行 <code>termux-setup-storage</code>，然后允许存储权限，再重试。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div class="step-content">
+            <h3>创建数据库并导入初始数据</h3>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="comment"># 以 root 身份登录数据库（首次无密码，直接回车）</span>
+<span class="cmd">mysql -u root</span>
+
+<span class="comment"># 以下命令在 MySQL 交互界面输入：</span>
+
+<span class="comment">-- 创建数据库</span>
+<span class="cmd">CREATE DATABASE vote_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;</span>
+
+<span class="comment">-- 创建用户并设置密码（把 your_password 替换成你设定的密码）</span>
+<span class="cmd">CREATE USER 'vote'@'localhost' IDENTIFIED BY 'your_password';</span>
+<span class="cmd">GRANT ALL PRIVILEGES ON vote_db.* TO 'vote'@'localhost';</span>
+<span class="cmd">FLUSH PRIVILEGES;</span>
+
+<span class="comment">-- 退出 MySQL</span>
+<span class="cmd">EXIT;</span></pre>
+            </div>
+            <p style="margin-top:10px;">导入初始数据：</p>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">cd ~/vote-app/backend</span>
+<span class="cmd">mysql -u vote -p vote_db &lt; init.sql</span>
+<span class="comment"># 提示输入密码时，输入刚才设置的 your_password</span></pre>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div class="step-content">
+            <h3>修改后端数据库连接配置</h3>
+            <p>JAR 包内通常有一个 <code>application.yml</code> 配置文件。如果开发方提供了外部配置文件，用以下方式编辑：</p>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">cd ~/vote-app/backend</span>
+
+<span class="comment"># 如开发方提供了 application.yml，用 nano 编辑器打开</span>
+<span class="cmd">nano application.yml</span></pre>
+            </div>
+            <p style="margin-top:8px;">找到数据库相关配置，改成：</p>
+            <div class="code-block">
+              <div class="code-label">application.yml 关键配置</div>
+              <pre><span class="comment"># 数据库连接</span>
+spring:
+  datasource:
+    url: <span class="str">jdbc:mysql://localhost:3306/vote_db?useUnicode=true&amp;characterEncoding=utf8</span>
+    username: <span class="str">vote</span>
+    password: <span class="str">your_password</span>   <span class="comment"># 替换为你设置的密码</span>
+
+<span class="comment"># 服务端口（保持 7003）</span>
+server:
+  port: <span class="str">7003</span></pre>
+            </div>
+            <p style="margin-top:8px;">编辑完成后：按 <kbd>Ctrl+X</kbd> → 按 <kbd>Y</kbd> → 按 <kbd>Enter</kbd> 保存退出。</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">4</span>
+          <div class="step-content">
+            <h3>启动后端服务</h3>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">cd ~/vote-app/backend</span>
+
+<span class="comment"># 启动后端（使用外部配置文件）</span>
+<span class="cmd">java -jar vote-system.jar --spring.config.location=./application.yml &gt; backend.log 2&gt;&amp;1 &amp;</span>
+
+<span class="comment"># 查看启动日志（等待约 10–20 秒）</span>
+<span class="cmd">tail -f backend.log</span></pre>
+            </div>
+            <div class="tip">
+              <span class="icon">✓</span>
+              <span>看到日志中出现 <code>Started Application in X.XXX seconds</code> 或 <code>Tomcat started on port(s): 7003</code> 字样，说明后端启动成功！按 <kbd>Ctrl+C</kbd> 停止日志查看（服务仍在后台运行）。</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 步骤4：前端部署 -->
+  <div class="section" id="s4">
+    <div class="section-header">
+      <div class="section-num purple">4</div>
+      <div>
+        <h2>部署前端静态页面（Nginx）</h2>
+        <p>把网页文件放到 Nginx 目录，让浏览器能打开</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <ul class="steps">
+        <li>
+          <span class="step-n">1</span>
+          <div class="step-content">
+            <h3>将前端文件传到平板</h3>
+            <p>把以下 5 个文件传输到平板下载文件夹（文件名中的字母数字是版本哈希，不同版本有所不同）：</p>
+            <ul style="margin:8px 0 8px 20px; font-size:14px; color:#444; line-height:2;">
+              <li><code>app.*.css</code></li>
+              <li><code>app.*.js</code>（去掉 .下载 后缀）</li>
+              <li><code>chunk-vendors.*.css</code></li>
+              <li><code>chunk-vendors.*.js</code>（去掉 .下载 后缀）</li>
+              <li><code>options.js</code>（去掉 .下载 后缀）</li>
+            </ul>
+            <div class="warn">
+              <span class="icon">⚠</span>
+              <span>文件名中的 <code>.下载</code> 是下载工具自动添加的临时后缀，<strong>在放入服务器前必须去掉</strong>，否则浏览器无法识别。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div class="step-content">
+            <h3>创建前端部署目录并复制文件</h3>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="comment"># 创建前端文件目录</span>
+<span class="cmd">mkdir -p ~/vote-app/frontend/web</span>
+
+<span class="comment"># 复制文件（注意：把下面的文件名替换成实际哈希值）</span>
+<span class="cmd">cp /sdcard/Download/app.5007c485.css ~/vote-app/frontend/web/</span>
+<span class="cmd">cp /sdcard/Download/app.b1193a83.js ~/vote-app/frontend/web/</span>
+<span class="cmd">cp /sdcard/Download/chunk-vendors.7eec43d6.css ~/vote-app/frontend/web/</span>
+<span class="cmd">cp /sdcard/Download/chunk-vendors.e58ab867.js ~/vote-app/frontend/web/</span>
+<span class="cmd">cp /sdcard/Download/options.js ~/vote-app/frontend/web/</span></pre>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div class="step-content">
+            <h3>创建 index.html 入口文件</h3>
+            <p>前端需要一个入口 HTML 文件，将所有 JS/CSS 引入进来。执行以下命令自动生成：</p>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">cat &gt; ~/vote-app/frontend/web/index.html &lt;&lt;'EOF'</span>
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+  &lt;title&gt;科技奖评审表决系统&lt;/title&gt;
+  &lt;link href="/web/chunk-vendors.7eec43d6.css" rel="stylesheet"&gt;
+  &lt;link href="/web/app.5007c485.css" rel="stylesheet"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id="app"&gt;&lt;/div&gt;
+  &lt;script src="/web/options.js"&gt;&lt;/script&gt;
+  &lt;script src="/web/chunk-vendors.e58ab867.js"&gt;&lt;/script&gt;
+  &lt;script src="/web/app.b1193a83.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+EOF</pre>
+            </div>
+            <div class="warn">
+              <span class="icon">⚠</span>
+              <span>请将上面命令中的文件名（哈希部分）替换为你实际的文件名。可以用 <code>ls ~/vote-app/frontend/web/</code> 查看已复制的真实文件名。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">4</span>
+          <div class="step-content">
+            <h3>配置 Nginx</h3>
+            <p>修改 Nginx 配置，将网页服务端口设为 8080，并代理后端 API：</p>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">nano $PREFIX/etc/nginx/nginx.conf</span></pre>
+            </div>
+            <p style="margin-top:8px;">找到 <code>server { ... }</code> 代码块，替换为以下内容：</p>
+            <div class="code-block">
+              <div class="code-label">nginx.conf 核心配置</div>
+              <pre>server {
+    listen       <span class="str">8080</span>;
+    server_name  localhost;
+
+    <span class="comment"># 前端静态文件根目录</span>
+    root  <span class="str">/data/data/com.termux/files/home/vote-app/frontend</span>;
+    index index.html;
+
+    <span class="comment"># 前端路由：所有页面请求都返回 index.html</span>
+    location / {
+        try_files $uri $uri/ /web/index.html;
+    }
+
+    <span class="comment"># API 请求反向代理到后端 7003 端口</span>
+    location /api/ {
+        proxy_pass <span class="str">http://127.0.0.1:7003/</span>;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /achievement/ {
+        proxy_pass <span class="str">http://127.0.0.1:7003/achievement/</span>;
+        proxy_set_header Host $host;
+    }
+
+    location /voteRound/ {
+        proxy_pass <span class="str">http://127.0.0.1:7003/voteRound/</span>;
+        proxy_set_header Host $host;
+    }
+
+    location /voteResult/ {
+        proxy_pass <span class="str">http://127.0.0.1:7003/voteResult/</span>;
+        proxy_set_header Host $host;
+    }
+}</pre>
+            </div>
+            <p style="margin-top:8px;">保存：<kbd>Ctrl+X</kbd> → <kbd>Y</kbd> → <kbd>Enter</kbd></p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">5</span>
+          <div class="step-content">
+            <h3>启动 Nginx</h3>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="comment"># 检查配置文件语法是否正确</span>
+<span class="cmd">nginx -t</span>
+
+<span class="comment"># 语法正确后，启动 Nginx</span>
+<span class="cmd">nginx</span>
+
+<span class="comment"># 如果已经运行，用下面命令重载配置</span>
+<span class="cmd">nginx -s reload</span></pre>
+            </div>
+            <div class="tip">
+              <span class="icon">✓</span>
+              <span><code>nginx -t</code> 输出 <code>syntax is ok</code> 和 <code>test is successful</code> 即代表配置正确。</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 步骤5：配置服务地址 -->
+  <div class="section" id="s5">
+    <div class="section-header">
+      <div class="section-num teal">5</div>
+      <div>
+        <h2>配置 options.js 连接地址</h2>
+        <p>告诉前端页面"后端服务在哪里"</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="info">
+        <span class="icon">ℹ</span>
+        <span>这一步是整个部署中最关键的配置。<code>options.js</code> 文件里的 <code>_$base_url</code> 变量告诉前端页面"去哪个地址找后端数据"。必须填写平板在局域网中的真实 IP 地址。</span>
+      </div>
+
+      <ul class="steps">
+        <li>
+          <span class="step-n">1</span>
+          <div class="step-content">
+            <h3>查询平板的局域网 IP 地址</h3>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">ifconfig</span>
+<span class="comment"># 或者：</span>
+<span class="cmd">ip addr show</span></pre>
+            </div>
+            <p style="margin-top:8px;">找到 <code>wlan0</code>（Wi-Fi）下的 <code>inet</code> 后面的数字，例如 <code>192.168.1.100</code>，这就是平板的 IP 地址。</p>
+            <div class="tip">
+              <span class="icon">✓</span>
+              <span>也可以在平板系统设置 → Wi-Fi → 点击已连接的网络 → 查看"IP 地址"。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div class="step-content">
+            <h3>编辑 options.js 填入 IP 地址</h3>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">nano ~/vote-app/frontend/web/options.js</span></pre>
+            </div>
+            <p style="margin-top:8px;">找到文件末尾这两行注释，取消注释并填入你的平板 IP：</p>
+            <div class="code-block">
+              <div class="code-label">options.js 修改前</div>
+              <pre><span class="comment">// window._$base_url = "http://192.168.2.188:7003";</span>
+<span class="comment">// window._$base_url = "/";</span></pre>
+            </div>
+            <div class="code-block">
+              <div class="code-label">options.js 修改后（将 IP 换成平板实际 IP）</div>
+              <pre>window._$base_url = <span class="str">"http://192.168.1.100:7003"</span>; <span class="comment">// ← 改成平板真实 IP</span>
+<span class="comment">// window._$base_url = "/";  ← 保持注释</span></pre>
+            </div>
+            <p style="margin-top:8px;">保存：<kbd>Ctrl+X</kbd> → <kbd>Y</kbd> → <kbd>Enter</kbd></p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div class="step-content">
+            <h3>重载 Nginx 使配置生效</h3>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="cmd">nginx -s reload</span></pre>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 步骤6：验证 -->
+  <div class="section" id="s6">
+    <div class="section-header">
+      <div class="section-num coral">6</div>
+      <div>
+        <h2>验证部署是否成功</h2>
+        <p>逐项检查，确认系统正常运行</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <ul class="steps">
+        <li>
+          <span class="step-n">1</span>
+          <div class="step-content">
+            <h3>在平板上自测（Termux 内）</h3>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="comment"># 测试后端是否响应（应返回 JSON 格式内容）</span>
+<span class="cmd">curl http://127.0.0.1:7003/achievement/page</span>
+
+<span class="comment"># 测试前端是否能访问（应返回 HTML 内容）</span>
+<span class="cmd">curl http://127.0.0.1:8080/web/index.html</span></pre>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">2</span>
+          <div class="step-content">
+            <h3>在浏览器中访问</h3>
+            <p>用平板自带浏览器或同一 Wi-Fi 下的手机/电脑打开：</p>
+            <div class="code-block">
+              <div class="code-label">浏览器地址栏输入</div>
+              <pre><span class="comment"># 替换 192.168.1.100 为平板实际 IP</span>
+<span class="str">http://192.168.1.100:8080/web/#/achievement-upload</span></pre>
+            </div>
+            <p style="margin-top:8px;">能看到"成果上传"页面，说明部署成功！</p>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">3</span>
+          <div class="step-content">
+            <h3>各功能页面地址</h3>
+            <table>
+              <tr><th>功能</th><th>访问地址</th></tr>
+              <tr><td>成果上传管理</td><td><code>http://[平板IP]:8080/web/#/achievement-upload</code></td></tr>
+              <tr><td>评审表决（投票）</td><td><code>http://[平板IP]:8080/web/#/review-voting</code></td></tr>
+              <tr><td>最终结果展示</td><td><code>http://[平板IP]:8080/web/#/result-show</code></td></tr>
+              <tr><td>二次表决结果</td><td><code>http://[平板IP]:8080/web/#/second-show</code></td></tr>
+            </table>
+          </div>
+        </li>
+        <li>
+          <span class="step-n">4</span>
+          <div class="step-content">
+            <h3>设置开机自启（可选但推荐）</h3>
+            <p>安装 Termux:Boot 插件，让数据库、后端、Nginx 在平板重启后自动运行：</p>
+            <div class="code-block">
+              <div class="code-label">Termux 终端</div>
+              <pre><span class="comment"># 安装 Termux:Boot（同样从 F-Droid 下载安装）</span>
+<span class="comment"># 安装后，创建开机启动脚本</span>
+<span class="cmd">mkdir -p ~/.termux/boot</span>
+<span class="cmd">nano ~/.termux/boot/start-vote.sh</span></pre>
+            </div>
+            <p style="margin-top:8px;">在文件中写入：</p>
+            <div class="code-block">
+              <div class="code-label">start-vote.sh</div>
+              <pre><span class="comment">#!/data/data/com.termux/files/usr/bin/bash</span>
+
+<span class="comment"># 启动数据库</span>
+<span class="cmd">mysqld_safe &amp;</span>
+sleep 5
+
+<span class="comment"># 启动后端</span>
+<span class="cmd">cd ~/vote-app/backend</span>
+<span class="cmd">java -jar vote-system.jar --spring.config.location=./application.yml &gt; backend.log 2&gt;&amp;1 &amp;</span>
+sleep 10
+
+<span class="comment"># 启动 Nginx</span>
+<span class="cmd">nginx</span></pre>
+            </div>
+            <div class="code-block">
+              <div class="code-label">设置脚本可执行</div>
+              <pre><span class="cmd">chmod +x ~/.termux/boot/start-vote.sh</span></pre>
+            </div>
+          </div>
+        </li>
+      </ul>
+
+      <hr>
+
+      <div class="tip">
+        <span class="icon">✓</span>
+        <span><strong>部署完成后建议的使用流程：</strong>① 管理员在"成果上传"页面录入所有待评成果和附件 → ② 管理员在"评审表决"页面开始投票轮次 → ③ 评委在各自设备上打开投票链接完成投票 → ④ 管理员在"最终结果展示"页面查看统计并一键发布。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 常见问题 -->
+  <div class="section" id="s7">
+    <div class="section-header">
+      <div class="section-num" style="background:#a32d2d;">?</div>
+      <div>
+        <h2>常见问题排查</h2>
+        <p>遇到问题不慌，对照下面逐一检查</p>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="faq-item">
+        <div class="faq-q">Q：浏览器打开地址，显示"无法访问此网站"或"连接被拒绝"</div>
+        <div class="faq-a">
+          检查以下几点：<br>
+          1. 平板和访问设备是否在<strong>同一个 Wi-Fi</strong>？<br>
+          2. Nginx 是否已启动？在 Termux 执行 <code>nginx -t && nginx</code><br>
+          3. IP 地址是否填写正确？用 <code>ifconfig</code> 重新确认
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q：页面能打开，但显示"加载失败"或数据为空</div>
+        <div class="faq-a">
+          后端服务可能未启动或已崩溃。执行 <code>tail -f ~/vote-app/backend/backend.log</code> 查看日志，检查是否有报错信息。常见原因：数据库密码错误、端口被占用。
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q：文件名报错，提示找不到 JS/CSS 文件</div>
+        <div class="faq-a">
+          index.html 中引用的文件名与实际文件名不一致。执行 <code>ls ~/vote-app/frontend/web/</code> 查看真实文件名，然后用 <code>nano ~/vote-app/frontend/web/index.html</code> 修正文件名。
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q：平板重启后，服务消失了</div>
+        <div class="faq-a">
+          需要重新手动启动，或按照步骤 6 中的"开机自启"设置 Termux:Boot 脚本。
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q：Termux 安装软件时提示"Storage permission denied"</div>
+        <div class="faq-a">
+          在 Termux 中执行 <code>termux-setup-storage</code>，然后在弹出的权限请求中点击"允许"。
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q：评委反映投票页面打开后转圈圈，无法加载</div>
+        <div class="faq-a">
+          通常是 <code>options.js</code> 中的 <code>_$base_url</code> 地址填写有误。检查：① IP 是否是平板当前 IP（IP 可能因重新连接 Wi-Fi 而变化）；② 端口是否为 7003；③ 地址前缀是否为 <code>http://</code>（不是 https）。
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q：平板 Wi-Fi IP 每次连接都会变，评委要重新记地址？</div>
+        <div class="faq-a">
+          建议在路由器后台为平板设置"固定 IP/静态地址绑定"（根据 MAC 地址绑定）。具体操作参考路由器品牌的说明书，一般在"LAN 设置" → "地址保留"中配置。
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q：系统时区或时间显示不对</div>
+        <div class="faq-a">
+          在 Termux 执行：<code>export TZ=Asia/Shanghai</code>，然后重启后端服务。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 完成横幅 -->
+  <div class="done-banner">
+    <h2>🎉 恭喜，部署完成！</h2>
+    <p>如遇问题请联系系统开发方，或参考上方常见问题自查。<br>祝 2024 年度科学技术奖评审顺利圆满！</p>
+  </div>
+
+</div>
+
+<script>
+  // 点击导航高亮
+  const dots = document.querySelectorAll('.step-dot');
+  const sections = document.querySelectorAll('.section');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        dots.forEach(d => {
+          d.classList.toggle('active', d.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

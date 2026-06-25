@@ -1,0 +1,49 @@
+server:
+  port: 7003
+  servlet:
+    context-path: /
+
+spring:
+  # ===== H2 内嵌数据库配置 =====
+  # Windows版无需安装MySQL，程序自带H2数据库，首次启动自动建库建表
+  datasource:
+    url: jdbc:h2:file:./data/vote_db;MODE=MySQL;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  # 首次启动自动执行建表脚本和初始数据
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-h2.sql
+      data-locations: classpath:data-h2.sql
+
+  # H2 Web控制台（可选，用于查看数据，访问地址 http://localhost:7003/h2-console）
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    # 生产环境可关闭SQL日志
+    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+# 文件存储路径（Windows下使用相对路径，在JAR同级目录创建uploads文件夹）
+app:
+  upload-dir: ./uploads
+  base-url: http://localhost:7003
+  # [P0修复] 应参与投票的委员总数（设为0则自动取历史最大投票人数）
+  total-voters: 0

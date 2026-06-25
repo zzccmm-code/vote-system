@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>科技奖评审表决系统 · Windows版部署流程说明书</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    color: #2c2c2a;
+    background: #f6f7f9;
+  }
+
+  /* ===== 顶部 Banner ===== */
+  .banner {
+    background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%);
+    color: #fff;
+    padding: 44px 0 36px;
+    text-align: center;
+  }
+  .banner .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 12px;
+    margin-bottom: 14px;
+    letter-spacing: 0.5px;
+  }
+  .banner h1 { font-size: 26px; font-weight: 600; margin-bottom: 8px; }
+  .banner p  { font-size: 14px; opacity: 0.8; }
+
+  /* ===== 进度导航 ===== */
+  .progress-bar {
+    background: #fff;
+    border-bottom: 1px solid #e2e4e8;
+    padding: 14px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .progress-inner {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .progress-inner::-webkit-scrollbar { display: none; }
+  .step-dot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-size: 13px;
+    color: #888;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .step-dot:hover .dot { background: #1565c0; }
+  .step-dot .dot {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #d3d1c7;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .step-dot.active .dot { background: #1565c0; }
+  .step-dot.active { color: #1565c0; font-weight: 500; }
+  .step-arrow {
+    color: #ccc;
+    font-size: 12px;
+    margin: 0 10px;
+  }
+
+  /* ===== 主体内容 ===== */
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  /* ===== 卡片 ===== */
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 32px;
+    margin-bottom: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+  }
+  .card h2 {
+    font-size: 21px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card h2 .icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: #1565c0;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .card .subtitle {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 20px;
+    padding-left: 42px;
+  }
+  .card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 24px 0 10px;
+    color: #333;
+    padding-left: 8px;
+    border-left: 3px solid #1565c0;
+  }
+  .card p { margin-bottom: 10px; }
+  .card ul, .card ol { margin: 8px 0 12px 20px; }
+  .card li { margin-bottom: 6px; }
+
+  /* ===== 代码块 ===== */
+  .code-block {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    overflow-x: auto;
+    font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+    font-size: 13.5px;
+    line-height: 1.6;
+    position: relative;
+  }
+  .code-block .comment { color: #6c7086; }
+  .code-block .keyword { color: #cba6f7; }
+  .code-block .string  { color: #a6e3a1; }
+
+  /* 行内代码 */
+  code.inline {
+    background: #eef1f4;
+    color: #c0341d;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+  }
+
+  /* ===== 提示框 ===== */
+  .tip {
+    background: #eef6ff;
+    border: 1px solid #b8daff;
+    border-left: 4px solid #1565c0;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  .tip strong { color: #1565c0; }
+
+  .warn {
+    background: #fff8e6;
+    border: 1px solid #ffe08a;
+    border-left: 4px solid #e6a700;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  .warn strong { color: #b8860b; }
+
+  .danger {
+    background: #fef0f0;
+    border: 1px solid #fbc4c4;
+    border-left: 4px solid #dc3545;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  .danger strong { color: #dc3545; }
+
+  .success-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #22c55e;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  .success-box strong { color: #16a34a; }
+
+  /* ===== 表格 ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid #dee2e6;
+    padding: 10px 14px;
+    text-align: left;
+  }
+  th {
+    background: #f8f9fa;
+    font-weight: 600;
+  }
+  tr:nth-child(even) { background: #fafbfc; }
+
+  /* ===== 步骤数字 ===== */
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: #1565c0;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  /* ===== 架构图 ===== */
+  .arch-diagram {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 28px;
+    margin: 18px 0;
+    text-align: center;
+  }
+  .arch-box {
+    display: inline-block;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 6px;
+  }
+  .arch-box.laptop { background: #e3f2fd; border: 2px solid #1565c0; color: #0d47a1; }
+  .arch-box.backend { background: #e8f5e9; border: 2px solid #2e7d32; color: #1b5e20; }
+  .arch-box.db { background: #f3e5f5; border: 2px solid #7b1fa2; color: #4a148c; }
+  .arch-box.tablet { background: #fff3e0; border: 2px solid #e65100; color: #bf360c; }
+  .arch-arrow {
+    font-size: 22px;
+    color: #999;
+    display: inline-block;
+    margin: 6px 4px;
+    vertical-align: middle;
+  }
+  .arch-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 8px 0;
+  }
+
+  /* ===== 目录 ===== */
+  .toc {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+  }
+  .toc h3 { border: none; padding: 0; margin-bottom: 10px; font-size: 15px; }
+  .toc ol { margin-left: 20px; }
+  .toc li { margin-bottom: 4px; }
+  .toc a { color: #1565c0; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* ===== 折叠 ===== */
+  details {
+    margin: 12px 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  summary {
+    padding: 12px 16px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #f8f9fa;
+    font-size: 14px;
+    user-select: none;
+  }
+  summary:hover { background: #eef1f4; }
+  details[open] summary { border-bottom: 1px solid #e0e0e0; }
+  details .detail-content { padding: 16px; }
+
+  /* ===== 页脚 ===== */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    color: #999;
+    font-size: 13px;
+  }
+
+  /* ===== 截图模拟 ===== */
+  .screenshot-mock {
+    background: #1a1a2e;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 14px 0;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 13px;
+    color: #a6e3a1;
+    line-height: 1.8;
+    border: 1px solid #333;
+  }
+  .screenshot-mock .prompt { color: #89b4fa; }
+  .screenshot-mock .highlight { color: #f9e2af; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<!-- ===== Banner ===== -->
+<div class="banner">
+  <span class="badge">版本 B · Windows笔记本后端 + 安卓平板前端</span>
+  <h1>科技奖评审表决系统 · Windows版部署流程说明书</h1>
+  <p>后端运行在Windows笔记本上，前端运行在安卓平板上</p>
+</div>
+
+<!-- ===== 进度导航 ===== -->
+<div class="progress-bar">
+  <div class="progress-inner">
+    <a class="step-dot active" href="#sec0"><span class="dot">0</span> 读我</a>
+    <span class="step-arrow">▸</span>
+    <a class="step-dot" href="#sec1"><span class="dot">1</span> 材料准备</a>
+    <span class="step-arrow">▸</span>
+    <a class="step-dot" href="#sec2"><span class="dot">2</span> 安装JDK</a>
+    <span class="step-arrow">▸</span>
+    <a class="step-dot" href="#sec3"><span class="dot">3</span> 启动后端</a>
+    <span class="step-arrow">▸</span>
+    <a class="step-dot" href="#sec4"><span class="dot">4</span> 防火墙配置</a>
+    <span class="step-arrow">▸</span>
+    <a class="step-dot" href="#sec5"><span class="dot">5</span> 平板前端</a>
+    <span class="step-arrow">▸</span>
+    <a class="step-dot" href="#sec6"><span class="dot">6</span> 配置IP</a>
+    <span class="step-arrow">▸</span>
+    <a class="step-dot" href="#sec7"><span class="dot">7</span> 验证上线</a>
+    <span class="step-arrow">▸</span>
+    <a class="step-dot" href="#sec8"><span class="dot">?</span> 常见问题</a>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ===== 目录 ===== -->
+<div class="toc">
+  <h3>📑 目录</h3>
+  <ol>
+    <li><a href="#sec0">第0章 · 系统架构说明（先读我）</a></li>
+    <li><a href="#sec1">第1章 · 部署材料准备清单</a></li>
+    <li><a href="#sec2">第2章 · 安装 JDK 17 运行环境</a></li>
+    <li><a href="#sec3">第3章 · 启动后端服务（双击即用）</a></li>
+    <li><a href="#sec4">第4章 · 配置 Windows 防火墙</a></li>
+    <li><a href="#sec5">第5章 · 安卓平板部署前端页面</a></li>
+    <li><a href="#sec6">第6章 · 配置 options.js 连接地址</a></li>
+    <li><a href="#sec7">第7章 · 验证与上线</a></li>
+    <li><a href="#sec8">第8章 · 常见问题排查</a></li>
+    <li><a href="#sec9">附录 · 数据备份与管理</a></li>
+  </ol>
+</div>
+
+<!-- ===== 第0章 ===== -->
+<div class="card" id="sec0">
+  <h2><span class="icon">📖</span> 第0章 · 系统架构说明（先读我）</h2>
+  <p class="subtitle">理解原理，部署不慌</p>
+
+  <h3>这个系统是干什么的？</h3>
+  <p>这是一套 <strong>2024 年度科学技术奖评审表决系统</strong>，用于评审委员在线投票表决科技奖项。替代纸质投票，实现电子化、全流程管理。</p>
+  <p>系统有三大功能模块：<strong>成果管理</strong>（录入成果信息、上传附件）、<strong>评审表决</strong>（多轮投票、实时统计）、<strong>结果展示</strong>（得票统计、最终结果发布、数据导出）。</p>
+
+  <h3>Windows版部署是什么意思？</h3>
+  <p>与"平板版"不同，Windows 版把<strong>后端程序和数据库放在 Windows 笔记本电脑上运行</strong>，前端网页仍部署在安卓平板上。电脑比平板性能更强、更稳定，适合较大规模的评审场景。</p>
+
+  <div class="arch-diagram">
+    <div class="arch-row">
+      <div class="arch-box laptop">💻 Windows笔记本电脑（后端+数据库）<br><small>JAR包运行，H2数据库自动创建</small></div>
+    </div>
+    <div class="arch-row">
+      <div class="arch-box backend">⚙️ 后端服务 Java JAR<br><small>端口 :7003</small></div>
+      <span class="arch-arrow">⟷</span>
+      <div class="arch-box db">💾 H2数据库<br><small>内嵌，零安装</small></div>
+    </div>
+    <div style="margin-top:14px; color:#888; font-size:13px;">
+      ▲ 后端和数据库在电脑上，通过WiFi网络提供服务
+    </div>
+    <div style="margin-top:10px;">
+      <span class="arch-arrow" style="font-size:16px;">⬇︎ WiFi 局域网</span>
+    </div>
+    <div class="arch-row">
+      <div class="arch-box tablet">📱 安卓平板（前端页面）<br><small>Nginx :8080</small></div>
+      <span class="arch-arrow" style="font-size:16px;">+</span>
+      <div class="arch-box tablet" style="background:#fce4ec; border-color:#c2185b; color:#ad1457;">📲 评审委员手机/平板<br><small>浏览器访问</small></div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <strong>💡 核心理解：</strong>电脑上跑着 <strong>Java 后端</strong>（含数据库），平板上跑着 <strong>Nginx 前端网页</strong>。委员们用手机浏览器访问平板的 8080 端口打开网页，网页自动连接电脑的 7003 端口处理投票。
+  </div>
+
+  <h3>Windows版的核心优势</h3>
+  <table>
+    <tr><th>特性</th><th>说明</th></tr>
+    <tr><td>✅ 零数据库安装</td><td>使用 H2 内嵌数据库，程序自带，首次启动自动建库建表</td></tr>
+    <tr><td>✅ 预编译JAR包</td><td>无需 Maven 编译，双击 .bat 脚本即可启动</td></tr>
+    <tr><td>✅ 数据便携</td><td>所有数据存在 <code class="inline">data/</code> 文件夹，复制即可备份</td></tr>
+    <tr><td>✅ 性能稳定</td><td>电脑比平板性能更强，适合大型评审会议</td></tr>
+  </table>
+
+  <h3>端口说明</h3>
+  <table>
+    <tr><th>端口</th><th>用途</th><th>运行位置</th></tr>
+    <tr><td>7003</td><td>后端API + H2数据库</td><td>Windows 电脑</td></tr>
+    <tr><td>8080</td><td>前端网页</td><td>安卓平板</td></tr>
+  </table>
+</div>
+
+<!-- ===== 第1章 ===== -->
+<div class="card" id="sec1">
+  <h2><span class="icon">📋</span> 第1章 · 部署材料准备清单</h2>
+  <p class="subtitle">开工前，把东西备齐</p>
+
+  <h3>1.1 设备要求</h3>
+  <table>
+    <tr><th>项目</th><th>要求</th><th>说明</th></tr>
+    <tr><td>Windows笔记本电脑</td><td>Win10/Win11，64位</td><td>内存 4GB 以上，存储剩余 500MB 以上</td></tr>
+    <tr><td>安卓平板</td><td>Android 8.0 及以上</td><td>用于运行前端 Nginx</td></tr>
+    <tr><td>WiFi 网络</td><td>所有设备连同一 WiFi</td><td>电脑、平板、委员手机必须在同一局域网</td></tr>
+    <tr><td>充电器</td><td>电脑和平板全程接电</td><td>评审期间不要断电</td></tr>
+  </table>
+
+  <h3>1.2 需要准备的文件</h3>
+  <table>
+    <tr><th>文件/文件夹</th><th>用途</th><th>运行位置</th></tr>
+    <tr><td><code class="inline">vote-backend-windows/</code></td><td>后端项目（含预编译JAR）</td><td>Windows 电脑</td></tr>
+    <tr><td>前端文件（5个）</td><td>app/css/js 等网页文件</td><td>安卓平板</td></tr>
+  </table>
+
+  <h3>1.3 Windows电脑需要安装的软件</h3>
+  <table>
+    <tr><th>软件</th><th>用途</th><th>获取方式</th></tr>
+    <tr><td>JDK 17</td><td>运行 Java 后端（<strong>必须</strong>）</td><td>微软官网下载（下章详细说明）</td></tr>
+  </table>
+
+  <div class="tip">
+    <strong>💡 好消息：</strong>Windows 版<strong>不需要</strong>安装 MySQL 数据库、<strong>不需要</strong>安装 Maven、<strong>不需要</strong>编译代码。JAR 包已经预编译好了，开箱即用！
+  </div>
+
+  <h3>1.4 设备设置调整</h3>
+  <ol>
+    <li><strong>电脑：设置不休眠</strong> → 设置 → 电源 → "屏幕和睡眠" → 全部设为"从不"</li>
+    <li><strong>电脑：保持 WiFi 连接</strong> → 确保电脑连上会议室 WiFi</li>
+    <li><strong>平板：关闭省电</strong> → 将 Termux 加入不受限应用列表</li>
+    <li><strong>平板：关闭屏幕休眠</strong> → 设置 → 显示 → 屏幕超时 → "永不"</li>
+  </ol>
+</div>
+
+<!-- ===== 第2章 ===== -->
+<div class="card" id="sec2">
+  <h2><span class="icon">☕</span> 第2章 · 安装 JDK 17 运行环境</h2>
+  <p class="subtitle">后端是 Java 程序，需要先装 Java 运行环境</p>
+
+  <h3>2.1 检查是否已安装</h3>
+  <p>在电脑上按 <code class="inline">Win+R</code>，输入 <code class="inline">cmd</code> 打开命令提示符，输入：</p>
+  <div class="code-block">
+java -version
+  </div>
+  <p>如果看到类似以下输出，说明已安装，可跳到第3章：</p>
+  <div class="screenshot-mock">
+<span class="prompt">C:\Users\Administrator></span> java -version
+openjdk version "17.0.11" 2024-04-16 LTS
+OpenJDK Runtime Environment Microsoft (build 17.0.11+9-LTS)
+OpenJDK 64-Bit Server VM (build 17.0.11+9-LTS, mixed mode)
+  </div>
+  <p>如果提示 <code class="inline">'java' 不是内部或外部命令</code>，说明未安装，继续下面的步骤。</p>
+
+  <h3>2.2 下载 JDK 17</h3>
+  <p><strong>方式一：下载安装包（推荐新手，最简单）</strong></p>
+  <ol>
+    <li>打开浏览器，访问：<br><code class="inline">https://learn.microsoft.com/zh-cn/java/openjdk/download</code></li>
+    <li>找到 <strong>"Windows x64" → "msi"</strong> 安装包，点击下载</li>
+    <li>文件名类似：<code class="inline">microsoft-jdk-17.0.x-windows-x64.msi</code>（约 170MB）</li>
+  </ol>
+
+  <p><strong>方式二：下载免安装版（适合不想装注册表的用户）</strong></p>
+  <ol>
+    <li>访问：<code class="inline">https://aka.ms/download-jdk/microsoft-jdk-17.0.11-windows-x64.zip</code></li>
+    <li>下载后解压到 <code class="inline">C:\jdk-17</code></li>
+    <li>手动配置环境变量（见 2.4 节）</li>
+  </ol>
+
+  <h3>2.3 安装 JDK（方式一用户）</h3>
+  <ol>
+    <li>双击下载的 <code class="inline">.msi</code> 文件</li>
+    <li>点击"下一步" → 勾选"我接受许可协议" → "下一步"</li>
+    <li><strong>重要：</strong>在功能选择页面，确保 <strong>"Set JAVA_HOME variable"</strong> 和 <strong>"Add to PATH"</strong> 都设为"整个功能安装到本地硬盘"</li>
+    <li>点击"安装" → 等待安装完成 → "完成"</li>
+  </ol>
+
+  <div class="warn">
+    <strong>⚠️ 注意：</strong>安装过程中如果弹出"是否允许应用更改设备"，请点击"是"。
+  </div>
+
+  <h3>2.4 配置环境变量（仅免安装版用户需要）</h3>
+  <p>如果用的是免安装版 ZIP，需要手动配置：</p>
+  <ol>
+    <li>右键"此电脑" → "属性" → "高级系统设置" → "环境变量"</li>
+    <li>在"系统变量"下点击"新建"：
+      <ul>
+        <li>变量名：<code class="inline">JAVA_HOME</code></li>
+        <li>变量值：<code class="inline">C:\jdk-17</code>（你解压的路径）</li>
+      </ul>
+    </li>
+    <li>找到"系统变量"中的 <code class="inline">Path</code>，点击"编辑" → "新建" → 输入 <code class="inline">%JAVA_HOME%\bin</code></li>
+    <li>点击"确定"保存所有窗口</li>
+  </ol>
+
+  <h3>2.5 验证安装</h3>
+  <p><strong>关闭之前的命令提示符窗口</strong>（环境变量修改后需要重新打开），重新打开一个新的命令提示符：</p>
+  <div class="code-block">
+java -version
+  </div>
+  <p>看到版本号输出即安装成功。</p>
+
+  <div class="success-box">
+    <strong>✅ 到这里 JDK 就装好了！</strong>这是整个部署过程中唯一需要安装的软件。
+  </div>
+</div>
+
+<!-- ===== 第3章 ===== -->
+<div class="card" id="sec3">
+  <h2><span class="icon">🚀</span> 第3章 · 启动后端服务（双击即用）</h2>
+  <p class="subtitle">JAR 包已预编译好，双击就能运行</p>
+
+  <h3>3.1 复制项目到电脑</h3>
+  <ol>
+    <li>将 <code class="inline">vote-backend-windows</code> 文件夹整体复制到电脑上任意位置（推荐桌面或 D 盘根目录）</li>
+    <li>例如复制到 <code class="inline">D:\vote-backend-windows</code> 或 <code class="inline">C:\Users\你的用户名\Desktop\vote-backend-windows</code></li>
+  </ol>
+
+  <h3>3.2 查看 JAR 包是否存在</h3>
+  <p>打开文件夹，确认存在以下文件：</p>
+  <table>
+    <tr><th>文件名</th><th>说明</th><th>大小</th></tr>
+    <tr><td><code class="inline">vote-system-windows.jar</code></td><td>预编译的后端程序</td><td>约 45MB</td></tr>
+    <tr><td><code class="inline">启动服务.bat</code></td><td>启动脚本</td><td>—</td></tr>
+    <tr><td><code class="inline">停止服务.bat</code></td><td>停止脚本</td><td>—</td></tr>
+    <tr><td><code class="inline">重新构建.bat</code></td><td>修改源码后重新编译（可选）</td><td>—</td></tr>
+  </table>
+
+  <div class="warn">
+    <strong>⚠️ 重要：</strong>如果文件夹中没有 <code class="inline">vote-system-windows.jar</code> 文件，需要先执行"重新构建.bat"编译（需要联网下载依赖，约10分钟）。正常情况下 JAR 包已预编译好，无需此操作。
+  </div>
+
+  <h3>3.3 双击启动服务</h3>
+  <ol>
+    <li><strong>双击</strong> <code class="inline">启动服务.bat</code></li>
+    <li>会弹出一个黑色命令行窗口，显示启动日志</li>
+    <li>等待 5-10 秒，看到以下关键信息表示启动成功：</li>
+  </ol>
+
+  <div class="screenshot-mock">
+<span class="highlight">============================================</span>
+   科技奖评审表决系统 - Windows后端服务
+<span class="highlight">============================================</span>
+
+正在启动后端服务...
+
+服务地址: http://localhost:7003
+H2数据库控制台: http://localhost:7003/h2-console
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v2.7.18)
+
+<span class="highlight">Tomcat started on port(s): 7003 (http)</span>
+<span class="highlight">Started VoteApplication in 3.214 seconds</span>
+  </div>
+
+  <div class="success-box">
+    <strong>✅ 看到 "Started VoteApplication" 就说明后端启动成功了！</strong><br>
+    首次启动时会自动创建数据库和表，所以比之后启动稍慢几秒。
+  </div>
+
+  <h3>3.4 验证后端是否正常</h3>
+  <p>在电脑浏览器中访问以下地址：</p>
+  <div class="code-block">
+http://localhost:7003/voteRound/current
+  </div>
+  <p>如果浏览器显示类似这样的 JSON 数据，说明后端完全正常：</p>
+  <div class="code-block">
+{"code":200,"msg":"success","data":{"id":1,"roundNum":1,...}}
+  </div>
+
+  <h3>3.5 不要关闭黑窗口！</h3>
+  <div class="danger">
+    <strong>⛔ 重要：</strong>那个黑色的命令行窗口就是后端服务的运行窗口。<strong>不能关闭！</strong>关闭就等于停止了后端服务。<br>
+    如果需要做其他事情，把窗口最小化即可。
+  </div>
+
+  <h3>3.6 如何停止后端</h3>
+  <ul>
+    <li><strong>方法一：</strong>双击 <code class="inline">停止服务.bat</code></li>
+    <li><strong>方法二：</strong>在运行后端的黑窗口中按 <code class="inline">Ctrl + C</code></li>
+    <li><strong>方法三：</strong>直接关闭黑窗口（不推荐，可能数据未完全保存）</li>
+  </ul>
+
+  <h3>3.7 查看电脑 IP 地址</h3>
+  <p>后端启动后，需要查看电脑的 IP 地址，后面配置平板时要用：</p>
+  <ol>
+    <li>按 <code class="inline">Win+R</code>，输入 <code class="inline">cmd</code>，回车</li>
+    <li>在命令提示符中输入 <code class="inline">ipconfig</code>，回车</li>
+    <li>找到 <strong>"无线局域网适配器 WLAN"</strong> 下的 <strong>"IPv4 地址"</strong></li>
+  </ol>
+  <div class="screenshot-mock">
+<span class="prompt">C:\Users\Administrator></span> ipconfig
+
+无线局域网适配器 WLAN:
+
+   连接特定的 DNS 后缀 . . . . . . . : localdomain
+   IPv4 地址 . . . . . . . . . . . . : <span class="highlight">192.168.1.100</span>
+   子网掩码  . . . . . . . . . . . . : 255.255.255.0
+   默认网关. . . . . . . . . . . . . : 192.168.1.1
+  </div>
+  <p>记下这个 IP 地址（例如 <code class="inline">192.168.1.100</code>），后面要用。</p>
+
+  <div class="warn">
+    <strong>⚠️ 注意：</strong>如果你的电脑是通过网线连接的，找"以太网适配器"下的 IPv4 地址。确保电脑和平板在同一个 WiFi/局域网下。
+  </div>
+</div>
+
+<!-- ===== 第4章 ===== -->
+<div class="card" id="sec4">
+  <h2><span class="icon">🛡️</span> 第4章 · 配置 Windows 防火墙</h2>
+  <p class="subtitle">让平板能够访问电脑上的后端服务</p>
+
+  <div class="warn">
+    <strong>⚠️ 这一步很重要！</strong>Windows 默认会阻止其他设备访问本机的端口。如果不配置防火墙，平板将无法连接到电脑后端。
+  </div>
+
+  <h3>4.1 方法一：通过命令行快速放行（推荐）</h3>
+  <ol>
+    <li>按 <code class="inline">Win+R</code>，输入 <code class="inline">cmd</code></li>
+    <li><strong>右键点击"命令提示符"→ "以管理员身份运行"</strong></li>
+    <li>输入以下命令（每行一个，按回车）：</li>
+  </ol>
+  <div class="code-block">
+<span class="comment"># 放行 7003 端口（后端服务）</span>
+netsh advfirewall firewall add rule name="VoteBackend-7003" dir=in action=allow protocol=TCP localport=7003
+
+<span class="comment"># 确认规则已添加</span>
+netsh advfirewall firewall show rule name="VoteBackend-7003"
+  </div>
+  <p>看到"确定。"即表示成功。</p>
+
+  <h3>4.2 方法二：通过图形界面配置</h3>
+  <ol>
+    <li>按 <code class="inline">Win</code> 键，搜索"Windows Defender 防火墙"→ 打开</li>
+    <li>点击左侧 <strong>"高级设置"</strong></li>
+    <li>左侧点击 <strong>"入站规则"</strong> → 右侧点击 <strong>"新建规则"</strong></li>
+    <li>选择 <strong>"端口"</strong> → "下一步"</li>
+    <li>选择 <strong>"TCP"</strong>，特定本地端口输入 <code class="inline">7003</code> → "下一步"</li>
+    <li>选择 <strong>"允许连接"</strong> → "下一步"</li>
+    <li>三个网络类型（域/专用/公用）全部勾选 → "下一步"</li>
+    <li>名称输入 <code class="inline">VoteBackend-7003</code> → "完成"</li>
+  </ol>
+
+  <h3>4.3 验证防火墙配置</h3>
+  <p>在平板浏览器中输入（替换为你的电脑 IP）：</p>
+  <div class="code-block">
+http://192.168.1.100:7003/voteRound/current
+  </div>
+  <p>如果返回 JSON 数据，说明防火墙配置成功，平板可以访问电脑后端了。</p>
+
+  <div class="danger">
+    <strong>⛔ 如果仍然打不开：</strong>
+    <ol>
+      <li>确认电脑和平板在<strong>同一个 WiFi 网络</strong></li>
+      <li>确认电脑 IP 地址正确（<code class="inline">ipconfig</code> 查看）</li>
+      <li>确认后端服务正在运行（黑窗口没关）</li>
+      <li>尝试临时关闭防火墙测试：控制面板 → Windows Defender 防火墙 → "启用或关闭防火墙" → 全部关闭</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ===== 第5章 ===== -->
+<div class="card" id="sec5">
+  <h2><span class="icon">📱</span> 第5章 · 安卓平板部署前端页面</h2>
+  <p class="subtitle">在平板上部署 Nginx 提供前端网页服务</p>
+
+  <h3>5.1 安装 Termux</h3>
+  <ol>
+    <li>从 F-Droid（https://f-droid.org/packages/com.termux/）下载 Termux APK 并安装</li>
+    <li>打开 Termux，等待初始化完成</li>
+  </ol>
+
+  <div class="warn">
+    <strong>⚠️ 注意：</strong>不要从 Google Play 下载 Termux（版本过旧）。从 F-Droid 或 GitHub 下载。
+  </div>
+
+  <h3>5.2 安装 Nginx 并准备前端文件</h3>
+  <div class="code-block">
+<span class="comment"># 更新软件包</span>
+pkg update -y
+
+<span class="comment"># 安装 Nginx</span>
+pkg install nginx -y
+
+<span class="comment"># 创建前端目录</span>
+mkdir -p ~/vote-app/frontend
+  </div>
+
+  <h3>5.3 复制前端文件到平板</h3>
+  <p>将项目根目录下的 5 个前端文件复制到平板的 Download 目录，然后移入 Termux：</p>
+  <div class="code-block">
+<span class="comment"># 复制前端文件</span>
+cp /sdcard/Download/app.*.css ~/vote-app/frontend/
+cp /sdcard/Download/app.*.js ~/vote-app/frontend/
+cp /sdcard/Download/chunk-vendors.*.css ~/vote-app/frontend/
+cp /sdcard/Download/chunk-vendors.*.js ~/vote-app/frontend/
+cp /sdcard/Download/options.js ~/vote-app/frontend/
+
+<span class="comment"># 查看文件</span>
+ls ~/vote-app/frontend/
+  </div>
+
+  <h3>5.4 创建 index.html</h3>
+  <div class="code-block">
+cat > ~/vote-app/frontend/index.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>科技奖评审表决系统</title>
+  <link href="/chunk-vendors.7eec43d6.css" rel="stylesheet">
+  <link href="/app.5007c485.css" rel="stylesheet">
+</head>
+<body>
+  <div id="app"></div>
+  <script src="/options.js"></script>
+  <script src="/chunk-vendors.e58ab867.js"></script>
+  <script src="/app.b1193a83.js"></script>
+</body>
+</html>
+HTMLEOF
+  </div>
+
+  <div class="warn">
+    <strong>⚠️ 重要：</strong>上面文件名中的哈希值必须和实际文件名<strong>完全一致</strong>。请根据你实际的文件名修改。
+  </div>
+
+  <h3>5.5 配置 Nginx</h3>
+  <div class="code-block">
+nano $PREFIX/etc/nginx/nginx.conf
+  </div>
+  <p>找到 <code class="inline">server</code> 部分，修改为：</p>
+  <div class="code-block">
+server {
+    listen       8080;
+    server_name  localhost;
+
+    location / {
+        root   /data/data/com.termux/files/home/vote-app/frontend;
+        index  index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    <span class="comment"># 后端API反向代理到Windows电脑</span>
+    location /achievement/ {
+        proxy_pass http://192.168.1.100:7003;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    location /voteRound/ {
+        proxy_pass http://192.168.1.100:7003;
+        proxy_set_header Host $host;
+    }
+    location /voteResult/ {
+        proxy_pass http://192.168.1.100:7003;
+        proxy_set_header Host $host;
+    }
+    location /api/ {
+        proxy_pass http://192.168.1.100:7003;
+        proxy_set_header Host $host;
+    }
+}
+  </div>
+
+  <div class="danger">
+    <strong>⛔ 关键修改：</strong>把上面所有的 <code class="inline">192.168.1.100</code> 替换为你的<strong>Windows 电脑实际 IP 地址</strong>！这是连接平板前端和电脑后端的关键桥梁。
+  </div>
+
+  <h3>5.6 启动 Nginx</h3>
+  <div class="code-block">
+<span class="comment"># 测试配置</span>
+nginx -t
+
+<span class="comment"># 启动</span>
+nginx
+
+<span class="comment"># 验证</span>
+curl -I http://localhost:8080/
+<span class="comment"># 应看到: HTTP/1.1 200 OK</span>
+  </div>
+
+  <h3>5.7 查看平板 IP 地址</h3>
+  <div class="code-block">
+ifconfig wlan0 | grep "inet "
+  </div>
+  <p>记下平板 IP（例如 <code class="inline">192.168.1.108</code>），这是委员们要访问的地址。</p>
+
+  <h3>5.8 设置 Nginx 开机自启（推荐）</h3>
+  <div class="code-block">
+<span class="comment"># 需先从 F-Droid 安装 Termux:Boot</span>
+mkdir -p ~/.termux/boot
+cat > ~/.termux/boot/start-nginx << 'EOF'
+#!/data/data/com.termux/files/usr/bin/sh
+termux-wake-lock
+sleep 5
+nginx
+EOF
+chmod +x ~/.termux/boot/start-nginx
+  </div>
+</div>
+
+<!-- ===== 第6章 ===== -->
+<div class="card" id="sec6">
+  <h2><span class="icon">🌐</span> 第6章 · 配置 options.js 连接地址</h2>
+  <p class="subtitle">让前端知道后端在哪里</p>
+
+  <h3>6.1 修改 options.js</h3>
+  <div class="code-block">
+nano ~/vote-app/frontend/options.js
+  </div>
+  <p>找到文件末尾被注释掉的两行，取消注释并填入<strong>电脑的 IP 地址</strong>：</p>
+  <div class="code-block">
+<span class="comment"># 修改前（被注释）：</span>
+// window._$base_url = "http://192.168.2.188:7003";
+// window._$base_url = "/";
+
+<span class="comment"># 修改后（取消注释，填入你的电脑IP）：</span>
+window._$base_url = "http://192.168.1.100:7003";
+  </div>
+
+  <div class="danger">
+    <strong>⛔ 最关键的一步：</strong>
+    <ul>
+      <li>把 <code class="inline">192.168.1.100</code> 换成你的 <strong>Windows 电脑</strong> IP（不是平板 IP！）</li>
+      <li>端口 <code class="inline">7003</code> 不要改</li>
+      <li>确保前面的 <code class="inline">//</code> 注释符号已经删掉</li>
+    </ul>
+  </div>
+
+  <h3>6.2 重启 Nginx 使配置生效</h3>
+  <div class="code-block">
+nginx -s reload
+  </div>
+
+  <div class="tip">
+    <strong>💡 配置总结：</strong>Windows 版中有<strong>两个 IP</strong> 需要配置：
+    <ul>
+      <li><strong>Nginx 配置中的 proxy_pass</strong> → 指向电脑 IP（后端地址）</li>
+      <li><strong>options.js 中的 _$base_url</strong> → 指向电脑 IP（后端地址）</li>
+      <li>委员们访问的是<strong>平板 IP:8080</strong>（前端地址）</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== 第7章 ===== -->
+<div class="card" id="sec7">
+  <h2><span class="icon">✅</span> 第7章 · 验证与上线</h2>
+  <p class="subtitle">检查所有环节是否正常工作</p>
+
+  <h3>7.1 电脑端验证</h3>
+  <p>在 Windows 电脑浏览器中访问：</p>
+  <table>
+    <tr><th>验证项</th><th>访问地址</th><th>预期结果</th></tr>
+    <tr><td>后端API</td><td><code class="inline">http://localhost:7003/voteRound/current</code></td><td>返回 JSON</td></tr>
+    <tr><td>H2数据库控制台</td><td><code class="inline">http://localhost:7003/h2-console</code></td><td>看到 H2 登录页面</td></tr>
+  </table>
+
+  <h3>7.2 平板端验证</h3>
+  <p>在平板浏览器中访问：</p>
+  <table>
+    <tr><th>验证项</th><th>访问地址</th><th>预期结果</th></tr>
+    <tr><td>前端页面</td><td><code class="inline">http://localhost:8080/</code></td><td>看到系统首页</td></tr>
+    <tr><td>后端连通</td><td><code class="inline">http://电脑IP:7003/voteRound/current</code></td><td>返回 JSON</td></tr>
+  </table>
+
+  <h3>7.3 其他设备验证（关键！）</h3>
+  <p>用另一台手机（连同一个 WiFi），在浏览器输入：</p>
+  <div class="code-block">
+http://192.168.1.108:8080/
+<span class="comment"># 把 192.168.1.108 换成你的平板 IP</span>
+  </div>
+  <p>如果能看到系统页面、能录入成果、能投票，说明部署成功！🎉</p>
+
+  <h3>7.4 完整启动顺序</h3>
+  <p><strong>每次使用前，按以下顺序启动：</strong></p>
+  <div class="code-block">
+<span class="comment">===== Windows 电脑 =====</span>
+
+<span class="comment"># 1. 双击 "启动服务.bat"</span>
+<span class="comment">#    等待看到 "Started VoteApplication"</span>
+
+<span class="comment">===== 安卓平板 =====</span>
+
+<span class="comment"># 2. 打开 Termux，启动 Nginx</span>
+nginx
+
+<span class="comment"># 3. 如果 Nginx 已在运行，跳过此步</span>
+<span class="comment">#    如果报"端口被占用"，说明已在运行了</span>
+
+<span class="comment">===== 委员访问 =====</span>
+
+<span class="comment"># 4. 委员浏览器输入: http://平板IP:8080</span>
+  </div>
+
+  <h3>7.5 给评审委员的访问说明</h3>
+  <div class="tip">
+    <strong>📱 告诉委员们：</strong><br>
+    1. 连上会议室 WiFi<br>
+    2. 打开手机浏览器（推荐 Chrome）<br>
+    3. 输入地址：<code class="inline">http://平板IP:8080</code><br>
+    4. 按照页面提示进行投票
+  </div>
+
+  <h3>7.6 评审结束后的操作</h3>
+  <ol>
+    <li>在系统"结果展示"页面导出 Excel 统计表</li>
+    <li>在电脑上备份 <code class="inline">data/</code> 文件夹（见附录）</li>
+    <li>电脑上双击 <code class="inline">停止服务.bat</code> 关闭后端</li>
+    <li>平板上在 Termux 输入 <code class="inline">nginx -s stop</code> 关闭前端</li>
+  </ol>
+</div>
+
+<!-- ===== 第8章 ===== -->
+<div class="card" id="sec8">
+  <h2><span class="icon">❓</span> 第8章 · 常见问题排查</h2>
+  <p class="subtitle">遇到问题别慌，这里能找到答案</p>
+
+  <details>
+    <summary>Q1：双击"启动服务.bat"闪退或报错？</summary>
+    <div class="detail-content">
+      <p><strong>原因：</strong>JDK 未安装或未配置环境变量。</p>
+      <p><strong>解决：</strong></p>
+      <ol>
+        <li>按 <code class="inline">Win+R</code> → 输入 <code class="inline">cmd</code> → 输入 <code class="inline">java -version</code></li>
+        <li>如果提示"不是内部命令"，说明 JDK 未安装，请按第2章重新安装</li>
+        <li>如果已安装但仍然报错，尝试重启电脑后再试</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q2：提示"端口 7003 已被占用"？</summary>
+    <div class="detail-content">
+      <p><strong>原因：</strong>后端服务已经在运行了，或者 7003 端口被其他程序占用。</p>
+      <p><strong>解决：</strong></p>
+      <ol>
+        <li>双击 <code class="inline">停止服务.bat</code> 关闭旧进程</li>
+        <li>等待 2 秒后再双击 <code class="inline">启动服务.bat</code></li>
+        <li>如果还不行，打开任务管理器（Ctrl+Shift+Esc），结束所有 <code class="inline">java.exe</code> 进程</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q3：平板打不开电脑后端（连接超时）？</summary>
+    <div class="detail-content">
+      <p><strong>排查步骤：</strong></p>
+      <ol>
+        <li>确认电脑和平板在<strong>同一个 WiFi 网络</strong></li>
+        <li>确认电脑 IP 正确：<code class="inline">ipconfig</code> 查看</li>
+        <li>确认防火墙已放行 7003 端口（第4章）</li>
+        <li>在平板浏览器试试 <code class="inline">http://电脑IP:7003/voteRound/current</code></li>
+        <li>如果还不行，临时关闭 Windows 防火墙测试</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q4：页面打开了但是数据为空或操作没反应？</summary>
+    <div class="detail-content">
+      <p><strong>原因：</strong><code class="inline">options.js</code> 中的 IP 地址配置不对，或 Nginx 反向代理配置不对。</p>
+      <p><strong>解决：</strong></p>
+      <ol>
+        <li>检查 <code class="inline">options.js</code>：<code class="inline">window._$base_url = "http://电脑IP:7003"</code> 确保取消注释</li>
+        <li>检查 Nginx 配置：<code class="inline">proxy_pass http://电脑IP:7003</code> 确保 IP 正确</li>
+        <li>执行 <code class="inline">nginx -s reload</code> 重新加载</li>
+        <li>在平板浏览器按 F12 → Console 查看报错信息</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q5：页面是白屏（空白页）？</summary>
+    <div class="detail-content">
+      <p><strong>原因：</strong><code class="inline">index.html</code> 中的文件名和实际文件名不匹配。</p>
+      <p><strong>解决：</strong></p>
+      <ol>
+        <li>在 Termux 中查看实际文件名：<code class="inline">ls ~/vote-app/frontend/</code></li>
+        <li>打开 <code class="inline">index.html</code>，确保文件名完全一致（包括哈希值）</li>
+        <li>执行 <code class="inline">nginx -s reload</code></li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q6：电脑或平板重启后 IP 变了怎么办？</summary>
+    <div class="detail-content">
+      <p><strong>原因：</strong>WiFi 路由器重新分配了 IP。</p>
+      <p><strong>解决：</strong></p>
+      <ol>
+        <li>查看电脑新 IP：<code class="inline">ipconfig</code></li>
+        <li>修改平板 <code class="inline">options.js</code> 中的 IP</li>
+        <li>修改平板 Nginx 配置中的 <code class="inline">proxy_pass</code> IP</li>
+        <li>执行 <code class="inline">nginx -s reload</code></li>
+        <li>查看平板新 IP：<code class="inline">ifconfig wlan0</code></li>
+        <li>告诉委员们新的访问地址</li>
+      </ol>
+      <p><strong>长期方案：</strong>在路由器后台给电脑和平板绑定固定 IP（DHCP 静态分配）。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q7：数据丢失了怎么办？</summary>
+    <div class="detail-content">
+      <p><strong>原因：</strong>H2 数据库文件在 <code class="inline">data/</code> 文件夹中，删除该文件夹会丢失所有数据。</p>
+      <p><strong>解决：</strong>定期备份 <code class="inline">data/</code> 文件夹（见附录）。如果已删除，数据无法恢复，需要重新录入。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q8：修改了源代码怎么生效？</summary>
+    <div class="detail-content">
+      <p><strong>步骤：</strong></p>
+      <ol>
+        <li>双击 <code class="inline">停止服务.bat</code> 关闭后端</li>
+        <li>双击 <code class="inline">重新构建.bat</code>（需要联网下载 Maven 依赖，首次约 10 分钟）</li>
+        <li>构建成功后，双击 <code class="inline">启动服务.bat</code> 即可</li>
+      </ol>
+      <p>如果构建报错，检查 JDK 是否正确安装，以及网络是否通畅。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q9：如何查看 H2 数据库里的数据？</summary>
+    <div class="detail-content">
+      <p>后端启动后，在电脑浏览器访问：</p>
+      <pre style="background:#1e1e2e;color:#cdd6f4;padding:14px;border-radius:6px;font-size:13px;">http://localhost:7003/h2-console</pre>
+      <p>填写连接信息：</p>
+      <ul>
+        <li><strong>JDBC URL:</strong> <code class="inline">jdbc:h2:file:./data/vote_db;MODE=MySQL</code></li>
+        <li><strong>User:</strong> <code class="inline">sa</code></li>
+        <li><strong>Password:</strong> 留空</li>
+      </ul>
+      <p>点击"Connect"即可查看和编辑所有数据表。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q10：能否把前端也放到电脑上运行？</summary>
+    <div class="detail-content">
+      <p>可以。在电脑上安装 Nginx for Windows，把前端文件放进去，配置 8080 端口和反向代理指向 <code class="inline">localhost:7003</code>。这样就不需要平板了，委员们直接访问 <code class="inline">http://电脑IP:8080</code>。</p>
+      <p>但需要额外安装和配置 Nginx for Windows，适合有一定基础的用户。</p>
+    </div>
+  </details>
+</div>
+
+<!-- ===== 附录 ===== -->
+<div class="card" id="sec9">
+  <h2><span class="icon">📎</span> 附录 · 数据备份与管理</h2>
+  <p class="subtitle">评审数据很重要，定期备份不可少</p>
+
+  <h3>A.1 备份数据</h3>
+  <p>Windows 版的所有数据都存在 <code class="inline">vote-backend-windows/data/</code> 文件夹中。备份方法：</p>
+  <ol>
+    <li><strong>停止后端服务</strong>（双击"停止服务.bat"）</li>
+    <li>复制 <code class="inline">data/</code> 文件夹到 U 盘或其他位置</li>
+    <li>重新启动服务</li>
+  </ol>
+  <div class="tip">
+    <strong>💡 建议每天评审结束后备份一次！</strong>
+  </div>
+
+  <h3>A.2 恢复数据</h3>
+  <ol>
+    <li>停止后端服务</li>
+    <li>将备份的 <code class="inline">data/</code> 文件夹复制回来覆盖</li>
+    <li>重新启动服务</li>
+  </ol>
+
+  <h3>A.3 上传的文件备份</h3>
+  <p>委员上传的附件文件存在 <code class="inline">vote-backend-windows/uploads/</code> 文件夹，备份时一并复制即可。</p>
+
+  <h3>A.4 快速命令速查表</h3>
+  <table>
+    <tr><th>操作</th><th>方式</th></tr>
+    <tr><td>启动后端</td><td>双击 <code class="inline">启动服务.bat</code></td></tr>
+    <tr><td>停止后端</td><td>双击 <code class="inline">停止服务.bat</code>，或按 Ctrl+C</td></tr>
+    <tr><td>重新编译</td><td>双击 <code class="inline">重新构建.bat</code></td></tr>
+    <tr><td>查看数据库</td><td>浏览器访问 <code class="inline">http://localhost:7003/h2-console</code></td></tr>
+    <tr><td>查看电脑IP</td><td>命令提示符输入 <code class="inline">ipconfig</code></td></tr>
+    <tr><td>查看平板IP</td><td>Termux 输入 <code class="inline">ifconfig wlan0</code></td></tr>
+    <tr><td>启动前端（平板）</td><td>Termux 输入 <code class="inline">nginx</code></td></tr>
+    <tr><td>停止前端（平板）</td><td>Termux 输入 <code class="inline">nginx -s stop</code></td></tr>
+    <tr><td>重载前端配置</td><td>Termux 输入 <code class="inline">nginx -s reload</code></td></tr>
+    <tr><td>备份</td><td>复制 <code class="inline">data/</code> 文件夹</td></tr>
+  </table>
+
+  <h3>A.5 两个版本对比参考</h3>
+  <table>
+    <tr><th>对比项</th><th>平板版</th><th>Windows版</th></tr>
+    <tr><td>后端运行位置</td><td>安卓平板（Termux）</td><td>Windows 笔记本电脑</td></tr>
+    <tr><td>数据库</td><td>MariaDB（需手动安装配置）</td><td>H2 内嵌（零安装，自动创建）</td></tr>
+    <tr><td>前端运行位置</td><td>安卓平板（Nginx）</td><td>安卓平板（Nginx）</td></tr>
+    <tr><td>部署难度</td><td>⭐⭐⭐⭐（较复杂）</td><td>⭐⭐（简单）</td></tr>
+    <tr><td>稳定性</td><td>一般（平板性能有限）</td><td>好（电脑性能强）</td></tr>
+    <tr><td>数据备份</td><td>导出 SQL 脚本</td><td>复制 data/ 文件夹</td></tr>
+    <tr><td>适合场景</td><td>小型评审、设备有限</td><td>中大型评审、有电脑可用</td></tr>
+  </table>
+</div>
+
+<div class="footer">
+  科技奖评审表决系统 · Windows版部署流程说明书<br>
+  版本 B · 后端运行在Windows笔记本 + 前端运行在安卓平板<br>
+  生成日期：2026-06-24
+</div>
+
+</div>
+</body>
+</html>

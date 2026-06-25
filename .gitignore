@@ -1,0 +1,38 @@
+# === IDE / Editor ===
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === WorkBuddy internal ===
+.workbuddy/
+
+# === Java / Maven build output ===
+target/
+*.class
+*.jar.original
+
+# === Maven Wrapper JAR (keep .cmd and properties, skip binary jar) ===
+# Actually keep maven-wrapper.jar so mvnw works out of the box
+
+# === H2 database runtime files ===
+vote-backend-windows/data/
+*.h2.db
+*.lock.db
+*.mv.db
+*.trace.db
+
+# === Logs ===
+*.log
+logs/
+
+# === Uploaded files (runtime data) ===
+vote-backend-windows/uploads/
+vote-backend/uploads/
