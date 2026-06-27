@@ -66,23 +66,12 @@
     toolbar.style.gap = '8px';
     toolbar.style.flexWrap = 'nowrap';
 
-    // 缩小所有搜索框
+    // 缩小所有搜索框50%
     toolbar.querySelectorAll('.el-input, .el-select').forEach(function(el) {
-      el.style.width = '110px';
+      el.style.width = '55px';
     });
     toolbar.querySelectorAll('.el-input__inner, input[type="text"]').forEach(function(inp) {
       inp.style.width = '100%';
-    });
-
-    // 推荐等级搜索框额外缩小50%
-    toolbar.querySelectorAll('.el-form-item__label').forEach(function(label) {
-      if (label.textContent.trim() === '推荐等级：' || label.textContent.trim() === '专家组推荐等级：') {
-        var formItem = label.closest('.el-form-item');
-        if (formItem) {
-          var select = formItem.querySelector('.el-select');
-          if (select) select.style.width = '55px';
-        }
-      }
     });
 
     // 隐藏原浮动按钮
