@@ -65,12 +65,17 @@
           }
         }
 
-        // 插入按钮
+        // 插入按钮到 .cell 内部（与编辑/删除同级）
         var span = document.createElement('span');
         span.className = 'wb-attach';
-        span.style.cssText = 'margin-left:4px;display:inline-block;vertical-align:middle;';
+        span.style.cssText = 'display:inline-block;vertical-align:middle;';
         renderBtn(span, aid);
-        opCell.appendChild(span);
+        var cellDiv = opCell.querySelector('.cell');
+        if (cellDiv) {
+          cellDiv.appendChild(span);
+        } else {
+          opCell.appendChild(span);
+        }
       });
     } finally {
       setTimeout(function() { isMutating = false; }, 100);
