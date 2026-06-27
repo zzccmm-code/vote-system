@@ -14,22 +14,23 @@
       var cols = colgroup.querySelectorAll('col');
       if (cols.length === 0) return;
 
-      // 第一列通常是序号，宽度小一些；最后一列是操作，稍大
-      // 其余列均分剩余宽度
-      var firstW = cols.length > 1 ? '4%' : '';
-      var lastW = cols.length > 1 ? '14%' : '';
-      var restCount = cols.length - 2;
-      if (restCount <= 0) restCount = cols.length;
-      var midW = restCount > 0 ? ((100 - 4 - 14) / restCount).toFixed(1) + '%' : '';
+      // 跳过勾选列，其余均分
+      var normalCols = [];
+      cols.forEach(function(c) {
+        if (!c.classList.contains('batch-cb-col')) normalCols.push(c);
+      });
+      if (normalCols.length === 0) return;
 
-      cols.forEach(function(col, i) {
-        if (i === 0 && firstW) {
-          col.style.width = firstW;
-        } else if (i === cols.length - 1 && lastW) {
-          col.style.width = lastW;
-        } else {
-          col.style.width = midW;
-        }
+      var firstW = '4%';
+      var lastW = '14%';
+      var midW = normalCols.length > 2
+        ? ((100 - 4 - 14) / (normalCols.length - 2)).toFixed(1) + '%'
+        : ((100) / normalCols.length).toFixed(1) + '%';
+
+      normalCols.forEach(function(col, i) {
+        if (i === 0) col.style.width = firstW;
+        else if (i === normalCols.length - 1) col.style.width = lastW;
+        else col.style.width = midW;
       });
     });
   }

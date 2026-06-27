@@ -19,6 +19,18 @@
       transition: all 0.2s;
     }
     .import-float-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(34,197,94,0.5); }
+
+    /* 批量删除条按钮 */
+    #batch-bar button {
+      background: #fff; color: #ef4444; border: none;
+      padding: 4px 14px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    #batch-bar button:hover { background: #fde8e8; }
+    #batch-bar button + button {
+      background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.6);
+      margin-left: 8px; font-size: 12px;
+    }
+    #batch-bar button + button:hover { background: rgba(255,255,255,0.15); }
   </style>
 </head>
 <body>
@@ -29,5 +41,6 @@
   <script src="pdf-inject.js"></script>
   <script src="hide-time-col.js"></script>
   <script src="col-width.js"></script>
+  <script src="batch-delete.js"></script>
 </body>
 </html>
