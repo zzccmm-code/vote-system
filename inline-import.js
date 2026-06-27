@@ -74,6 +74,17 @@
       inp.style.width = '100%';
     });
 
+    // 推荐等级搜索框额外缩小50%
+    toolbar.querySelectorAll('.el-form-item__label').forEach(function(label) {
+      if (label.textContent.trim() === '推荐等级：' || label.textContent.trim() === '专家组推荐等级：') {
+        var formItem = label.closest('.el-form-item');
+        if (formItem) {
+          var select = formItem.querySelector('.el-select');
+          if (select) select.style.width = '28px';
+        }
+      }
+    });
+
     // 隐藏原浮动按钮
     var floatBtn = document.querySelector('.import-float-btn');
     if (floatBtn) floatBtn.style.display = 'none';
