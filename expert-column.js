@@ -21,7 +21,7 @@
       if (!cell) return;
       var txt = cell.textContent.trim();
 
-      if (txt === '专家推荐等级' || txt === '专家评审推荐') {
+      if (txt === '专家组推荐等级' || txt === '专家推荐等级' || txt === '专家评审推荐') {
         cell.textContent = '专家评审推荐';
         expertColIdx = i;
       }
