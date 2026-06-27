@@ -35,7 +35,7 @@
     // 创建内联导入按钮
     var btn = document.createElement('button');
     btn.className = 'el-button el-button--success el-button--small wb-import-inline';
-    btn.innerHTML = '<span>导入数据</span>';
+    btn.innerHTML = '<span style="font-size:12px;">导入数据</span>';
     btn.onclick = function() { location.href = 'import.html'; };
 
     // 插入到工具栏末尾
