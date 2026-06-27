@@ -35,12 +35,14 @@
     // 创建内联导入按钮
     var btn = document.createElement('button');
     btn.className = 'el-button el-button--success el-button--small wb-import-inline';
-    btn.style.marginLeft = '20px';
     btn.innerHTML = '<span>📊 导入数据</span>';
     btn.onclick = function() { location.href = 'import.html'; };
 
     // 插入到工具栏末尾
     toolbar.appendChild(btn);
+    toolbar.style.display = 'flex';
+    toolbar.style.justifyContent = 'flex-start';
+    toolbar.style.gap = '12px';
 
     // 隐藏原浮动按钮
     var floatBtn = document.querySelector('.import-float-btn');
