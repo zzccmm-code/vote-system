@@ -98,10 +98,8 @@
   function scan() {
     ensureBar();
 
-    // 找到所有 el-table 内部的 table（含 header 和 body 两张）
-    var tables = document.querySelectorAll('.el-table table');
-    tables.forEach(function(tbl) {
-      // --- colgroup: 插勾选列 ---
+    // 1) 先给所有 table 插勾选列（colgroup/thead/tbody）
+    document.querySelectorAll('.el-table table').forEach(function(tbl) {
       var cg = tbl.querySelector('colgroup');
       if (cg && !cg.querySelector('.wb-cb-col')) {
         var cc = document.createElement('col');
@@ -111,7 +109,6 @@
         cg.insertBefore(cc, cg.firstChild);
       }
 
-      // --- thead: 插全选 th ---
       var thead = tbl.querySelector('thead');
       if (thead) {
         thead.querySelectorAll('tr').forEach(function(hr) {
@@ -124,7 +121,6 @@
         });
       }
 
-      // --- tbody: 每行插勾选 td ---
       tbl.querySelectorAll('tbody').forEach(function(tb) {
         tb.querySelectorAll('tr').forEach(function(row) {
           if (row.classList.contains('wb-row')) return;
@@ -137,6 +133,20 @@
           row.insertBefore(td, tds[0]);
         });
       });
+    });
+
+    // 2) 对齐：把 header colgroup 的 col 宽度同步到 body colgroup
+    document.querySelectorAll('.el-table').forEach(function(ct) {
+      var hdrTbl = ct.querySelector('.el-table__header-wrapper table');
+      var bodyTbl = ct.querySelector('.el-table__body-wrapper table');
+      if (!hdrTbl || !bodyTbl) return;
+
+      var hdrCols = hdrTbl.querySelectorAll('colgroup col');
+      var bodyCols = bodyTbl.querySelectorAll('colgroup col');
+      var n = Math.min(hdrCols.length, bodyCols.length);
+      for (var i = 0; i < n; i++) {
+        bodyCols[i].style.width = hdrCols[i].style.width || hdrCols[i].getAttribute('width') + 'px' || '';
+      }
     });
   }
 
