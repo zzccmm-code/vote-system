@@ -32,8 +32,10 @@
     }
     #batch-bar button + button:hover { background: rgba(255,255,255,0.15); }
 
-    /* 表头居中 */
+    /* 表头+数据居中（操作列除外） */
     .el-table th .cell { text-align: center !important; }
+    .el-table__body-wrapper td .cell { text-align: center !important; }
+    .el-table__body-wrapper td:last-child .cell { text-align: left !important; }
   </style>
 </head>
 <body>
