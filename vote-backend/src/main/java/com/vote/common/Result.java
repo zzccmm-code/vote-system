@@ -28,6 +28,15 @@ public class Result<T> {
         return r;
     }
 
+    /** 明确以 data 形式返回字符串（避免与 ok(String msg) 歧义） */
+    public static Result<String> okData(String data) {
+        Result<String> r = new Result<>();
+        r.setCode(200);
+        r.setMsg("success");
+        r.setData(data);
+        return r;
+    }
+
     public static <T> Result<T> fail(String msg) {
         Result<T> r = new Result<>();
         r.setCode(500);

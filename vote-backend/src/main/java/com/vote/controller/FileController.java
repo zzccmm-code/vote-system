@@ -29,6 +29,6 @@ public class FileController {
     @PostMapping("/upload")
     public Result<String> upload(@RequestParam("file") MultipartFile file) throws IOException {
         String filename = achievementService.uploadFile(file);
-        return Result.ok(filename);
+        return Result.okData(filename);
     }
 }

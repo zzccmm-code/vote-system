@@ -8,10 +8,24 @@
   <link rel="stylesheet" href="chunk-vendors.7eec43d6.css">
   <link rel="stylesheet" href="app.5007c485.css">
   <script src="options.js"></script>
+  <style>
+    .import-float-btn {
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: #fff; border: none; border-radius: 12px;
+      padding: 12px 20px; font-size: 14px; font-weight: 600;
+      cursor: pointer; box-shadow: 0 4px 14px rgba(34,197,94,0.4);
+      text-decoration: none; display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s;
+    }
+    .import-float-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(34,197,94,0.5); }
+  </style>
 </head>
 <body>
   <div id="app"></div>
+  <a href="import.html" class="import-float-btn" title="批量导入成果">📊 导入数据</a>
   <script src="chunk-vendors.e58ab867.js"></script>
   <script src="app.b1193a83.js"></script>
+  <script src="pdf-inject.js"></script>
 </body>
 </html>

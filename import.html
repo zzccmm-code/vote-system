@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>批量导入成果 - 科技奖评审表决系统</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: 15px; line-height: 1.6;
+    color: #2c2c2a; background: #f6f7f9; min-height: 100vh;
+  }
+  .banner {
+    background: linear-gradient(135deg, #1565c0 0%, #42a5f5 100%);
+    color: #fff; padding: 36px 0 28px; text-align: center;
+  }
+  .banner h1 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+  .banner p  { font-size: 13px; opacity: 0.8; }
+  .container { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+  .card {
+    background: #fff; border-radius: 10px; padding: 28px;
+    margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eee;
+  }
+  .card h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .card h2 .icon {
+    width: 30px; height: 30px; border-radius: 8px; background: #1565c0; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .step-row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .step-card {
+    flex: 1; min-width: 180px; background: #f8f9fa;
+    border-radius: 8px; padding: 20px; text-align: center; border: 2px dashed #d3d1c7;
+  }
+  .step-card .num {
+    width: 32px; height: 32px; border-radius: 50%; background: #1565c0;
+    color: #fff; font-size: 15px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;
+  }
+  .step-card h4 { font-size: 15px; margin-bottom: 6px; }
+  .step-card p  { font-size: 13px; color: #888; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 22px; border-radius: 6px; font-size: 14px;
+    font-weight: 500; cursor: pointer; border: none; text-decoration: none; transition: all 0.2s;
+  }
+  .btn-primary { background: #1565c0; color: #fff; }
+  .btn-primary:hover { background: #0d47a1; }
+  .btn-outline { background: #fff; color: #1565c0; border: 1.5px solid #1565c0; }
+  .btn-outline:hover { background: #eef6ff; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .upload-zone {
+    border: 2px dashed #b8daff; border-radius: 10px; padding: 36px 20px;
+    text-align: center; background: #eef6ff; cursor: pointer; transition: all 0.2s;
+  }
+  .upload-zone:hover { border-color: #1565c0; background: #dceeff; }
+  .upload-zone.active { border-color: #22c55e; background: #f0fdf4; }
+  .upload-zone .icon-upload { font-size: 36px; margin-bottom: 8px; }
+  .upload-zone p { margin: 4px 0; }
+  .upload-zone .hint { font-size: 12px; color: #888; }
+  #fileInput { display: none; }
+  .file-name {
+    display: inline-block; padding: 6px 14px; background: #eef6ff;
+    border-radius: 6px; font-size: 13px; margin-top: 8px;
+  }
+  .result-table {
+    width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px;
+  }
+  .result-table th, .result-table td { border: 1px solid #dee2e6; padding: 8px 12px; text-align: left; }
+  .result-table th { background: #f8f9fa; }
+  .result-table tr:nth-child(even) { background: #fafbfc; }
+  .summary { display: flex; gap: 16px; margin: 12px 0; flex-wrap: wrap; }
+  .summary-item {
+    padding: 12px 20px; border-radius: 8px; text-align: center; min-width: 100px; font-weight: 600;
+  }
+  .summary-item.success { background: #f0fdf4; color: #16a34a; }
+  .summary-item.fail    { background: #fef0f0; color: #dc3545; }
+  .summary-item.total   { background: #eef6ff; color: #1565c0; }
+  .summary-item .num    { font-size: 28px; display: block; }
+  .hidden { display: none; }
+  .tip {
+    background: #fff8e6; border-left: 4px solid #e6a700;
+    border-radius: 6px; padding: 10px 14px; margin: 12px 0; font-size: 13px;
+  }
+  .back-link { text-align: center; margin-top: 8px; }
+  .back-link a { color: #1565c0; text-decoration: none; font-size: 13px; }
+  .back-link a:hover { text-decoration: underline; }
+  .progress-bar-wrap { background: #e0e0e0; border-radius: 6px; height: 8px; margin: 8px 0; overflow: hidden; }
+  .progress-bar-inner { height: 100%; background: #1565c0; border-radius: 6px; transition: width 0.3s; width: 0; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <h1>📊 批量导入成果</h1>
+  <p>下载模板 → 离线填写 → 一键导入 → 回到主系统上传PDF附件</p>
+</div>
+
+<div class="container">
+  <div class="card">
+    <h2><span class="icon">📋</span> 操作步骤</h2>
+    <div class="step-row">
+      <div class="step-card">
+        <div class="num">1</div><h4>下载模板</h4>
+        <p>下载 Excel 模板</p>
+        <button class="btn btn-outline" onclick="downloadTemplate()" style="margin-top:8px;">⬇ 下载模板</button>
+      </div>
+      <div class="step-card">
+        <div class="num">2</div><h4>填写数据</h4>
+        <p>按模板格式填写成果信息</p>
+      </div>
+      <div class="step-card">
+        <div class="num">3</div><h4>上传 Excel</h4>
+        <p>上传填好的 Excel 一键导入</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="uploadCard">
+    <h2><span class="icon">📤</span> 上传 Excel 文件</h2>
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div class="icon-upload">📁</div>
+      <p><strong>点击选择文件</strong> 或将 Excel 文件拖拽到此处</p>
+      <p class="hint">仅支持 .xlsx / .xls 格式</p>
+      <div id="fileNameDisplay" class="file-name hidden"></div>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileSelect(event)">
+    <div style="margin-top:14px; display:flex; gap:10px;">
+      <button class="btn btn-primary" id="importBtn" disabled onclick="startImport()">🚀 开始导入</button>
+      <button class="btn btn-outline" id="clearBtn" disabled onclick="clearFile()">清除</button>
+    </div>
+    <div class="tip">
+      <strong>💡 提示：</strong>导入成功后，请回到<a href="/" style="color:#1565c0;">成果管理页面</a>，在各项目操作栏中点击「📤 上传PDF」逐条上传附件。
+    </div>
+  </div>
+
+  <div class="card hidden" id="resultCard">
+    <h2><span class="icon">📊</span> 导入结果</h2>
+    <div id="progressArea" class="hidden">
+      <p>正在导入...</p>
+      <div class="progress-bar-wrap"><div class="progress-bar-inner" id="progressBar"></div></div>
+    </div>
+    <div class="summary hidden" id="summaryArea">
+      <div class="summary-item total"><span class="num" id="totalNum">0</span>总计</div>
+      <div class="summary-item success"><span class="num" id="successNum">0</span>成功</div>
+      <div class="summary-item fail"><span class="num" id="failNum">0</span>失败</div>
+    </div>
+    <div id="errorArea" class="hidden">
+      <h4 style="margin:12px 0 6px; color:#dc3545;">错误详情</h4>
+      <table class="result-table">
+        <thead><tr><th style="width:60px">行号</th><th>错误信息</th></tr></thead>
+        <tbody id="errorTbody"></tbody>
+      </table>
+    </div>
+    <button class="btn btn-outline" onclick="resetImport()" style="margin-top:14px;">📤 继续导入</button>
+  </div>
+
+  <div class="back-link"><a href="/">← 返回评审表决系统首页</a></div>
+</div>
+
+<script>
+  var SELECTED_FILE = null;
+  var API_BASE = window._$base_url || 'http://localhost:7003';
+
+  function downloadTemplate() {
+    var a = document.createElement('a');
+    a.href = API_BASE + '/achievement/template';
+    a.download = '成果导入模板.xlsx';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  var dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('active'); });
+  dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('active'); });
+  dropZone.addEventListener('drop', function(e) {
+    e.preventDefault(); dropZone.classList.remove('active');
+    if (e.dataTransfer.files.length > 0) setFile(e.dataTransfer.files[0]);
+  });
+
+  function handleFileSelect(e) { if (e.target.files.length > 0) setFile(e.target.files[0]); }
+
+  function setFile(file) {
+    var ext = file.name.split('.').pop().toLowerCase();
+    if (ext !== 'xlsx' && ext !== 'xls') { alert('仅支持 .xlsx 或 .xls 格式！'); return; }
+    SELECTED_FILE = file;
+    var d = document.getElementById('fileNameDisplay');
+    d.textContent = '已选择: ' + file.name + ' (' + formatSize(file.size) + ')';
+    d.classList.remove('hidden');
+    document.getElementById('importBtn').disabled = false;
+    document.getElementById('clearBtn').disabled = false;
+  }
+
+  function clearFile() {
+    SELECTED_FILE = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('fileNameDisplay').classList.add('hidden');
+    document.getElementById('importBtn').disabled = true;
+    document.getElementById('clearBtn').disabled = true;
+  }
+
+  function startImport() {
+    if (!SELECTED_FILE) return;
+    document.getElementById('progressArea').classList.remove('hidden');
+    document.getElementById('summaryArea').classList.add('hidden');
+    document.getElementById('errorArea').classList.add('hidden');
+    document.getElementById('resultCard').classList.remove('hidden');
+    document.getElementById('importBtn').disabled = true;
+    document.getElementById('progressBar').style.width = '30%';
+
+    var fd = new FormData(); fd.append('file', SELECTED_FILE);
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', API_BASE + '/achievement/import', true);
+    xhr.upload.onprogress = function(e) {
+      if (e.lengthComputable) document.getElementById('progressBar').style.width = (30+(e.loaded/e.total)*40)+'%';
+    };
+    xhr.onload = function() {
+      document.getElementById('progressBar').style.width = '100%';
+      setTimeout(function() {
+        document.getElementById('progressArea').classList.add('hidden');
+        try { showResult(JSON.parse(xhr.responseText).data || {}); } catch(e) { alert('解析结果失败'); }
+      }, 400);
+    };
+    xhr.onerror = function() {
+      alert('导入请求失败，请检查后端服务是否正常运行');
+      document.getElementById('progressArea').classList.add('hidden');
+      document.getElementById('importBtn').disabled = false;
+    };
+    xhr.send(fd);
+  }
+
+  function showResult(data) {
+    var total = data.total || 0, success = data.success || 0, fail = data.fail || 0;
+    document.getElementById('totalNum').textContent = total;
+    document.getElementById('successNum').textContent = success;
+    document.getElementById('failNum').textContent = fail;
+    document.getElementById('summaryArea').classList.remove('hidden');
+    if (fail > 0 && data.errors && data.errors.length > 0) {
+      var tb = document.getElementById('errorTbody'); tb.innerHTML = '';
+      data.errors.forEach(function(e) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + e.row + '</td><td>' + e.message + '</td>';
+        tb.appendChild(tr);
+      });
+      document.getElementById('errorArea').classList.remove('hidden');
+    }
+    document.getElementById('importBtn').disabled = false;
+  }
+
+  function resetImport() { clearFile(); document.getElementById('resultCard').classList.add('hidden'); }
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(2) + ' MB';
+  }
+</script>
+</body>
+</html>

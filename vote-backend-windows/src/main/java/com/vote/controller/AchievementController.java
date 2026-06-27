@@ -8,10 +8,12 @@ import com.vote.dto.UpdateStatusReq;
 import com.vote.entity.Achievement;
 import com.vote.service.AchievementService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * 成果管理接口
@@ -155,5 +157,24 @@ public class AchievementController {
     public Result<Void> updateStatus(@RequestBody UpdateStatusReq req) {
         achievementService.updateStatus(req);
         return Result.ok("状态更新成功");
+    }
+
+    /**
+     * 下载 Excel 导入模板
+     * GET /achievement/template
+     */
+    @GetMapping("/template")
+    public ResponseEntity<byte[]> downloadTemplate() throws IOException {
+        return achievementService.downloadTemplate();
+    }
+
+    /**
+     * 批量导入成果（Excel）
+     * POST /achievement/import
+     * form-data: file=xxx.xlsx
+     */
+    @PostMapping("/import")
+    public Result<Map<String, Object>> batchImport(@RequestParam("file") MultipartFile file) throws IOException {
+        return Result.ok(achievementService.batchImport(file));
     }
 }

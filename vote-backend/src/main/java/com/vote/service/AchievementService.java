@@ -10,19 +10,25 @@ import com.vote.dto.UpdateStatusReq;
 import com.vote.entity.Achievement;
 import com.vote.mapper.AchievementMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -238,5 +244,242 @@ public class AchievementService {
         wrapper.eq(Achievement::getStatus, 1)
                .orderByAsc(Achievement::getOrderNum);
         return achievementMapper.selectList(wrapper);
+    }
+
+    // ==================== 批量导入 ====================
+
+    /** 成果类别可选值 */
+    private static final Set<String> VALID_CATEGORIES = new HashSet<>(Arrays.asList("专利奖", "科技进步奖", "技术发明奖"));
+
+    /** 专家推荐等级可选值 */
+    private static final Set<String> VALID_LEVELS = new HashSet<>(Arrays.asList("一等奖", "二等奖", "三等奖", "不推荐"));
+
+    /**
+     * 下载 Excel 导入模板
+     */
+    public ResponseEntity<byte[]> downloadTemplate() throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("成果导入模板");
+
+        // 样式
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setFontHeightInPoints((short) 11);
+        headerStyle.setFont(headerFont);
+        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setBorderBottom(BorderStyle.THIN);
+        headerStyle.setBorderTop(BorderStyle.THIN);
+        headerStyle.setBorderLeft(BorderStyle.THIN);
+        headerStyle.setBorderRight(BorderStyle.THIN);
+
+        CellStyle exampleStyle = workbook.createCellStyle();
+        exampleStyle.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+        exampleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        exampleStyle.setBorderBottom(BorderStyle.THIN);
+        exampleStyle.setBorderTop(BorderStyle.THIN);
+        exampleStyle.setBorderLeft(BorderStyle.THIN);
+        exampleStyle.setBorderRight(BorderStyle.THIN);
+
+        CellStyle noteStyle = workbook.createCellStyle();
+        Font noteFont = workbook.createFont();
+        noteFont.setColor(IndexedColors.RED.getIndex());
+        noteStyle.setFont(noteFont);
+
+        // 表头
+        String[] headers = {"成果名称*", "成果类别*", "申报单位", "专家推荐等级", "附加信息", "排序号"};
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+            sheet.setColumnWidth(i, 18 * 256);
+        }
+
+        // 示例数据
+        Row exampleRow = sheet.createRow(1);
+        exampleRow.createCell(0).setCellValue("示例：基于AI的智能评审系统");
+        exampleRow.createCell(1).setCellValue("科技进步奖");
+        exampleRow.createCell(2).setCellValue("XX科技有限公司");
+        exampleRow.createCell(3).setCellValue("一等奖");
+        exampleRow.createCell(4).setCellValue("该项目实现了...");
+        exampleRow.createCell(5).setCellValue(1);
+        for (int i = 0; i < 6; i++) {
+            exampleRow.getCell(i).setCellStyle(exampleStyle);
+        }
+
+        // 填写说明
+        Row noteRow = sheet.createRow(3);
+        Cell noteCell = noteRow.createCell(0);
+        noteCell.setCellValue("说明：带*为必填；成果类别可选：专利奖/科技进步奖/技术发明奖；专家推荐等级可选：一等奖/二等奖/三等奖/不推荐（可留空）");
+        noteCell.setCellStyle(noteStyle);
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(3, 3, 0, 5));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        workbook.write(baos);
+        workbook.close();
+
+        String filename = URLEncoder.encode("成果导入模板.xlsx", StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(baos.toByteArray());
+    }
+
+    /**
+     * 批量导入成果
+     * @return 导入结果 Map：total（总数）、success（成功数）、fail（失败数）、errors（错误详情列表）
+     */
+    public Map<String, Object> batchImport(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("请选择要上传的 Excel 文件");
+        }
+
+        String filename = file.getOriginalFilename();
+        if (filename == null || (!filename.endsWith(".xlsx") && !filename.endsWith(".xls"))) {
+            throw new IllegalArgumentException("仅支持 .xlsx 或 .xls 格式的 Excel 文件");
+        }
+
+        List<Map<String, String>> errors = new ArrayList<>();
+        int success = 0;
+        List<Map<String, Object>> created = new ArrayList<>();
+
+        try (InputStream is = file.getInputStream();
+             Workbook workbook = WorkbookFactory.create(is)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            int lastRow = sheet.getLastRowNum();
+
+            if (lastRow < 1) {
+                throw new IllegalArgumentException("Excel 文件中没有数据行");
+            }
+
+            List<Achievement> batch = new ArrayList<>();
+
+            for (int i = 1; i <= lastRow; i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+
+                // 跳过空行和说明行
+                String name = getCellString(row, 0);
+                if (name == null || name.trim().isEmpty()) continue;
+                if (name.startsWith("说明：") || name.startsWith("示例：")) continue;
+
+                try {
+                    Achievement a = new Achievement();
+                    a.setAchievementName(name.trim());
+
+                    // 成果类别（必填）
+                    String category = getCellString(row, 1);
+                    if (category == null || category.trim().isEmpty()) {
+                        errors.add(buildError(i + 1, "成果类别不能为空"));
+                        continue;
+                    }
+                    category = category.trim();
+                    if (!VALID_CATEGORIES.contains(category)) {
+                        errors.add(buildError(i + 1, "成果类别 '" + category + "' 无效，可选：专利奖/科技进步奖/技术发明奖"));
+                        continue;
+                    }
+                    a.setAchievementCategory(category);
+
+                    // 申报单位
+                    String units = getCellString(row, 2);
+                    if (units != null && !units.trim().isEmpty()) {
+                        a.setCreationUnits(units.trim());
+                    }
+
+                    // 专家推荐等级
+                    String level = getCellString(row, 3);
+                    if (level != null && !level.trim().isEmpty()) {
+                        level = level.trim();
+                        if (!VALID_LEVELS.contains(level)) {
+                            errors.add(buildError(i + 1, "专家推荐等级 '" + level + "' 无效，可选：一等奖/二等奖/三等奖/不推荐"));
+                            continue;
+                        }
+                        a.setExpertLevel(level);
+                    }
+
+                    // 附加信息
+                    String extra = getCellString(row, 4);
+                    if (extra != null && !extra.trim().isEmpty()) {
+                        a.setExtraInfo(extra.trim());
+                    }
+
+                    // 排序号
+                    String orderNum = getCellString(row, 5);
+                    if (orderNum != null && !orderNum.trim().isEmpty()) {
+                        try {
+                            a.setOrderNum(Integer.parseInt(orderNum.trim()));
+                        } catch (NumberFormatException e) {
+                            a.setOrderNum(success + 1);
+                        }
+                    } else {
+                        a.setOrderNum(success + 1);
+                    }
+
+                    a.setStatus(1); // 默认已提交
+                    batch.add(a);
+                    success++;
+
+                } catch (Exception e) {
+                    errors.add(buildError(i + 1, "解析错误: " + e.getMessage()));
+                }
+            }
+
+            // 批量插入
+            if (!batch.isEmpty()) {
+                for (Achievement a : batch) {
+                    achievementMapper.insert(a);
+                    // 返回创建后的成果信息（含自增ID），供前端展示PDF上传
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("id", a.getId());
+                    item.put("achievementName", a.getAchievementName());
+                    item.put("achievementCategory", a.getAchievementCategory());
+                    item.put("fileSrc", a.getFileSrc());
+                    created.add(item);
+                }
+            }
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", success + errors.size());
+        result.put("success", success);
+        result.put("fail", errors.size());
+        result.put("errors", errors);
+        result.put("created", created);
+        return result;
+    }
+
+    private String getCellString(Row row, int col) {
+        Cell cell = row.getCell(col);
+        if (cell == null) return null;
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                double d = cell.getNumericCellValue();
+                if (d == Math.floor(d) && !Double.isInfinite(d)) {
+                    return String.valueOf((long) d);
+                }
+                return String.valueOf(d);
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                try {
+                    return cell.getStringCellValue();
+                } catch (Exception e) {
+                    return String.valueOf(cell.getNumericCellValue());
+                }
+            default:
+                return null;
+        }
+    }
+
+    private Map<String, String> buildError(int row, String msg) {
+        Map<String, String> err = new HashMap<>();
+        err.put("row", String.valueOf(row));
+        err.put("message", msg);
+        return err;
     }
 }
