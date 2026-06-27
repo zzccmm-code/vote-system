@@ -41,10 +41,13 @@
     // 插入到工具栏末尾
     toolbar.appendChild(btn);
 
-    // 三个操作按钮等宽等距
-    [btn].concat(Array.from(toolbar.querySelectorAll('.el-button--primary.el-button--small, .el-button--warning.el-button--small'))).forEach(function(b) {
-      b.style.width = '100px';
-      b.style.margin = '0 4px';
+    // 三个操作按钮等宽
+    var actionBtns = [btn].concat(Array.from(toolbar.querySelectorAll('.el-button--primary.el-button--small, .el-button--warning.el-button--small')));
+    actionBtns.forEach(function(b) {
+      b.style.setProperty('width', '110px', 'important');
+      b.style.setProperty('min-width', '110px', 'important');
+      b.style.setProperty('box-sizing', 'border-box');
+      b.style.margin = '0';
     });
     toolbar.style.display = 'flex';
     toolbar.style.justifyContent = 'flex-start';
