@@ -13,8 +13,8 @@
       var cell = th.querySelector('.cell');
       if (!cell) return;
       var txt = cell.textContent.trim();
-      if (txt === '专家组推荐等级' || txt === '专家推荐等级' || txt === '专家评审推荐' || txt === '推荐等级') {
-        cell.textContent = '推荐等级';
+      if (txt === '专家组推荐等级' || txt === '专家推荐等级' || txt === '专家评审推荐') {
+        cell.textContent = '专家评审推荐';
       }
       if (txt === '申报单位' || txt === '创建单位') {
         cell.textContent = '推荐单位(部门)';
