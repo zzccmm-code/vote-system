@@ -49,6 +49,10 @@
       b.style.setProperty('box-sizing', 'border-box');
       b.style.margin = '0';
     });
+
+    // 导入数据按钮加高50%
+    btn.style.setProperty('padding-top', '10px', 'important');
+    btn.style.setProperty('padding-bottom', '10px', 'important');
     toolbar.style.display = 'flex';
     toolbar.style.justifyContent = 'flex-start';
     toolbar.style.alignItems = 'center';
