@@ -41,14 +41,17 @@
     // 插入到工具栏末尾
     toolbar.appendChild(btn);
 
-    // 三个操作按钮等宽
+    // 三个操作按钮等宽等距
     var actionBtns = [btn].concat(Array.from(toolbar.querySelectorAll('.el-button--primary.el-button--small, .el-button--warning.el-button--small')));
     actionBtns.forEach(function(b) {
       b.style.setProperty('width', '110px', 'important');
       b.style.setProperty('min-width', '110px', 'important');
       b.style.setProperty('box-sizing', 'border-box');
-      b.style.margin = '0';
+      b.style.setProperty('margin', '0', 'important');
+      b.style.setProperty('margin-left', '0', 'important');
+      b.style.setProperty('margin-right', '0', 'important');
     });
+    toolbar.style.setProperty('gap', '8px', 'important');
 
     // 导入数据按钮固定高度38px字体12px
     btn.style.setProperty('height', '38px', 'important');
