@@ -34,7 +34,7 @@
 
     // 创建内联导入按钮
     var btn = document.createElement('button');
-    btn.className = 'el-button el-button--success el-button--small wb-import-inline';
+    btn.className = 'el-button el-button--primary el-button--small wb-import-inline';
     btn.innerHTML = '<span>导入数据</span>';
     btn.onclick = function() { location.href = 'import.html'; };
 
@@ -50,12 +50,7 @@
       b.style.margin = '0';
     });
 
-    // 导入数据按钮固定高度38px字体12px
-    btn.style.setProperty('height', '38px', 'important');
-    btn.style.setProperty('font-size', '12px', 'important');
-    btn.style.setProperty('padding-top', '0', 'important');
-    btn.style.setProperty('padding-bottom', '0', 'important');
-    btn.style.setProperty('line-height', '38px', 'important');
+    // 导入数据按钮样式与成果新增统一
     toolbar.style.display = 'flex';
     toolbar.style.justifyContent = 'flex-start';
     toolbar.style.alignItems = 'center';
