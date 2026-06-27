@@ -35,14 +35,23 @@
     // 创建内联导入按钮
     var btn = document.createElement('button');
     btn.className = 'el-button el-button--success el-button--small wb-import-inline';
-    btn.innerHTML = '<span>📊 导入数据</span>';
+    btn.innerHTML = '<span>导入数据</span>';
     btn.onclick = function() { location.href = 'import.html'; };
 
     // 插入到工具栏末尾
     toolbar.appendChild(btn);
     toolbar.style.display = 'flex';
     toolbar.style.justifyContent = 'flex-start';
-    toolbar.style.gap = '12px';
+    toolbar.style.alignItems = 'center';
+    toolbar.style.gap = '8px';
+    toolbar.style.flexWrap = 'nowrap';
+
+    // 缩小搜索框
+    var inputs = toolbar.querySelectorAll('.el-input__inner, input[type="text"]');
+    inputs.forEach(function(inp) {
+      inp.style.width = '140px';
+      inp.style.minWidth = '100px';
+    });
 
     // 隐藏原浮动按钮
     var floatBtn = document.querySelector('.import-float-btn');
