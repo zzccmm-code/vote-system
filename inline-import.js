@@ -50,9 +50,15 @@
       b.style.margin = '0';
     });
 
-    // 导入数据按钮加高50%
-    btn.style.setProperty('padding-top', '10px', 'important');
-    btn.style.setProperty('padding-bottom', '10px', 'important');
+    // 导入数据按钮高度对齐成果新增按钮
+    var primaryBtn = toolbar.querySelector('.el-button--primary.el-button--small');
+    if (primaryBtn) {
+      var ph = window.getComputedStyle(primaryBtn).getPropertyValue('padding-top');
+      var pb = window.getComputedStyle(primaryBtn).getPropertyValue('padding-bottom');
+      btn.style.setProperty('padding-top', ph, 'important');
+      btn.style.setProperty('padding-bottom', pb, 'important');
+      btn.style.setProperty('height', primaryBtn.offsetHeight + 'px', 'important');
+    }
     toolbar.style.display = 'flex';
     toolbar.style.justifyContent = 'flex-start';
     toolbar.style.alignItems = 'center';
