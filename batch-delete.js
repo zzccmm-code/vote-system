@@ -1,14 +1,18 @@
 /**
  * 批量操作：勾选框 + 顶部批量删除条
+ *
+ * 策略：拦截 /achievement/page API 返回的 records 数组，按“数据行顺序”与 records 数组
+ * 一一对应回填 id。避免用成果名称做 key 匹配（名称可能重复）。
  */
 (function() {
   'use strict';
 
   var API_BASE = window._$base_url || 'http://localhost:7003';
-  var nameToId = {};
+  var cachedRecords = [];
   var observer = null;
   var isMutating = false;
   var globalBar = null;
+  var COL_WIDTH = 38;
 
   // ========== 顶部浮动删除条 ==========
   function ensureBar() {
@@ -32,10 +36,10 @@
   function updateBar() {
     ensureBar();
     var count = document.querySelectorAll('.batch-cb:checked').length;
-    document.getElementById('batch-count').textContent = count;
+    var el = document.getElementById('batch-count');
+    if (el) el.textContent = count;
     globalBar.style.display = count > 0 ? 'flex' : 'none';
 
-    // 全选框状态
     var all = document.querySelectorAll('.batch-cb');
     var checked = document.querySelectorAll('.batch-cb:checked');
     document.querySelectorAll('.batch-cb-all').forEach(function(cb) {
@@ -49,32 +53,17 @@
     updateBar();
   };
 
-  // ========== API 拦截获取 ID ==========
+  window._batchUpdate = function() { updateBar(); };
+
+  // ========== API 拦截获取 records ==========
   function cache(records) {
-    if (!records || !records.length) return;
-    records.forEach(function(r) {
-      if (r.id && r.achievementName) nameToId[r.achievementName.trim()] = r.id;
-    });
-    setTimeout(updateExistIds, 100);
+    cachedRecords = records || [];
+    setTimeout(fillIds, 50);
+    setTimeout(fillIds, 300);
   }
 
-  // 更新已注入的勾选框ID（数据到达后回填）
-  function updateExistIds() {
-    document.querySelectorAll('.batch-cb-cell').forEach(function(td) {
-      var row = td.parentElement;
-      var tds = row.querySelectorAll('td');
-      if (tds.length < 3) return;
-      // tds[0]=checkbox, tds[1]=序号, tds[2]=成果名称
-      var name = tds[2].textContent.trim().replace(/\s+/g, ' ');
-      var id = nameToId[name] || '';
-      if (id) {
-        var cb = td.querySelector('.batch-cb');
-        if (cb) {
-          cb.setAttribute('data-ach-id', id);
-          cb.removeAttribute('disabled');
-        }
-      }
-    });
+  function readRecordsFromResponse(d) {
+    return (d && d.data && d.data.records) ? d.data.records : [];
   }
 
   var origFetch = window.fetch;
@@ -83,10 +72,7 @@
       var u = typeof url === 'string' ? url : (url.url || '');
       if (u.indexOf('/achievement/page') !== -1) {
         var c = resp.clone();
-        c.json().then(function(d) {
-          var records = (d && d.data && d.data.records) ? d.data.records : [];
-          cache(records);
-        }).catch(function() {});
+        c.json().then(function(d) { cache(readRecordsFromResponse(d)); }).catch(function() {});
       }
       return resp;
     });
@@ -99,11 +85,7 @@
     x.open = function(m, u) { x._u = u; return oo.apply(x, arguments); };
     x.addEventListener('load', function() {
       if (x._u && x._u.indexOf('/achievement/page') !== -1) {
-        try {
-          var d = JSON.parse(x.responseText);
-          var records = (d && d.data && d.data.records) ? d.data.records : [];
-          cache(records);
-        } catch(e) {}
+        try { cache(readRecordsFromResponse(JSON.parse(x.responseText))); } catch(e) {}
       }
     });
     return x;
@@ -116,60 +98,80 @@
       if (cg.querySelector('.batch-cb-col')) return;
       var c = document.createElement('col');
       c.className = 'batch-cb-col';
-      c.style.width = '38px';
-      c.style.minWidth = '38px';
-      c.style.maxWidth = '38px';
+      c.style.width = COL_WIDTH + 'px';
+      c.style.minWidth = COL_WIDTH + 'px';
+      c.style.maxWidth = COL_WIDTH + 'px';
       cg.insertBefore(c, cg.firstChild);
     });
   }
 
-  function injectCb() {
+  function injectHeader() {
     document.querySelectorAll('.el-table__header-wrapper thead tr, .el-table thead tr').forEach(function(hr) {
       if (hr.querySelector('.batch-cb-header')) return;
       var th = document.createElement('th');
       th.className = 'batch-cb-header';
-      th.style.cssText = 'width:38px;text-align:center;padding:0;';
+      th.style.cssText = 'width:' + COL_WIDTH + 'px;text-align:center;padding:0;vertical-align:middle;';
       th.innerHTML = '<input type="checkbox" class="batch-cb-all" style="cursor:pointer;" ' +
         'onclick="event.stopPropagation();var c=this.checked;' +
         'document.querySelectorAll(\'.batch-cb\').forEach(function(b){b.checked=c});window._batchUpdate()">';
       hr.insertBefore(th, hr.firstChild);
     });
+  }
 
-    document.querySelectorAll('.el-table__body-wrapper tbody tr, .el-table tbody tr').forEach(function(row) {
+  function injectCheckboxes() {
+    var bodyRows = document.querySelectorAll('.el-table__body-wrapper tbody tr, .el-table tbody tr');
+    bodyRows.forEach(function(row) {
       if (row.querySelector('.batch-cb-cell')) return;
       var tds = row.querySelectorAll('td');
       if (tds.length < 2) return;
 
-      var name = tds[1].textContent.trim().replace(/\s+/g, ' ');
-      var id = nameToId[name] || '';
-
       var td = document.createElement('td');
       td.className = 'batch-cb-cell';
-      td.style.cssText = 'width:38px;text-align:center;padding:0;vertical-align:middle;';
-      td.innerHTML = '<input type="checkbox" class="batch-cb" data-ach-id="' + id + '" style="cursor:pointer;" ' +
-        (id ? '' : 'disabled') +
-        ' onclick="event.stopPropagation();window._batchUpdate()">';
+      td.style.cssText = 'width:' + COL_WIDTH + 'px;text-align:center;padding:0;vertical-align:middle;';
+      td.innerHTML = '<input type="checkbox" class="batch-cb" data-ach-id="" style="cursor:pointer;" ' +
+        'disabled onclick="event.stopPropagation();window._batchUpdate()">';
       row.insertBefore(td, tds[0]);
     });
+  }
+
+  // 按 records 数组顺序回填 id
+  function fillIds() {
+    var rows = document.querySelectorAll('.el-table__body-wrapper tbody tr, .el-table tbody tr');
+    var idx = 0;
+    rows.forEach(function(row) {
+      var cb = row.querySelector('.batch-cb');
+      if (!cb) return;
+      var record = cachedRecords[idx];
+      idx++;
+      if (!record || !record.id) return;
+      cb.setAttribute('data-ach-id', record.id);
+      cb.removeAttribute('disabled');
+    });
+    updateBar();
   }
 
   function doInject() {
     if (isMutating) return;
     isMutating = true;
-    try { ensureBar(); fixColgroup(); injectCb(); } finally {
+    try {
+      ensureBar();
+      fixColgroup();
+      injectHeader();
+      injectCheckboxes();
+      fillIds();
+    } finally {
       setTimeout(function() { isMutating = false; }, 100);
     }
   }
 
-  window._batchUpdate = function() { updateBar(); };
-
+  // ========== 批量删除 ==========
   window._batchDel = function() {
     var ids = [];
     document.querySelectorAll('.batch-cb:checked').forEach(function(c) {
       var id = c.getAttribute('data-ach-id');
       if (id) ids.push(Number(id));
     });
-    if (!ids.length) return;
+    if (!ids.length) { alert('没有选中的数据'); return; }
     if (!confirm('确定删除选中的 ' + ids.length + ' 条成果？')) return;
 
     var btn = document.getElementById('batch-del-btn');
@@ -188,8 +190,11 @@
   // ========== 启动 ==========
   function start() {
     if (observer) return;
-    observer = new MutationObserver(function() { if (!isMutating) doInject(); });
+    observer = new MutationObserver(function() {
+      if (!isMutating) doInject();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
+    doInject();
     setInterval(function() { if (!isMutating) doInject(); }, 2000);
   }
 
