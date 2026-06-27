@@ -1,6 +1,6 @@
 /**
  * 批量操作 + 列宽管理（合并版）
- * - 勾选框注入（header + body + colgroup）
+ * - 勾选框注入（header + body 各自的 colgroup/thead/tbody）
  * - 顶部批量删除条
  * - 列宽均分铺满页面
  */
@@ -11,7 +11,7 @@
   var cachedRecords = [];
   var observer = null;
   var bar = null;
-  var CB_W = 34;  // 勾选列宽度 (px)
+  var CB_W = 36;
 
   // ==================== 批量删除条 ====================
   function ensureBar() {
@@ -59,10 +59,7 @@
       onCheck();
       return;
     }
-    if (e.target.classList.contains('wb-cb')) {
-      setTimeout(onCheck, 50);
-      return;
-    }
+    if (e.target.classList.contains('wb-cb')) { setTimeout(onCheck, 50); return; }
     if (e.target.classList.contains('wb-cb-all')) {
       var checked = e.target.checked;
       document.querySelectorAll('.wb-cb').forEach(function(c) { c.checked = checked; });
@@ -80,12 +77,7 @@
   }
 
   // ==================== API 拦截 ====================
-  function onRecords(records) {
-    cachedRecords = records || [];
-    setTimeout(fillIds, 80);
-    setTimeout(fillIds, 400);
-  }
-
+  function onRecords(records) { cachedRecords = records || []; setTimeout(fillIds, 80); setTimeout(fillIds, 400); }
   function readRecords(d) { return (d && d.data && d.data.records) || []; }
 
   var _fetch = window.fetch;
@@ -114,27 +106,27 @@
   window.XMLHttpRequest.prototype = OX.prototype;
 
   // ==================== DOM 注入 ====================
-  function fixColgroup() {
-    document.querySelectorAll('.el-table').forEach(function(table) {
-      var cg = table.querySelector('colgroup');
+  // 给 ELementUI 两个子 table 的 colgroup 都插入勾选列 + 均分宽度
+  function fixColgroups() {
+    // 遍历所有 table（ELUI 使用 table.el-table__header / table.el-table__body）
+    document.querySelectorAll('.el-table table').forEach(function(tbl) {
+      var cg = tbl.querySelector('colgroup');
       if (!cg) return;
 
-      // 1) 确保有勾选列的 col
+      // 确保有勾选列的 col
       if (!cg.querySelector('.wb-cb-col')) {
         var cc = document.createElement('col');
         cc.className = 'wb-cb-col';
-        cc.style.width = CB_W + 'px';
-        cc.style.minWidth = CB_W + 'px';
-        cc.style.maxWidth = CB_W + 'px';
+        cc.style.cssText = 'width:'+CB_W+'px;min-width:'+CB_W+'px;max-width:'+CB_W+'px';
         cg.insertBefore(cc, cg.firstChild);
       }
 
-      // 2) 重新均分各列宽度
+      // 均分其余列
       var normal = [];
       cg.querySelectorAll('col').forEach(function(c) {
         if (!c.classList.contains('wb-cb-col')) normal.push(c);
       });
-      if (normal.length === 0) return;
+      if (!normal.length) return;
 
       var firstPct = 4, lastPct = 14;
       var midPct = normal.length > 2
@@ -142,23 +134,20 @@
         : parseFloat((100 / normal.length).toFixed(2));
 
       normal.forEach(function(col, i) {
-        col.style.width =      (i === 0 ? firstPct : (i === normal.length - 1 ? lastPct : midPct)) + '%';
-        col.style.minWidth = '';
-        col.style.maxWidth = '';
+        var w = (i === 0 ? firstPct : (i === normal.length - 1 ? lastPct : midPct)) + '%';
+        col.style.cssText = 'width:' + w;
       });
 
-      // 强制 table-layout:fixed
-      table.style.tableLayout = 'fixed';
-      table.style.width = '100%';
+      tbl.style.tableLayout = 'fixed';
+      tbl.style.width = '100%';
     });
   }
 
   function injectHeader() {
-    document.querySelectorAll('.el-table__header-wrapper thead tr, .el-table thead tr').forEach(function(hr) {
+    document.querySelectorAll('.el-table__header-wrapper thead tr').forEach(function(hr) {
       if (hr.classList.contains('wb-hdr-done')) return;
       hr.classList.add('wb-hdr-done');
       var th = document.createElement('th');
-      th.className = 'wb-cb-th';
       th.style.cssText = 'width:'+CB_W+'px;text-align:center;padding:0;vertical-align:middle;background:inherit;border:inherit;';
       th.innerHTML = '<input type="checkbox" class="wb-cb-all" style="cursor:pointer;margin:0;vertical-align:middle">';
       hr.insertBefore(th, hr.firstChild);
@@ -166,15 +155,11 @@
   }
 
   function injectBody() {
-    // 收集所有 tbody 里的 tr（排除表头）
-    var rows = document.querySelectorAll('.el-table__body-wrapper tbody tr, .el-table tbody tr');
-    rows.forEach(function(row) {
+    document.querySelectorAll('.el-table__body-wrapper tbody tr').forEach(function(row) {
       if (row.classList.contains('wb-row-done')) return;
       row.classList.add('wb-row-done');
-
       var tds = row.querySelectorAll('td');
-      if (tds.length < 1) return;
-
+      if (!tds.length) return;
       var td = document.createElement('td');
       td.style.cssText = 'width:'+CB_W+'px;text-align:center;padding:0;vertical-align:middle;';
       td.innerHTML = '<input type="checkbox" class="wb-cb" data-id="" style="cursor:pointer;margin:0;vertical-align:middle">';
@@ -183,22 +168,20 @@
   }
 
   function fillIds() {
-    var rows = document.querySelectorAll('.el-table__body-wrapper tbody tr, .el-table tbody tr');
+    var rows = document.querySelectorAll('.el-table__body-wrapper tbody tr');
     var idx = 0;
     rows.forEach(function(row) {
       var cb = row.querySelector('.wb-cb');
       if (!cb) return;
       var rec = cachedRecords[idx++];
-      if (rec && rec.id) {
-        cb.setAttribute('data-id', rec.id);
-      }
+      if (rec && rec.id) cb.setAttribute('data-id', rec.id);
     });
     onCheck();
   }
 
   function doInject() {
     ensureBar();
-    fixColgroup();
+    fixColgroups();
     injectHeader();
     injectBody();
     fillIds();
@@ -215,16 +198,10 @@
     if (observer) return;
     doInject();
     observer = new MutationObserver(function(muts) {
-      // 只在表格有新节点时触发
-      var hit = false;
       for (var i = 0; i < muts.length; i++) {
         var t = muts[i].target;
-        if (t.nodeType === 1 && (t.classList.contains('el-table') ||
-            t.querySelector && (t.querySelector('.el-table') || t.querySelector('.el-table__body')))) {
-          hit = true; break;
-        }
+        if (t.nodeType === 1 && (t.closest && t.closest('.el-table'))) { doInject(); break; }
       }
-      if (hit) doInject();
     });
     observer.observe(document.body, { childList: true, subtree: true });
     setInterval(doInject, 2500);
