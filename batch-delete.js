@@ -63,8 +63,9 @@
     document.querySelectorAll('.batch-cb-cell').forEach(function(td) {
       var row = td.parentElement;
       var tds = row.querySelectorAll('td');
-      if (tds.length < 2) return;
-      var name = tds[1].textContent.trim().replace(/\s+/g, ' ');
+      if (tds.length < 3) return;
+      // tds[0]=checkbox, tds[1]=序号, tds[2]=成果名称
+      var name = tds[2].textContent.trim().replace(/\s+/g, ' ');
       var id = nameToId[name] || '';
       if (id) {
         var cb = td.querySelector('.batch-cb');
