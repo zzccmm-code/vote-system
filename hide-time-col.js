@@ -1,5 +1,5 @@
 /**
- * 隐藏"上传时间"列 — 直接操作 th/td/col，不用 nth-child
+ * 隐藏"上传时间"列 — 仅定时器，不用 MutationObserver
  */
 (function() {
   'use strict';
@@ -21,30 +21,21 @@
       });
       if (hideIdx < 0) return;
 
-      // 隐藏 header
       if (ths[hideIdx]) ths[hideIdx].style.display = 'none';
-
-      // 隐藏 body
       table.querySelectorAll('.el-table__body-wrapper tbody tr').forEach(function(row) {
         var tds = row.querySelectorAll('td');
         if (tds[hideIdx]) tds[hideIdx].style.display = 'none';
       });
-
-      // 隐藏 colgroup
       table.querySelectorAll('colgroup col').forEach(function(col, i) {
         if (i === hideIdx) col.style.display = 'none';
       });
     });
   }
 
-  // MutationObserver + 定时器双保险
-  var obs = new MutationObserver(function() { hideTimeCol(); });
-  obs.observe(document.body, { childList: true, subtree: true });
-  setInterval(hideTimeCol, 1000);
-
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', hideTimeCol);
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(hideTimeCol, 1000); });
   } else {
-    hideTimeCol();
+    setTimeout(hideTimeCol, 1000);
   }
+  setInterval(hideTimeCol, 2000);
 })();
