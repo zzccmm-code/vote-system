@@ -50,15 +50,12 @@
       b.style.margin = '0';
     });
 
-    // 导入数据按钮高度对齐成果新增按钮
-    var primaryBtn = toolbar.querySelector('.el-button--primary.el-button--small');
-    if (primaryBtn) {
-      var ph = window.getComputedStyle(primaryBtn).getPropertyValue('padding-top');
-      var pb = window.getComputedStyle(primaryBtn).getPropertyValue('padding-bottom');
-      btn.style.setProperty('padding-top', ph, 'important');
-      btn.style.setProperty('padding-bottom', pb, 'important');
-      btn.style.setProperty('height', primaryBtn.offsetHeight + 'px', 'important');
-    }
+    // 导入数据按钮固定高度38px字体12px
+    btn.style.setProperty('height', '38px', 'important');
+    btn.style.setProperty('font-size', '12px', 'important');
+    btn.style.setProperty('padding-top', '0', 'important');
+    btn.style.setProperty('padding-bottom', '0', 'important');
+    btn.style.setProperty('line-height', '38px', 'important');
     toolbar.style.display = 'flex';
     toolbar.style.justifyContent = 'flex-start';
     toolbar.style.alignItems = 'center';
