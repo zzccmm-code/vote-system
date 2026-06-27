@@ -55,7 +55,25 @@
     records.forEach(function(r) {
       if (r.id && r.achievementName) nameToId[r.achievementName.trim()] = r.id;
     });
-    setTimeout(doInject, 300);
+    setTimeout(updateExistIds, 100);
+  }
+
+  // 更新已注入的勾选框ID（数据到达后回填）
+  function updateExistIds() {
+    document.querySelectorAll('.batch-cb-cell').forEach(function(td) {
+      var row = td.parentElement;
+      var tds = row.querySelectorAll('td');
+      if (tds.length < 2) return;
+      var name = tds[1].textContent.trim().replace(/\s+/g, ' ');
+      var id = nameToId[name] || '';
+      if (id) {
+        var cb = td.querySelector('.batch-cb');
+        if (cb) {
+          cb.setAttribute('data-ach-id', id);
+          cb.removeAttribute('disabled');
+        }
+      }
+    });
   }
 
   var origFetch = window.fetch;
