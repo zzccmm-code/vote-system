@@ -42,24 +42,13 @@
     // 插入到工具栏末尾
     toolbar.appendChild(btn);
 
-    // 三个操作按钮等宽等距
+    // 三个操作按钮等宽（仅设宽度，其余由Element UI原生样式控制）
     var actionBtns = [btn].concat(Array.from(toolbar.querySelectorAll('.el-button--primary.el-button--small, .el-button--warning.el-button--small')));
     actionBtns.forEach(function(b) {
       b.style.setProperty('width', '110px', 'important');
-      b.style.setProperty('min-width', '110px', 'important');
-      b.style.setProperty('box-sizing', 'border-box');
       b.style.setProperty('margin', '0', 'important');
       b.style.setProperty('margin-left', '0', 'important');
-      b.style.setProperty('margin-right', '0', 'important');
     });
-    toolbar.style.setProperty('gap', '8px', 'important');
-
-    // 导入数据按钮固定高度38px字体12px
-    btn.style.setProperty('height', '38px', 'important');
-    btn.style.setProperty('font-size', '12px', 'important');
-    btn.style.setProperty('padding-top', '0', 'important');
-    btn.style.setProperty('padding-bottom', '0', 'important');
-    btn.style.setProperty('line-height', '38px', 'important');
     toolbar.style.display = 'flex';
     toolbar.style.justifyContent = 'flex-start';
     toolbar.style.alignItems = 'center';
