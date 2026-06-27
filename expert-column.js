@@ -20,6 +20,12 @@
         cell.textContent = '推荐单位(部门)';
       }
     });
+
+    // 改搜索栏标签
+    document.querySelectorAll('.el-form-item__label').forEach(function(label) {
+      var t = label.textContent.trim();
+      if (t === '专家组推荐等级：') label.textContent = '推荐等级：';
+    });
   }
 
   if (document.readyState === 'loading') {
