@@ -32,10 +32,11 @@
     }
     #batch-bar button + button:hover { background: rgba(255,255,255,0.15); }
 
-    /* 表头居中 + 勾选框居中 */
+    /* 表头+数据居中 + 勾选框flex居中 */
     .el-table th .cell { text-align: center !important; }
-    .wb-cb-th, .batch-cb-header, .wb-cb-cell, .batch-cb-cell { text-align: center !important; }
-    .wb-cb-th input, .batch-cb-header input, .wb-cb-cell input, .batch-cb-cell input { margin: 0 auto !important; display: block !important; }
+    .el-table__body-wrapper td .cell { text-align: center !important; }
+    .el-table__body-wrapper td:last-child .cell { text-align: left !important; }
+    .wb-cb-th, .wb-cb-cell { display: flex !important; align-items: center !important; justify-content: center !important; }
   </style>
 </head>
 <body>

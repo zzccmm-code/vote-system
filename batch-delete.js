@@ -132,30 +132,38 @@
         }
       });
 
-      // --- 对齐：测量 header 各列实际像素宽，应用到 body ---
+      // --- 对齐：测量 header 各列实际像素宽，应用到 body（跳过 gutter 列）---
       var hdrThs = hdrTr.querySelectorAll('th');
       var bodyCols = bodyTbl.querySelectorAll('colgroup col');
       var bodyRows = bodyTbl.querySelectorAll('tbody tr');
+      var gutterIdx = -1;
+
+      // 找 gutter 列
+      hdrTbl.querySelectorAll('colgroup col').forEach(function(c, i) {
+        if (c.getAttribute('name') === 'gutter' || c.classList.contains('gutter')) gutterIdx = i;
+      });
 
       hdrThs.forEach(function(hdrTh, i) {
+        if (i === gutterIdx) return; // 跳过 gutter
         var w = hdrTh.getBoundingClientRect().width;
         if (w <= 0) return;
 
-        // body colgroup
-        if (bodyCols[i]) {
-          bodyCols[i].style.width = w + 'px';
-          bodyCols[i].style.minWidth = w + 'px';
-          bodyCols[i].style.maxWidth = w + 'px';
+        // 映射到 body colgroup（body 没有 gutter）
+        var bodyColIdx = gutterIdx >= 0 && i > gutterIdx ? i - 1 : i;
+
+        if (bodyCols[bodyColIdx]) {
+          bodyCols[bodyColIdx].style.width = w + 'px';
+          bodyCols[bodyColIdx].style.minWidth = w + 'px';
+          bodyCols[bodyColIdx].style.maxWidth = w + 'px';
         }
 
-        // body 每行 td
         bodyRows.forEach(function(row) {
           var tds = row.querySelectorAll('td');
-          if (tds[i]) {
-            tds[i].style.width = w + 'px';
-            tds[i].style.minWidth = w + 'px';
-            tds[i].style.maxWidth = w + 'px';
-            tds[i].style.boxSizing = 'border-box';
+          if (tds[bodyColIdx]) {
+            tds[bodyColIdx].style.width = w + 'px';
+            tds[bodyColIdx].style.minWidth = w + 'px';
+            tds[bodyColIdx].style.maxWidth = w + 'px';
+            tds[bodyColIdx].style.boxSizing = 'border-box';
           }
         });
       });
