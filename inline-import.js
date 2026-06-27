@@ -32,11 +32,12 @@
     // 检查是否已注入
     if (toolbar.querySelector('.wb-import-inline')) return;
 
-    // 创建内联导入按钮
-    var btn = document.createElement('button');
+    // 创建内联导入按钮（用 a 标签确保跳转可靠）
+    var btn = document.createElement('a');
     btn.className = 'el-button el-button--success el-button--small wb-import-inline';
+    btn.href = 'import.html';
     btn.innerHTML = '<span style="font-size:12px;">导入数据</span>';
-    btn.onclick = function() { location.href = 'import.html'; };
+    btn.style.textDecoration = 'none';
 
     // 插入到工具栏末尾
     toolbar.appendChild(btn);
