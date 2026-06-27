@@ -9,6 +9,31 @@
   <link rel="stylesheet" href="app.5007c485.css">
   <script src="options.js"></script>
   <style>
+    /* 全局标题栏 - 科技风格 */
+    .global-header {
+      background: linear-gradient(135deg, #0a1628 0%, #0d2137 40%, #0f2b4a 100%);
+      padding: 10px 24px;
+      display: flex; align-items: center; justify-content: center;
+      border-bottom: 2px solid #1e88e5;
+      position: relative; overflow: hidden;
+    }
+    .global-header::before {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, #42a5f5, #1e88e5, #42a5f5, transparent);
+    }
+    .global-header::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(30,136,229,0.3), transparent);
+    }
+    .global-header h1 {
+      color: #e3f2fd; font-size: 18px; font-weight: 600;
+      letter-spacing: 2px; margin: 0;
+      text-shadow: 0 0 20px rgba(30,136,229,0.4);
+    }
+
+    /* 导入数据浮动按钮 */
     .import-float-btn {
       position: fixed; bottom: 28px; right: 28px; z-index: 9999;
       background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
@@ -47,6 +72,7 @@
   </style>
 </head>
 <body>
+  <div class="global-header"><h1>国网四川省电力公司科技奖励评审系统</h1></div>
   <div id="app"></div>
   <a href="import.html" class="import-float-btn" title="批量导入成果">📊 导入数据</a>
   <script src="chunk-vendors.e58ab867.js"></script>
