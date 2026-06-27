@@ -1,37 +1,27 @@
 /**
- * 注入"专家评审推荐"列 — 位于"推荐单位(部门)"和"操作"之间
+ * 注入"专家评审推荐"列 — 插入在操作列之前
  */
 (function() {
   'use strict';
 
+  var API = window._$base_url || 'http://localhost:7003';
   var retries = 0;
   var MAX = 30;
 
-  function getApiBase() { return window._$base_url || 'http://localhost:7003'; }
-
-  function injectAndFill() {
+  function go() {
     if (retries >= MAX) return;
     retries++;
 
-    var recordsReady = false;
-
-    // 先调 API 拿数据
-    fetch(getApiBase() + '/achievement/page', {
+    fetch(API + '/achievement/page', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pageNum: 1, pageSize: 200 })
     }).then(function(r) { return r.json(); }).then(function(d) {
       var records = (d && d.data && d.data.records) || [];
       if (!records.length) return;
-      recordsReady = true;
 
-      // 找到所有 table（header 表 + body 表）
-      var tables = document.querySelectorAll('.el-table table');
-
-      tables.forEach(function(tbl) {
+      document.querySelectorAll('.el-table table').forEach(function(tbl) {
         var cg = tbl.querySelector('colgroup');
-        var isHeader = !!tbl.querySelector('thead');
-        var isBody = !!tbl.querySelector('tbody');
 
         // ---- colgroup: 在倒数第2个 col 前插入 ----
         if (cg && !cg.querySelector('.wb-exp-col')) {
@@ -42,63 +32,50 @@
           var cols = cg.querySelectorAll('col');
           if (cols.length >= 2) {
             cg.insertBefore(cc, cols[cols.length - 1]);
-          } else {
-            cg.appendChild(cc);
+          } else if (cols.length === 1) {
+            cg.insertBefore(cc, cols[0]);
           }
         }
 
-        // ---- thead: 表头行插入 ----
-        if (isHeader) {
-          tbl.querySelectorAll('thead tr').forEach(function(hr) {
-            if (hr.querySelector('.wb-exp-th')) return;
-            var th = document.createElement('th');
-            th.className = 'wb-exp-th';
-            th.style.cssText = 'width:110px;text-align:center;padding:0 4px;white-space:nowrap;';
-            th.innerHTML = '<div class="cell" style="text-align:center;font-weight:600;">专家评审推荐</div>';
-            var ths = hr.querySelectorAll('th');
-            if (ths.length >= 2) {
-              hr.insertBefore(th, ths[ths.length - 1]);
-            } else if (ths.length === 1) {
-              hr.appendChild(th);
-            } else {
-              hr.appendChild(th);
-            }
-          });
-        }
+        // ---- thead ----
+        tbl.querySelectorAll('thead tr').forEach(function(hr) {
+          if (hr.querySelector('.wb-exp-th')) return;
+          var allTh = hr.querySelectorAll('th');
+          if (!allTh.length) return;
 
-        // ---- tbody: 数据行插入 ----
-        if (isBody) {
-          tbl.querySelectorAll('tbody tr').forEach(function(row, i) {
-            if (row.querySelector('.wb-exp-td')) return;
-            var tds = row.querySelectorAll('td');
-            if (!tds.length) return;
+          var th = document.createElement('th');
+          th.className = 'wb-exp-th';
+          th.innerHTML = '<div class="cell">专家评审推荐</div>';
 
-            var rec = records[i];
-            var val = (rec && rec.expertLevel) ? rec.expertLevel : '';
+          // 插在最后一个 th 之前
+          hr.insertBefore(th, allTh[allTh.length - 1]);
+        });
 
-            var td = document.createElement('td');
-            td.className = 'wb-exp-td';
-            td.style.cssText = 'width:110px;text-align:center;padding:0 4px;white-space:nowrap;';
-            td.innerHTML = '<div class="cell" style="text-align:center;">' + (val || '—') + '</div>';
+        // ---- tbody ----
+        tbl.querySelectorAll('tbody tr').forEach(function(row, idx) {
+          if (row.querySelector('.wb-exp-td')) return;
+          var allTd = row.querySelectorAll('td');
+          if (!allTd.length) return;
 
-            if (tds.length >= 2) {
-              row.insertBefore(td, tds[tds.length - 1]);
-            } else {
-              row.appendChild(td);
-            }
-          });
-        }
+          var rec = records[idx];
+          var val = (rec && rec.expertLevel) ? rec.expertLevel : '';
+
+          var td = document.createElement('td');
+          td.className = 'wb-exp-td';
+          td.innerHTML = '<div class="cell">' + (val || '—') + '</div>';
+
+          // 插在最后一个 td 之前
+          row.insertBefore(td, allTd[allTd.length - 1]);
+        });
       });
     }).catch(function() {});
 
-    if (retries < MAX) {
-      setTimeout(injectAndFill, 2000);
-    }
+    if (retries < MAX) setTimeout(go, 2000);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() { setTimeout(injectAndFill, 500); });
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(go, 500); });
   } else {
-    setTimeout(injectAndFill, 500);
+    setTimeout(go, 500);
   }
 })();
