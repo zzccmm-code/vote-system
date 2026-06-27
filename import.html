@@ -144,6 +144,7 @@
       <div class="summary-item total"><span class="num" id="totalNum">0</span>总计</div>
       <div class="summary-item success"><span class="num" id="successNum">0</span>成功</div>
       <div class="summary-item fail"><span class="num" id="failNum">0</span>失败</div>
+      <div class="summary-item" style="background:#fff8e6;color:#e6a700;"><span class="num" id="skippedNum">0</span>重复已跳过</div>
     </div>
     <div id="errorArea" class="hidden">
       <h4 style="margin:12px 0 6px; color:#dc3545;">错误详情</h4>
@@ -229,18 +230,31 @@
   }
 
   function showResult(data) {
-    var total = data.total || 0, success = data.success || 0, fail = data.fail || 0;
+    var total = data.total || 0, success = data.success || 0, fail = data.fail || 0, skipped = data.skipped || 0;
     document.getElementById('totalNum').textContent = total;
     document.getElementById('successNum').textContent = success;
     document.getElementById('failNum').textContent = fail;
+    document.getElementById('skippedNum').textContent = skipped;
     document.getElementById('summaryArea').classList.remove('hidden');
+    var hasErrors = false;
+    var tb = document.getElementById('errorTbody'); tb.innerHTML = '';
     if (fail > 0 && data.errors && data.errors.length > 0) {
-      var tb = document.getElementById('errorTbody'); tb.innerHTML = '';
       data.errors.forEach(function(e) {
         var tr = document.createElement('tr');
-        tr.innerHTML = '<td>' + e.row + '</td><td>' + e.message + '</td>';
+        tr.innerHTML = '<td>' + e.row + '</td><td style="color:#dc3545;">' + e.message + '</td>';
         tb.appendChild(tr);
       });
+      hasErrors = true;
+    }
+    if (skipped > 0 && data.skippedErrors && data.skippedErrors.length > 0) {
+      data.skippedErrors.forEach(function(e) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + e.row + '</td><td style="color:#e6a700;">' + e.message + '</td>';
+        tb.appendChild(tr);
+      });
+      hasErrors = true;
+    }
+    if (hasErrors) {
       document.getElementById('errorArea').classList.remove('hidden');
     }
     document.getElementById('importBtn').disabled = false;

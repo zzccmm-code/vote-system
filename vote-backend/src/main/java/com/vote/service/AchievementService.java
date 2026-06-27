@@ -329,7 +329,7 @@ public class AchievementService {
 
     /**
      * 批量导入成果
-     * @return 导入结果 Map：total（总数）、success（成功数）、fail（失败数）、errors（错误详情列表）
+     * @return 导入结果 Map：total（总数）、success（成功数）、fail（失败数）、skipped（重复跳过数）、errors（错误详情列表）、skippedErrors（重复跳过详情列表）
      */
     public Map<String, Object> batchImport(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
@@ -341,8 +341,21 @@ public class AchievementService {
             throw new IllegalArgumentException("仅支持 .xlsx 或 .xls 格式的 Excel 文件");
         }
 
+        // 先查询库中已有成果名称，用于去重
+        Set<String> existingNames = new HashSet<>();
+        LambdaQueryWrapper<Achievement> nameWrapper = new LambdaQueryWrapper<>();
+        nameWrapper.select(Achievement::getAchievementName);
+        List<Achievement> existing = achievementMapper.selectList(nameWrapper);
+        for (Achievement a : existing) {
+            if (a.getAchievementName() != null && !a.getAchievementName().isEmpty()) {
+                existingNames.add(a.getAchievementName().trim());
+            }
+        }
+
         List<Map<String, String>> errors = new ArrayList<>();
+        List<Map<String, String>> skippedErrors = new ArrayList<>();
         int success = 0;
+        int skipped = 0;
         List<Map<String, Object>> created = new ArrayList<>();
 
         try (InputStream is = file.getInputStream();
@@ -366,9 +379,18 @@ public class AchievementService {
                 if (name == null || name.trim().isEmpty()) continue;
                 if (name.startsWith("说明：") || name.startsWith("示例：")) continue;
 
+                name = name.trim();
+
+                // 成果名称重复校验
+                if (existingNames.contains(name)) {
+                    skippedErrors.add(buildError(i + 1, "成果名称 '" + name + "' 已存在，已跳过"));
+                    skipped++;
+                    continue;
+                }
+
                 try {
                     Achievement a = new Achievement();
-                    a.setAchievementName(name.trim());
+                    a.setAchievementName(name);
 
                     // 成果类别（必填）
                     String category = getCellString(row, 1);
@@ -421,6 +443,7 @@ public class AchievementService {
                     a.setStatus(1); // 默认已提交
                     batch.add(a);
                     success++;
+                    existingNames.add(name); // 同一批次内也去重
 
                 } catch (Exception e) {
                     errors.add(buildError(i + 1, "解析错误: " + e.getMessage()));
@@ -443,10 +466,12 @@ public class AchievementService {
         }
 
         Map<String, Object> result = new HashMap<>();
-        result.put("total", success + errors.size());
+        result.put("total", success + errors.size() + skipped);
         result.put("success", success);
         result.put("fail", errors.size());
+        result.put("skipped", skipped);
         result.put("errors", errors);
+        result.put("skippedErrors", skippedErrors);
         result.put("created", created);
         return result;
     }
