@@ -141,13 +141,36 @@
   }
 
   function fill() {
-    document.querySelectorAll('.el-table__body-wrapper tbody tr').forEach(function(row, i) {
-      var cb = row.querySelector('.wb-cb');
-      if (!cb) return;
-      var rec = cachedRecords[i];
-      if (rec && rec.id) cb.setAttribute('data-id', rec.id);
-    });
-    updateBar();
+    var rows = document.querySelectorAll('.el-table__body-wrapper tbody tr');
+    if (!rows.length) return;
+
+    // 先用缓存的 records
+    if (cachedRecords.length > 0) {
+      rows.forEach(function(row, i) {
+        var cb = row.querySelector('.wb-cb');
+        if (!cb) return;
+        var rec = cachedRecords[i];
+        if (rec && rec.id) cb.setAttribute('data-id', rec.id);
+      });
+      updateBar();
+      return;
+    }
+
+    // 缓存空则主动调 API
+    fetch(API_BASE + '/achievement/page', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageNum: 1, pageSize: 200 })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      cachedRecords = (d && d.data && d.data.records) || [];
+      rows.forEach(function(row, i) {
+        var cb = row.querySelector('.wb-cb');
+        if (!cb) return;
+        var rec = cachedRecords[i];
+        if (rec && rec.id) cb.setAttribute('data-id', rec.id);
+      });
+      updateBar();
+    }).catch(function() {});
   }
 
   // ==================== 启动 ====================
