@@ -1,8 +1,6 @@
 /**
- * 批量操作 + 列宽管理（合并版）
- * - 勾选框注入（header + body 各自的 colgroup/thead/tbody）
- * - 顶部批量删除条
- * - 列宽均分铺满页面
+ * 批量操作 + 列宽管理
+ * 关键：ELUI 两张 table 的 colgroup 必须完全一致才能对齐
  */
 (function() {
   'use strict';
@@ -11,7 +9,7 @@
   var cachedRecords = [];
   var observer = null;
   var bar = null;
-  var CB_W = 36;
+  var CB_W = 38;
 
   // ==================== 批量删除条 ====================
   function ensureBar() {
@@ -61,8 +59,7 @@
     }
     if (e.target.classList.contains('wb-cb')) { setTimeout(onCheck, 50); return; }
     if (e.target.classList.contains('wb-cb-all')) {
-      var checked = e.target.checked;
-      document.querySelectorAll('.wb-cb').forEach(function(c) { c.checked = checked; });
+      document.querySelectorAll('.wb-cb').forEach(function(c) { c.checked = e.target.checked; });
       onCheck();
     }
   });
@@ -76,7 +73,7 @@
     });
   }
 
-  // ==================== API 拦截 ====================
+  // ==================== API ====================
   function onRecords(records) { cachedRecords = records || []; setTimeout(fillIds, 80); setTimeout(fillIds, 400); }
   function readRecords(d) { return (d && d.data && d.data.records) || []; }
 
@@ -106,85 +103,86 @@
   window.XMLHttpRequest.prototype = OX.prototype;
 
   // ==================== DOM 注入 ====================
-  // 给 ELementUI 两个子 table 的 colgroup 都插入勾选列 + 均分宽度
-  function fixColgroups() {
-    // 遍历所有 table（ELUI 使用 table.el-table__header / table.el-table__body）
-    document.querySelectorAll('.el-table table').forEach(function(tbl) {
-      var cg = tbl.querySelector('colgroup');
-      if (!cg) return;
+  function doInject() {
+    ensureBar();
+    document.querySelectorAll('.el-table').forEach(function(ct) {
+      // 找到内部两张 table
+      var hdrTbl = ct.querySelector('.el-table__header-wrapper table');
+      var bodyTbl = ct.querySelector('.el-table__body-wrapper table');
+      // 也可能在 .el-table__fixed 等里面，统一取所有 table
+      if (!hdrTbl) hdrTbl = ct.querySelector('table'); // fallback
+      var tables = ct.querySelectorAll('table');
 
-      // 确保有勾选列的 col
-      if (!cg.querySelector('.wb-cb-col')) {
-        var cc = document.createElement('col');
-        cc.className = 'wb-cb-col';
-        cc.style.cssText = 'width:'+CB_W+'px;min-width:'+CB_W+'px;max-width:'+CB_W+'px';
-        cg.insertBefore(cc, cg.firstChild);
+      tables.forEach(function(tbl) {
+        // ---- 1) colgroup 插入勾选列 ----
+        var cg = tbl.querySelector('colgroup');
+        if (cg && !cg.querySelector('.wb-cb-col')) {
+          var cc = document.createElement('col');
+          cc.className = 'wb-cb-col';
+          cc.setAttribute('width', CB_W);
+          cc.style.cssText = 'width:'+CB_W+'px;min-width:'+CB_W+'px;max-width:'+CB_W+'px';
+          cg.insertBefore(cc, cg.firstChild);
+        }
+
+        // ---- 2) 表头插入全选 th ----
+        var thead = tbl.querySelector('thead');
+        if (thead) {
+          var hrs = thead.querySelectorAll('tr');
+          hrs.forEach(function(hr) {
+            if (hr.classList.contains('wb-hdr')) return;
+            hr.classList.add('wb-hdr');
+            var th = document.createElement('th');
+            th.className = 'wb-th';
+            th.style.cssText = 'width:'+CB_W+'px;text-align:center;padding:0;';
+            th.innerHTML = '<input type="checkbox" class="wb-cb-all" style="cursor:pointer;margin:0;vertical-align:middle;">';
+            hr.insertBefore(th, hr.firstChild);
+          });
+        }
+
+        // ---- 3) tbody 每行插入勾选 td ----
+        var tbodies = tbl.querySelectorAll('tbody');
+        tbodies.forEach(function(tb) {
+          tb.querySelectorAll('tr').forEach(function(row) {
+            if (row.classList.contains('wb-row')) return;
+            row.classList.add('wb-row');
+            var tds = row.querySelectorAll('td');
+            if (!tds.length) return;
+            var td = document.createElement('td');
+            td.style.cssText = 'width:'+CB_W+'px;text-align:center;padding:0;';
+            td.innerHTML = '<input type="checkbox" class="wb-cb" data-id="" style="cursor:pointer;margin:0;vertical-align:middle;">';
+            row.insertBefore(td, tds[0]);
+          });
+        });
+      });
+
+      // ---- 4) 统一两张 table 的 colgroup（关键：确保 header/body 列定义一致） ----
+      if (hdrTbl && bodyTbl) {
+        var hdrCg = hdrTbl.querySelector('colgroup');
+        var bodyCg = bodyTbl.querySelector('colgroup');
+        if (hdrCg && bodyCg) {
+          // 用 header colgroup 覆盖 body colgroup
+          bodyCg.innerHTML = hdrCg.innerHTML;
+        }
       }
 
-      // 均分其余列
-      var normal = [];
-      cg.querySelectorAll('col').forEach(function(c) {
-        if (!c.classList.contains('wb-cb-col')) normal.push(c);
+      // ---- 5) 设固定布局铺满 ----
+      tables.forEach(function(tbl) {
+        tbl.style.tableLayout = 'fixed';
+        tbl.style.width = '100%';
       });
-      if (!normal.length) return;
-
-      var firstPct = 4, lastPct = 14;
-      var midPct = normal.length > 2
-        ? parseFloat(((100 - firstPct - lastPct) / (normal.length - 2)).toFixed(2))
-        : parseFloat((100 / normal.length).toFixed(2));
-
-      normal.forEach(function(col, i) {
-        var w = (i === 0 ? firstPct : (i === normal.length - 1 ? lastPct : midPct)) + '%';
-        col.style.cssText = 'width:' + w;
-      });
-
-      tbl.style.tableLayout = 'fixed';
-      tbl.style.width = '100%';
     });
-  }
 
-  function injectHeader() {
-    document.querySelectorAll('.el-table__header-wrapper thead tr').forEach(function(hr) {
-      if (hr.classList.contains('wb-hdr-done')) return;
-      hr.classList.add('wb-hdr-done');
-      var th = document.createElement('th');
-      th.style.cssText = 'width:'+CB_W+'px;text-align:center;padding:0;vertical-align:middle;background:inherit;border:inherit;';
-      th.innerHTML = '<input type="checkbox" class="wb-cb-all" style="cursor:pointer;margin:0;vertical-align:middle">';
-      hr.insertBefore(th, hr.firstChild);
-    });
-  }
-
-  function injectBody() {
-    document.querySelectorAll('.el-table__body-wrapper tbody tr').forEach(function(row) {
-      if (row.classList.contains('wb-row-done')) return;
-      row.classList.add('wb-row-done');
-      var tds = row.querySelectorAll('td');
-      if (!tds.length) return;
-      var td = document.createElement('td');
-      td.style.cssText = 'width:'+CB_W+'px;text-align:center;padding:0;vertical-align:middle;';
-      td.innerHTML = '<input type="checkbox" class="wb-cb" data-id="" style="cursor:pointer;margin:0;vertical-align:middle">';
-      row.insertBefore(td, tds[0]);
-    });
+    fillIds();
   }
 
   function fillIds() {
-    var rows = document.querySelectorAll('.el-table__body-wrapper tbody tr');
-    var idx = 0;
-    rows.forEach(function(row) {
+    document.querySelectorAll('.el-table__body-wrapper tbody tr').forEach(function(row, i) {
       var cb = row.querySelector('.wb-cb');
       if (!cb) return;
-      var rec = cachedRecords[idx++];
+      var rec = cachedRecords[i];
       if (rec && rec.id) cb.setAttribute('data-id', rec.id);
     });
     onCheck();
-  }
-
-  function doInject() {
-    ensureBar();
-    fixColgroups();
-    injectHeader();
-    injectBody();
-    fillIds();
   }
 
   // ==================== 启动 ====================
@@ -200,10 +198,10 @@
     observer = new MutationObserver(function(muts) {
       for (var i = 0; i < muts.length; i++) {
         var t = muts[i].target;
-        if (t.nodeType === 1 && (t.closest && t.closest('.el-table'))) { doInject(); break; }
+        if (t.nodeType === 1 && t.closest && t.closest('.el-table')) { doInject(); break; }
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });
-    setInterval(doInject, 2500);
+    setInterval(doInject, 2000);
   }
 })();
