@@ -1,5 +1,5 @@
 /**
- * 隐藏"上传时间"列 — 仅定时器，不用 MutationObserver
+ * 隐藏"上传时间"列 — 压缩宽度而非 display:none，避免 fixed 布局错位
  */
 (function() {
   'use strict';
@@ -12,22 +12,23 @@
       if (!hdrTr) return;
 
       var ths = Array.from(hdrTr.querySelectorAll('th'));
-      var hideIdx = -1;
       ths.forEach(function(th, i) {
         var txt = (th.textContent || '').trim();
         if (HIDE_TEXTS.some(function(k) { return txt.indexOf(k) > -1; })) {
-          hideIdx = i;
-        }
-      });
-      if (hideIdx < 0) return;
+          // 设宽度为 0 而非 display:none，避免 fixed 布局列错位
+          th.style.cssText = 'width:0!important;min-width:0!important;max-width:0!important;overflow:hidden;padding:0!important;border:none!important;';
 
-      if (ths[hideIdx]) ths[hideIdx].style.display = 'none';
-      table.querySelectorAll('.el-table__body-wrapper tbody tr').forEach(function(row) {
-        var tds = row.querySelectorAll('td');
-        if (tds[hideIdx]) tds[hideIdx].style.display = 'none';
-      });
-      table.querySelectorAll('colgroup col').forEach(function(col, i) {
-        if (i === hideIdx) col.style.display = 'none';
+          // body 对应列
+          table.querySelectorAll('.el-table__body-wrapper tbody tr').forEach(function(row) {
+            var tds = row.querySelectorAll('td');
+            if (tds[i]) tds[i].style.cssText = 'width:0!important;min-width:0!important;max-width:0!important;overflow:hidden;padding:0!important;border:none!important;';
+          });
+
+          // colgroup
+          table.querySelectorAll('colgroup col').forEach(function(col, j) {
+            if (j === i) col.style.cssText = 'width:0!important;min-width:0!important;max-width:0!important;';
+          });
+        }
       });
     });
   }
