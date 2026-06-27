@@ -1,5 +1,6 @@
 /**
- * 批量操作 - 极简版，最小化DOM改动
+ * 批量操作 + 表头对齐（彻底版）
+ * 用 getBoundingClientRect 测量 header 列宽，精确应用到 body
  */
 (function() {
   'use strict';
@@ -7,7 +8,7 @@
   var API_BASE = window._$base_url || 'http://localhost:7003';
   var cachedRecords = [];
   var bar = null;
-  var CB_W = 38;
+  var CB_W = 36;
   var tid = null;
 
   // ==================== 删除条 ====================
@@ -42,13 +43,12 @@
       if (!confirm('确定删除选中的 ' + ids.length + ' 条成果？')) return;
       t.disabled = true; t.textContent = '删除中...';
       fetch(API_BASE + '/achievement/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ objectIds: ids })
       }).then(function(r) { return r.json(); }).then(function(d) {
         if (d.code === 200) { alert('已删除 ' + ids.length + ' 条'); location.reload(); }
-        else { alert('失败: ' + (d.msg || '')); t.disabled = false; t.textContent = '批量删除'; }
-      }).catch(function(err) { alert('错误: ' + err.message); t.disabled = false; t.textContent = '批量删除'; });
+        else { alert('失败: '+d.msg); t.disabled=false; t.textContent='批量删除'; }
+      }).catch(function(err) { alert('错误: '+err.message); t.disabled=false; t.textContent='批量删除'; });
     }
     if (t.id === 'wb-clr') {
       document.querySelectorAll('.wb-cb,.wb-cb-all').forEach(function(c) { c.checked = false; });
@@ -61,7 +61,7 @@
     }
   });
 
-  // ==================== API拦截 ====================
+  // ==================== API ====================
   var _fetch = window.fetch;
   window.fetch = function(u, o) {
     return _fetch.apply(this, arguments).then(function(r) {
@@ -69,131 +69,130 @@
       if (url.indexOf('/achievement/page') > 0) {
         r.clone().json().then(function(d) {
           cachedRecords = (d && d.data && d.data.records) || [];
-          setTimeout(fill, 200);
-          setTimeout(fill, 600);
+          setTimeout(fill, 200); setTimeout(fill, 600);
         }).catch(function() {});
       }
       return r;
     });
   };
-
   var OX = window.XMLHttpRequest;
   window.XMLHttpRequest = function() {
     var x = new OX(), oo = x.open;
     x.open = function(m, u) { x._u = u; return oo.apply(x, arguments); };
     x.addEventListener('load', function() {
       if (x._u && x._u.indexOf('/achievement/page') > 0) {
-        try {
-          var d = JSON.parse(x.responseText);
-          cachedRecords = (d && d.data && d.data.records) || [];
-          setTimeout(fill, 200);
-        } catch(e) {}
+        try { var d = JSON.parse(x.responseText); cachedRecords = (d && d.data && d.data.records) || []; setTimeout(fill, 200); } catch(e) {}
       }
     });
     return x;
   };
   window.XMLHttpRequest.prototype = OX.prototype;
 
-  // ==================== 注入 ====================
+  // ==================== 注入 + 对齐 ====================
   function scan() {
     ensureBar();
 
-    // 1) 先给所有 table 插勾选列（colgroup/thead/tbody）
-    document.querySelectorAll('.el-table table').forEach(function(tbl) {
-      var cg = tbl.querySelector('colgroup');
-      if (cg && !cg.querySelector('.wb-cb-col')) {
-        var cc = document.createElement('col');
-        cc.className = 'wb-cb-col';
-        cc.setAttribute('width', '' + CB_W);
-        cc.style.width = CB_W + 'px';
-        cg.insertBefore(cc, cg.firstChild);
-      }
-
-      var thead = tbl.querySelector('thead');
-      if (thead) {
-        thead.querySelectorAll('tr').forEach(function(hr) {
-          if (hr.classList.contains('wb-hdr')) return;
-          hr.classList.add('wb-hdr');
-          var th = document.createElement('th');
-          th.style.cssText = 'width:'+CB_W+'px;text-align:center;padding:0;';
-          th.innerHTML = '<input type="checkbox" class="wb-cb-all" style="cursor:pointer;margin:0;vertical-align:middle">';
-          hr.insertBefore(th, hr.firstChild);
-        });
-      }
-
-      tbl.querySelectorAll('tbody').forEach(function(tb) {
-        tb.querySelectorAll('tr').forEach(function(row) {
-          if (row.classList.contains('wb-row')) return;
-          row.classList.add('wb-row');
-          var tds = row.querySelectorAll('td');
-          if (!tds.length) return;
-          var td = document.createElement('td');
-          td.style.cssText = 'width:'+CB_W+'px;text-align:center;padding:0;';
-          td.innerHTML = '<input type="checkbox" class="wb-cb" data-id="" style="cursor:pointer;margin:0;vertical-align:middle">';
-          row.insertBefore(td, tds[0]);
-        });
-      });
-    });
-
-    // 2) 对齐：把 header colgroup 的 col 宽度同步到 body colgroup
     document.querySelectorAll('.el-table').forEach(function(ct) {
       var hdrTbl = ct.querySelector('.el-table__header-wrapper table');
       var bodyTbl = ct.querySelector('.el-table__body-wrapper table');
       if (!hdrTbl || !bodyTbl) return;
 
-      var hdrCols = hdrTbl.querySelectorAll('colgroup col');
-      var bodyCols = bodyTbl.querySelectorAll('colgroup col');
-      var n = Math.min(hdrCols.length, bodyCols.length);
-      for (var i = 0; i < n; i++) {
-        bodyCols[i].style.width = hdrCols[i].style.width || hdrCols[i].getAttribute('width') + 'px' || '';
+      // --- 注入全选 th ---
+      var hdrTr = hdrTbl.querySelector('thead tr');
+      if (hdrTr && !hdrTr.classList.contains('wb-hdr')) {
+        hdrTr.classList.add('wb-hdr');
+        var th = document.createElement('th');
+        th.className = 'wb-cb-th';
+        th.style.cssText = 'width:'+CB_W+'px;text-align:center;padding:0;';
+        th.innerHTML = '<input type="checkbox" class="wb-cb-all" style="cursor:pointer;margin:0;vertical-align:middle">';
+        hdrTr.insertBefore(th, hdrTr.firstChild);
       }
+
+      // --- 注入 body 勾选 td ---
+      bodyTbl.querySelectorAll('tbody tr').forEach(function(row) {
+        if (row.classList.contains('wb-row')) return;
+        row.classList.add('wb-row');
+        var tds = row.querySelectorAll('td');
+        if (!tds.length) return;
+        var td = document.createElement('td');
+        td.style.cssText = 'width:'+CB_W+'px;text-align:center;padding:0;';
+        td.innerHTML = '<input type="checkbox" class="wb-cb" data-id="" style="cursor:pointer;margin:0;vertical-align:middle">';
+        row.insertBefore(td, tds[0]);
+      });
+
+      // --- colgroup 注入 ---
+      [hdrTbl, bodyTbl].forEach(function(tbl) {
+        var cg = tbl.querySelector('colgroup');
+        if (cg && !cg.querySelector('.wb-cb-col')) {
+          var cc = document.createElement('col');
+          cc.className = 'wb-cb-col';
+          cc.setAttribute('width', '' + CB_W);
+          cc.style.width = CB_W + 'px';
+          cg.insertBefore(cc, cg.firstChild);
+        }
+      });
+
+      // --- 对齐：测量 header 各列实际像素宽，应用到 body ---
+      var hdrThs = hdrTr.querySelectorAll('th');
+      var bodyCols = bodyTbl.querySelectorAll('colgroup col');
+      var bodyRows = bodyTbl.querySelectorAll('tbody tr');
+
+      hdrThs.forEach(function(hdrTh, i) {
+        var w = hdrTh.getBoundingClientRect().width;
+        if (w <= 0) return;
+
+        // body colgroup
+        if (bodyCols[i]) {
+          bodyCols[i].style.width = w + 'px';
+          bodyCols[i].style.minWidth = w + 'px';
+          bodyCols[i].style.maxWidth = w + 'px';
+        }
+
+        // body 每行 td
+        bodyRows.forEach(function(row) {
+          var tds = row.querySelectorAll('td');
+          if (tds[i]) {
+            tds[i].style.width = w + 'px';
+            tds[i].style.minWidth = w + 'px';
+            tds[i].style.maxWidth = w + 'px';
+            tds[i].style.boxSizing = 'border-box';
+          }
+        });
+      });
+
+      bodyTbl.style.tableLayout = 'fixed';
+      bodyTbl.style.width = hdrTbl.getBoundingClientRect().width + 'px';
     });
   }
 
   function fill() {
-    var rows = document.querySelectorAll('.el-table__body-wrapper tbody tr');
-    if (!rows.length) return;
-
-    // 先用缓存的 records
-    if (cachedRecords.length > 0) {
-      rows.forEach(function(row, i) {
-        var cb = row.querySelector('.wb-cb');
-        if (!cb) return;
-        var rec = cachedRecords[i];
-        if (rec && rec.id) cb.setAttribute('data-id', rec.id);
-      });
-      updateBar();
+    if (!cachedRecords.length) {
+      fetch(API_BASE + '/achievement/page', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageNum: 1, pageSize: 200 })
+      }).then(function(r) { return r.json(); }).then(function(d) {
+        cachedRecords = (d && d.data && d.data.records) || [];
+        doFill();
+      }).catch(function() {});
       return;
     }
+    doFill();
+  }
 
-    // 缓存空则主动调 API
-    fetch(API_BASE + '/achievement/page', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pageNum: 1, pageSize: 200 })
-    }).then(function(r) { return r.json(); }).then(function(d) {
-      cachedRecords = (d && d.data && d.data.records) || [];
-      rows.forEach(function(row, i) {
-        var cb = row.querySelector('.wb-cb');
-        if (!cb) return;
-        var rec = cachedRecords[i];
-        if (rec && rec.id) cb.setAttribute('data-id', rec.id);
-      });
-      updateBar();
-    }).catch(function() {});
+  function doFill() {
+    document.querySelectorAll('.el-table__body-wrapper tbody tr').forEach(function(row, i) {
+      var cb = row.querySelector('.wb-cb');
+      if (!cb) return;
+      var rec = cachedRecords[i];
+      if (rec && rec.id) cb.setAttribute('data-id', rec.id);
+    });
+    updateBar();
   }
 
   // ==================== 启动 ====================
-  function go() {
-    scan();
-    fill();
-    if (tid) clearInterval(tid);
-    tid = setInterval(function() { scan(); fill(); }, 2000);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', go);
-  } else {
-    go();
-  }
+  function go() { scan(); fill(); }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', go); }
+  else { go(); }
+  if (tid) clearInterval(tid);
+  tid = setInterval(go, 2000);
 })();
