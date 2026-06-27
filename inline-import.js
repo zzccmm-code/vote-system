@@ -40,6 +40,12 @@
 
     // 插入到工具栏末尾
     toolbar.appendChild(btn);
+
+    // 三个操作按钮等宽等距
+    [btn].concat(Array.from(toolbar.querySelectorAll('.el-button--primary.el-button--small, .el-button--warning.el-button--small'))).forEach(function(b) {
+      b.style.width = '100px';
+      b.style.margin = '0 4px';
+    });
     toolbar.style.display = 'flex';
     toolbar.style.justifyContent = 'flex-start';
     toolbar.style.alignItems = 'center';
