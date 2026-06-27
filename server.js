@@ -4,8 +4,9 @@ const path = require('path');
 
 const PORT = 3000;
 const ROOT = __dirname;
-const BACKEND_HOST = 'localhost';
-const BACKEND_PORT = 7003;
+const BACKEND_HOST = process.env.BACKEND_HOST || 'localhost';
+const BACKEND_PORT = parseInt(process.env.BACKEND_PORT || '7003', 10);
+const MAX_BODY_SIZE = 50 * 1024 * 1024; // 50MB max request body
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -17,9 +18,19 @@ const MIME = {
   '.svg': 'image/svg+xml',
 };
 
+// [P0修复] 代理所有后端API路径（与Nginx部署配置保持一致）
+const API_PATHS = ['/api/', '/achievement/', '/voteRound/', '/voteResult/'];
+
+function isApiPath(url) {
+  return API_PATHS.some(p => url.startsWith(p));
+}
+
 function proxy(req, res) {
-  // Strip /api prefix before forwarding to backend
-  const targetPath = req.url.replace(/^\/api/, '') || '/';
+  // /api/* 去掉前缀，其他路径原样转发
+  const targetPath = req.url.startsWith('/api/')
+    ? req.url.replace(/^\/api/, '') || '/'
+    : req.url;
+
   const options = {
     hostname: BACKEND_HOST,
     port: BACKEND_PORT,
@@ -41,15 +52,22 @@ function proxy(req, res) {
     proxyRes.pipe(res);
   });
   proxyReq.on('error', () => {
-    res.writeHead(502, { 'Content-Type': 'text/plain' });
+    res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('Backend unavailable on port ' + BACKEND_PORT);
   });
   req.pipe(proxyReq);
 }
 
 http.createServer((req, res) => {
-  // Proxy all /api/* requests to backend (strip /api prefix)
-  if (req.url.startsWith('/api/')) {
+  // [P0修复] 代理所有后端API路径（/api/*, /achievement/*, /voteRound/*, /voteResult/*）
+  if (isApiPath(req.url)) {
+    // [P2修复] 限制请求体大小，防止大文件上传撑爆内存
+    const contentLength = parseInt(req.headers['content-length'], 10);
+    if (contentLength > MAX_BODY_SIZE) {
+      res.writeHead(413, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('Request body too large, max ' + (MAX_BODY_SIZE / 1024 / 1024) + 'MB');
+      return;
+    }
     return proxy(req, res);
   }
 
@@ -79,5 +97,5 @@ http.createServer((req, res) => {
   });
 }).listen(PORT, () => {
   console.log('Frontend: http://localhost:' + PORT);
-  console.log('API proxy: /api/* -> localhost:' + BACKEND_PORT);
+  console.log('API proxy: /achievement/*, /voteRound/*, /voteResult/*, /api/* -> ' + BACKEND_HOST + ':' + BACKEND_PORT);
 });

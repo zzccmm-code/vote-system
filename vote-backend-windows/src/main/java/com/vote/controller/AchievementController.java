@@ -25,8 +25,24 @@ public class AchievementController {
 
     /**
      * 分页查询成果列表
-     * POST /achievement/page
+     * GET/POST /achievement/page
      */
+    @GetMapping("/page")
+    public Result<PageResult<Achievement>> pageGet(
+            @RequestParam(required = false, defaultValue = "1") Integer pageNum,
+            @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String achievementCategory,
+            @RequestParam(required = false) String expertLevel,
+            @RequestParam(required = false) String achievementName) {
+        AchievementPageReq req = new AchievementPageReq();
+        req.setPageNum(pageNum);
+        req.setPageSize(pageSize);
+        req.setAchievementCategory(achievementCategory);
+        req.setExpertLevel(expertLevel);
+        req.setAchievementName(achievementName);
+        return Result.ok(achievementService.page(req));
+    }
+
     @PostMapping("/page")
     public Result<PageResult<Achievement>> page(@RequestBody AchievementPageReq req) {
         return Result.ok(achievementService.page(req));

@@ -8,9 +8,12 @@ echo.
 
 set JAVA=
 set JDK_PATH=%USERPROFILE%\Downloads\microsoft-jdk-17.0.11-windows-x64\jdk-17.0.11+9\bin\java.exe
+set JDK_PATH_MSI=C:\Program Files\Microsoft\jdk-17.0.19.10-hotspot\bin\java.exe
 
 if exist "%JDK_PATH%" (
     set JAVA=%JDK_PATH%
+) else if exist "%JDK_PATH_MSI%" (
+    set JAVA=%JDK_PATH_MSI%
 ) else (
     where java >nul 2>&1
     if not errorlevel 1 set JAVA=java

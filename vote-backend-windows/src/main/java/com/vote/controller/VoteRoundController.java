@@ -23,11 +23,16 @@ public class VoteRoundController {
 
     /**
      * 获取当前进行中的投票轮次
-     * POST /voteRound/current
+     * GET/POST /voteRound/current
      * 返回: { code:200, data: VoteRound }
      */
+    @GetMapping("/current")
+    public Result<VoteRound> currentGet() {
+        return Result.ok(voteRoundService.getCurrentRound());
+    }
+
     @PostMapping("/current")
-    public Result<VoteRound> current() {
+    public Result<VoteRound> currentPost() {
         return Result.ok(voteRoundService.getCurrentRound());
     }
 
@@ -76,11 +81,17 @@ public class VoteRoundController {
 
     /**
      * 获取当前轮次已提交人数
-     * POST /voteRound/getRoundSubmitNum
+     * GET/POST /voteRound/getRoundSubmitNum
      * [P1修复] 使用 @RequestParam 兼容空请求体和表单提交，避免 Content-Type 不匹配报错
      */
+    @GetMapping("/getRoundSubmitNum")
+    public Result<Map<String, Object>> getRoundSubmitNumGet(
+            @RequestParam(value = "roundId", required = false) Long roundId) {
+        return Result.ok(voteRoundService.getRoundSubmitNum(roundId));
+    }
+
     @PostMapping("/getRoundSubmitNum")
-    public Result<Map<String, Object>> getRoundSubmitNum(
+    public Result<Map<String, Object>> getRoundSubmitNumPost(
             @RequestParam(value = "roundId", required = false) Long roundId) {
         return Result.ok(voteRoundService.getRoundSubmitNum(roundId));
     }

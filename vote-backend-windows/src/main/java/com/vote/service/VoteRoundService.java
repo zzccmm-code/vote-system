@@ -1,6 +1,7 @@
 package com.vote.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.vote.dto.StartVoteReq;
 import com.vote.dto.VoteRoundPushReq;
 import com.vote.entity.Achievement;
@@ -31,6 +32,13 @@ public class VoteRoundService {
 
     @Value("${app.total-voters:0}")
     private int configuredTotalVoters;
+
+    /** [P2修复] 缓存：计算出的委员总数 */
+    private volatile int cachedTotalVoters = -1;
+    /** [P2修复] 缓存时间戳 */
+    private volatile long cachedTotalVotersTime = 0;
+    /** [P2修复] 缓存有效期（毫秒），30秒 */
+    private static final long CACHE_TTL_MS = 30_000;
 
     /**
      * 获取当前投票轮次（状态为 running 的）
@@ -83,6 +91,9 @@ public class VoteRoundService {
             voteResultMapper.insert(vr);
         }
 
+        // [P2修复] 清除委员总数缓存，下次查询时重新计算
+        clearTotalVotersCache();
+
         return "投票已开始，第 " + nextRoundNum + " 轮";
     }
 
@@ -97,6 +108,8 @@ public class VoteRoundService {
         }
         running.setStatus("finished");
         voteRoundMapper.updateById(running);
+        // [P2修复] 清除委员总数缓存
+        clearTotalVotersCache();
         return "投票已结束";
     }
 
@@ -195,16 +208,19 @@ public class VoteRoundService {
             voteResultMapper.insert(vr);
         }
 
+        // [P0修复] 使用SQL原子更新，防止并发投票导致计数丢失
         String opt = req.getVoteOption();
+        LambdaUpdateWrapper<VoteResult> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(VoteResult::getId, vr.getId());
         if ("agree".equals(opt)) {
-            vr.setAgree(vr.getAgree() + 1);
+            updateWrapper.setSql("agree = agree + 1");
         } else if ("disagree".equals(opt)) {
-            vr.setDisagree(vr.getDisagree() + 1);
+            updateWrapper.setSql("disagree = disagree + 1");
         } else {
-            vr.setAbstain(vr.getAbstain() + 1);
+            updateWrapper.setSql("abstain = abstain + 1");
         }
-        vr.setTotalVoters(vr.getTotalVoters() + 1);
-        voteResultMapper.updateById(vr);
+        updateWrapper.setSql("total_voters = total_voters + 1");
+        voteResultMapper.update(null, updateWrapper);
 
         return "投票成功";
     }
@@ -249,12 +265,20 @@ public class VoteRoundService {
     /**
      * 获取应参与投票的委员总数
      * 优先使用配置的 app.total-voters，若未配置则取历史最大投票人数
+     * [P2修复] 增加内存缓存，避免每次调用都全表扫描
      */
     private int getTotalVoters() {
         if (configuredTotalVoters > 0) {
             return configuredTotalVoters;
         }
-        // 未配置时，取所有轮次中参与投票的独立委员数作为参考
+
+        // [P2修复] 缓存未过期时直接返回
+        long now = System.currentTimeMillis();
+        if (cachedTotalVoters >= 0 && (now - cachedTotalVotersTime) < CACHE_TTL_MS) {
+            return cachedTotalVoters;
+        }
+
+        // 缓存过期，重新计算
         LambdaQueryWrapper<VoteRecord> w = new LambdaQueryWrapper<>();
         w.select(VoteRecord::getVoterId);
         List<VoteRecord> allRecords = voteRecordMapper.selectList(w);
@@ -263,6 +287,17 @@ public class VoteRoundService {
                 .filter(id -> id != null && !id.isEmpty())
                 .distinct()
                 .count();
-        return (int) Math.max(maxVoters, 0);
+
+        cachedTotalVoters = (int) Math.max(maxVoters, 0);
+        cachedTotalVotersTime = now;
+        return cachedTotalVoters;
+    }
+
+    /**
+     * [P2修复] 清除委员总数缓存（投票开始/结束时调用，确保数据实时性）
+     */
+    public void clearTotalVotersCache() {
+        cachedTotalVoters = -1;
+        cachedTotalVotersTime = 0;
     }
 }

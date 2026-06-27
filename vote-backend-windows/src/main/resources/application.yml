@@ -47,3 +47,7 @@ app:
   base-url: http://localhost:7003
   # [P0修复] 应参与投票的委员总数（设为0则自动取历史最大投票人数）
   total-voters: 0
+  # [P2修复] CORS 允许的来源（逗号分隔），留空则使用默认值 localhost:3000,localhost:8080
+  # 局域网部署时可配置: http://192.168.1.100:8080,http://192.168.1.100:3000
+  cors:
+    allowed-origins:

@@ -27,8 +27,22 @@ public class VoteResultController {
 
     /**
      * 分页查询投票结果
-     * POST /voteResult/page
+     * GET/POST /voteResult/page
      */
+    @GetMapping("/page")
+    public Result<PageResult<VoteResultService.VoteResultVO>> pageGet(
+            @RequestParam(required = false, defaultValue = "1") Integer pageNum,
+            @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Long roundId,
+            @RequestParam(required = false) Integer isPublished) {
+        VoteResultReq req = new VoteResultReq();
+        req.setPageNum(pageNum);
+        req.setPageSize(pageSize);
+        req.setRoundId(roundId);
+        req.setIsPublished(isPublished);
+        return Result.ok(voteResultService.page(req));
+    }
+
     @PostMapping("/page")
     public Result<PageResult<VoteResultService.VoteResultVO>> page(@RequestBody VoteResultReq req) {
         return Result.ok(voteResultService.page(req));
@@ -56,18 +70,32 @@ public class VoteResultController {
 
     /**
      * 获取所有轮次列表（用于下拉筛选）
-     * POST /voteResult/getRoundList
+     * GET/POST /voteResult/getRoundList
      */
+    @GetMapping("/getRoundList")
+    public Result<List<VoteRound>> getRoundListGet() {
+        return Result.ok(voteResultService.getRoundList());
+    }
+
     @PostMapping("/getRoundList")
-    public Result<List<VoteRound>> getRoundList() {
+    public Result<List<VoteRound>> getRoundListPost() {
         return Result.ok(voteResultService.getRoundList());
     }
 
     /**
      * 每轮得票情况（含同意票数、占比等）
-     * POST /voteResult/eachRoundSituation
-     * Params: roundId, achievementCategory
+     * GET/POST /voteResult/eachRoundSituation
      */
+    @GetMapping("/eachRoundSituation")
+    public Result<List<VoteResultService.RoundSituationVO>> eachRoundSituationGet(
+            @RequestParam(required = false) Long roundId,
+            @RequestParam(required = false) Integer isPublished) {
+        EachRoundReq req = new EachRoundReq();
+        req.setRoundId(roundId);
+        req.setIsPublished(isPublished);
+        return Result.ok(voteResultService.eachRoundSituation(req));
+    }
+
     @PostMapping("/eachRoundSituation")
     public Result<List<VoteResultService.RoundSituationVO>> eachRoundSituation(
             @RequestBody(required = false) EachRoundReq req) {
@@ -78,8 +106,16 @@ public class VoteResultController {
 
     /**
      * 最终结果
-     * POST /voteResult/finalResult
+     * GET/POST /voteResult/finalResult
      */
+    @GetMapping("/finalResult")
+    public Result<List<VoteResultService.RoundSituationVO>> finalResultGet(
+            @RequestParam(required = false) Long roundId) {
+        VoteResultReq req = new VoteResultReq();
+        req.setRoundId(roundId);
+        return Result.ok(voteResultService.finalResult(req));
+    }
+
     @PostMapping("/finalResult")
     public Result<List<VoteResultService.RoundSituationVO>> finalResult(
             @RequestBody(required = false) VoteResultReq req) {
@@ -89,8 +125,22 @@ public class VoteResultController {
 
     /**
      * 附加分页（二次表决等）
-     * POST /voteResult/additionalPage
+     * GET/POST /voteResult/additionalPage
      */
+    @GetMapping("/additionalPage")
+    public Result<PageResult<VoteResultService.VoteResultVO>> additionalPageGet(
+            @RequestParam(required = false, defaultValue = "1") Integer pageNum,
+            @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Long roundId,
+            @RequestParam(required = false) Integer isPublished) {
+        VoteResultReq req = new VoteResultReq();
+        req.setPageNum(pageNum);
+        req.setPageSize(pageSize);
+        req.setRoundId(roundId);
+        req.setIsPublished(isPublished);
+        return Result.ok(voteResultService.additionalPage(req));
+    }
+
     @PostMapping("/additionalPage")
     public Result<PageResult<VoteResultService.VoteResultVO>> additionalPage(
             @RequestBody VoteResultReq req) {

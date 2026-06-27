@@ -1,6 +1,7 @@
 package com.vote.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.vote.common.PageResult;
 import com.vote.dto.AchievementPageReq;
@@ -17,7 +18,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -95,6 +99,7 @@ public class AchievementService {
 
     /**
      * 编辑成果（含文件上传）
+     * [P1修复] 使用 LambdaUpdateWrapper 只更新非null字段，防止空值覆盖已有数据
      */
     public void update(Achievement achievement, MultipartFile file) throws IOException {
         if (file != null && !file.isEmpty()) {
@@ -111,7 +116,20 @@ public class AchievementService {
             String filename = saveFile(file);
             achievement.setFileSrc(filename);
         }
-        achievementMapper.updateById(achievement);
+
+        // [P1修复] 只更新非null字段，防止未传字段被覆盖为null
+        LambdaUpdateWrapper<Achievement> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Achievement::getId, achievement.getId());
+        if (achievement.getAchievementName() != null) wrapper.set(Achievement::getAchievementName, achievement.getAchievementName());
+        if (achievement.getAchievementCategory() != null) wrapper.set(Achievement::getAchievementCategory, achievement.getAchievementCategory());
+        if (achievement.getCreationUnits() != null) wrapper.set(Achievement::getCreationUnits, achievement.getCreationUnits());
+        if (achievement.getExpertLevel() != null) wrapper.set(Achievement::getExpertLevel, achievement.getExpertLevel());
+        if (achievement.getExtraInfo() != null) wrapper.set(Achievement::getExtraInfo, achievement.getExtraInfo());
+        if (achievement.getFileSrc() != null) wrapper.set(Achievement::getFileSrc, achievement.getFileSrc());
+        if (achievement.getStatus() != null) wrapper.set(Achievement::getStatus, achievement.getStatus());
+        if (achievement.getOrderNum() != null) wrapper.set(Achievement::getOrderNum, achievement.getOrderNum());
+        if (achievement.getEvalResult() != null) wrapper.set(Achievement::getEvalResult, achievement.getEvalResult());
+        achievementMapper.update(null, wrapper);
     }
 
     /**
@@ -167,18 +185,41 @@ public class AchievementService {
         return saveFile(file);
     }
 
+    /** [P2修复] 允许上传的文件扩展名白名单 */
+    private static final Set<String> ALLOWED_EXTENSIONS = new HashSet<>(Arrays.asList(
+            ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+            ".jpg", ".jpeg", ".png", ".gif", ".bmp",
+            ".txt", ".zip", ".rar"
+    ));
+
+    /** [P2修复] 单文件最大大小: 20MB */
+    private static final long MAX_FILE_SIZE = 20 * 1024 * 1024;
+
     /**
      * 保存文件到磁盘
+     * [P2修复] 增加文件类型和大小校验
      */
     private String saveFile(MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("文件不能为空");
         }
+
+        // [P2修复] 文件大小校验
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("文件大小不能超过20MB");
+        }
+
         String original = file.getOriginalFilename();
         String ext = "";
         if (original != null && original.contains(".")) {
-            ext = original.substring(original.lastIndexOf("."));
+            ext = original.substring(original.lastIndexOf(".")).toLowerCase();
         }
+
+        // [P2修复] 文件类型白名单校验
+        if (!ALLOWED_EXTENSIONS.contains(ext)) {
+            throw new IllegalArgumentException("不支持的文件类型: " + ext + "，允许的类型: " + String.join(", ", ALLOWED_EXTENSIONS));
+        }
+
         String filename = UUID.randomUUID().toString().replace("-", "") + ext;
 
         if (!uploadDirFile.exists()) {
