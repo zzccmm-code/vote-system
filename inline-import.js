@@ -46,11 +46,12 @@
     toolbar.style.gap = '8px';
     toolbar.style.flexWrap = 'nowrap';
 
-    // 缩小搜索框
-    var inputs = toolbar.querySelectorAll('.el-input__inner, input[type="text"]');
-    inputs.forEach(function(inp) {
-      inp.style.width = '140px';
-      inp.style.minWidth = '100px';
+    // 缩小所有搜索框
+    toolbar.querySelectorAll('.el-input, .el-select').forEach(function(el) {
+      el.style.width = '110px';
+    });
+    toolbar.querySelectorAll('.el-input__inner, input[type="text"]').forEach(function(inp) {
+      inp.style.width = '100%';
     });
 
     // 隐藏原浮动按钮
