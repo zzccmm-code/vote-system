@@ -84,7 +84,7 @@
         '<a href="' + API_BASE + '/api/files/' + encodeURIComponent(achievementCache[aid].fileSrc) + '" ' +
         'target="_blank" ' +
         'style="color:#2563eb;font-size:12px;text-decoration:none;border:1px solid #2563eb;padding:3px 7px;border-radius:3px;background:#eff6ff;font-weight:600;display:inline-block;">' +
-        '查看PDF</a>';
+        '查看附件</a>';
     } else {
       span.innerHTML =
         '<span style="color:#ef4444;font-size:12px;cursor:pointer;border:1px solid #ef4444;padding:3px 7px;border-radius:3px;background:#fef2f2;font-weight:600;display:inline-block;" ' +
