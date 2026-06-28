@@ -40,7 +40,9 @@ if errorlevel 1 (
 )
 echo  [OK] Node.js
 
-if not exist "%ROOT%\vote-system-windows.jar" (
+set "JAR=%ROOT%\vote-system-windows.jar"
+if not exist "%JAR%" set "JAR=%ROOT%\vote-backend-windows\vote-system-windows.jar"
+if not exist "%JAR%" (
     echo  [X] vote-system-windows.jar not found
     pause
     exit /b
@@ -62,7 +64,7 @@ echo  [OK] Cleaned
 echo.
 echo  [3/5] Starting services...
 echo    - Backend (port 7003) ...
-start "VoteBackend" "%JAVA%" -jar "%ROOT%\vote-system-windows.jar" --server.port=7003
+start "VoteBackend" "%JAVA%" -jar "%JAR%" --server.port=7003
 timeout /t 8 /nobreak >nul
 echo    [OK]
 
