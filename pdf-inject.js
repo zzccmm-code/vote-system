@@ -50,10 +50,8 @@
         }
         if (!opCell) return;
 
-        // 成果名称列 — 从右边数第2个（跳过操作列）
-        // 或者正向：cells[1] 是序号，cells[2] 是名称（有复选框时）
-        // cells[0]=复选框, cells[1]=序号, cells[2]=成果名称
-        var nameCell = cells.length >= 3 ? cells[2] : cells[1];
+        // 列序: cells[0]=☑, [1]=序号, [2]=类别, [3]=名称
+        var nameCell = cells.length >= 4 ? cells[3] : (cells.length >= 2 ? cells[2] : cells[1]);
         if (!nameCell) return;
         var rowName = nameCell.textContent.trim().replace(/\s+/g, ' ');
 
@@ -104,7 +102,7 @@
       var row = btnEl.closest('tr');
       if (row) {
         var cells = row.querySelectorAll('td');
-        var nameCell = cells.length >= 3 ? cells[2] : cells[1];
+        var nameCell = cells.length >= 4 ? cells[3] : (cells.length >= 2 ? cells[2] : cells[1]);
         if (nameCell) {
           var rn = nameCell.textContent.trim().replace(/\s+/g, ' ');
           aid = nameToId[rn];
