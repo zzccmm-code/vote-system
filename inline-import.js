@@ -1,99 +1,70 @@
-/**
- * 将"导入数据"按钮从浮动改为并入工具栏（与成果新增/开始投票并排）
- */
 (function() {
   'use strict';
 
-  function inject() {
-    // 找到工具栏容器（包含成果新增和开始投票按钮的 div）
-    var voteBtn = document.querySelector('.el-button--warning span');
-    if (!voteBtn) {
-      // 通过文本找"开始投票"按钮
-      var allBtns = document.querySelectorAll('.el-button');
-      allBtns.forEach(function(btn) {
-        if (btn.textContent.trim() === '开始投票') voteBtn = btn;
-      });
-      if (!voteBtn) return;
-    }
+  function go() {
+    document.querySelectorAll('.el-card.search-box').forEach(function(card) {
+      var formEl = card.querySelector('.el-form');
+      if (!formEl) return;
 
-    // 找到父级容器（工具栏）
-    var toolbar = null;
-    var el = voteBtn.closest ? voteBtn.closest('div') : voteBtn.parentElement;
-    while (el && el !== document.body) {
-      // 找到包含多个 el-button 的 div
-      if (el.querySelectorAll && el.querySelectorAll('.el-button').length >= 2) {
-        toolbar = el;
-        break;
+      formEl.style.setProperty('display', 'flex', 'important');
+      formEl.style.setProperty('flex-wrap', 'nowrap', 'important');
+      formEl.style.setProperty('align-items', 'center', 'important');
+      formEl.style.setProperty('gap', '6px', 'important');
+
+      var rightBox = card.querySelector('.right-box');
+      if (rightBox) {
+        rightBox.style.setProperty('float', 'none', 'important');
+        rightBox.style.setProperty('margin', '0', 'important');
+        rightBox.style.setProperty('display', 'flex', 'important');
+        rightBox.style.setProperty('align-items', 'center', 'important');
+        rightBox.style.setProperty('gap', '6px', 'important');
+        rightBox.style.setProperty('flex-shrink', '0', 'important');
+        rightBox.style.setProperty('margin-left', 'auto', 'important');
+        var addBtn = rightBox.querySelector('.el-button--primary');
+        if (addBtn) { addBtn.style.setProperty('margin-left', '-2px', 'important'); }
       }
-      el = el.parentElement;
-    }
-    if (!toolbar) return;
 
-    // 检查是否已注入
-    if (toolbar.querySelector('.wb-import-inline')) return;
-
-    // 创建内联导入按钮（用 a 标签确保跳转可靠）
-    var btn = document.createElement('a');
-    btn.className = 'el-button el-button--success el-button--small wb-import-inline';
-    btn.href = 'import.html';
-    btn.innerHTML = '<span style="font-size:12px;">导入数据</span>';
-    btn.style.textDecoration = 'none';
-
-    // 插入到工具栏末尾
-    toolbar.appendChild(btn);
-
-    // 三个操作按钮等宽等距
-    var actionBtns = [btn].concat(Array.from(toolbar.querySelectorAll('.el-button--primary.el-button--small, .el-button--warning.el-button--small')));
-    actionBtns.forEach(function(b) {
-      b.style.setProperty('width', '110px', 'important');
-      b.style.setProperty('min-width', '110px', 'important');
-      b.style.setProperty('box-sizing', 'border-box');
-      b.style.setProperty('margin', '0', 'important');
-      b.style.setProperty('margin-left', '0', 'important');
-      b.style.setProperty('margin-right', '0', 'important');
-    });
-    toolbar.style.setProperty('gap', '8px', 'important');
-
-    // 导入数据按钮固定高度38px字体12px
-    btn.style.setProperty('height', '38px', 'important');
-    btn.style.setProperty('font-size', '12px', 'important');
-    btn.style.setProperty('padding-top', '0', 'important');
-    btn.style.setProperty('padding-bottom', '0', 'important');
-    btn.style.setProperty('line-height', '38px', 'important');
-    toolbar.style.display = 'flex';
-    toolbar.style.justifyContent = 'flex-start';
-    toolbar.style.alignItems = 'center';
-    toolbar.style.gap = '8px';
-    toolbar.style.flexWrap = 'nowrap';
-
-    // 缩小所有搜索框50%
-    toolbar.querySelectorAll('.el-input, .el-select').forEach(function(el) {
-      el.style.width = '55px';
-    });
-    toolbar.querySelectorAll('.el-input__inner, input[type="text"]').forEach(function(inp) {
-      inp.style.width = '100%';
-    });
-
-    // 推荐等级搜索框额外缩小50%
-    toolbar.querySelectorAll('.el-form-item__label').forEach(function(label) {
-      if (label.textContent.trim() === '推荐等级：' || label.textContent.trim() === '专家组推荐等级：') {
-        var formItem = label.closest('.el-form-item');
-        if (formItem) {
-          var select = formItem.querySelector('.el-select');
-          if (select) select.style.width = '28px';
+      card.querySelectorAll('.el-form-item').forEach(function(item) {
+        item.style.setProperty('margin-bottom', '0', 'important');
+        item.style.setProperty('flex-shrink', '0', 'important');
+        var label = item.querySelector('.el-form-item__label');
+        if (label) {
+          label.style.setProperty('font-size', '12px', 'important');
+          label.style.setProperty('padding', '0 4px', 'important');
         }
+        var select = item.querySelector('.el-select');
+        if (select) {
+          var lt = label ? label.textContent.trim() : '';
+          if (lt.indexOf('成果类别') > -1) {
+            select.style.setProperty('width', '130px', 'important');
+          } else {
+            select.style.setProperty('width', '90px', 'important');
+          }
+        }
+      });
+
+      card.querySelectorAll('.el-button').forEach(function(btn) {
+        if (btn.classList.contains('el-button--warning')) { btn.style.setProperty('margin-left', '-1px', 'important'); }
+        btn.style.setProperty('flex-shrink', '0', 'important');
+        var span = btn.querySelector('span');
+        if (span) span.style.setProperty('font-size', '12px', 'important');
+      });
+
+      if (!card.querySelector('.wb-import-inline')) {
+        var targetBox = rightBox || formEl;
+        var ib = document.createElement('button');
+        ib.setAttribute('type', 'button');
+        ib.className = 'el-button el-button--success wb-import-inline';
+        ib.innerHTML = '<span>导入数据</span>';
+        ib.onclick = function() { location.href = 'import.html'; };
+        targetBox.appendChild(ib);
       }
+
+      var floatBtn = document.querySelector('.import-float-btn');
+      if (floatBtn) floatBtn.style.setProperty('display', 'none', 'important');
     });
-
-    // 隐藏原浮动按钮
-    var floatBtn = document.querySelector('.import-float-btn');
-    if (floatBtn) floatBtn.style.display = 'none';
   }
 
-  setInterval(inject, 1500);
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() { setTimeout(inject, 800); });
-  } else {
-    setTimeout(inject, 800);
-  }
+  setInterval(go, 1500);
+  setTimeout(go, 500);
 })();
