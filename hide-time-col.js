@@ -46,9 +46,10 @@
         });
         if (hideIdx < 0) return;
 
-        // colgroup
-        table.querySelectorAll('colgroup col').forEach(function(col, j) {
-          if (j === hideIdx) col.setAttribute('data-hide-col', '1');
+        // 分别给 header 和 body 的 colgroup 各自标 hide-col
+        table.querySelectorAll('colgroup').forEach(function(cg) {
+          var cols = cg.querySelectorAll('col');
+          if (cols[hideIdx]) cols[hideIdx].setAttribute('data-hide-col', '1');
         });
 
         // body td

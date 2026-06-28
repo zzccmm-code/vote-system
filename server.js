@@ -85,6 +85,19 @@ http.createServer((req, res) => {
   } catch (e) {}
 
   const ext = path.extname(filePath).toLowerCase();
+
+  // 禁止 JS 文件缓存，保证热更新生效
+  if (ext === '.js') {
+    res.writeHead(200, {
+      'Content-Type': 'application/javascript',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+    fs.createReadStream(filePath).pipe(res);
+    return;
+  }
+
   fs.readFile(filePath, (err, data) => {
     if (err) {
       // SPA fallback: return index.html for any unknown route

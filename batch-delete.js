@@ -132,7 +132,7 @@
         }
       });
 
-      // --- 对齐：测量 header 各列实际像素宽，应用到 body（跳过 gutter 列）---
+      // --- 对齐：测量 header 各列实际像素宽，用 !important 精确应用到 body ---
       var hdrThs = hdrTr.querySelectorAll('th');
       var bodyCols = bodyTbl.querySelectorAll('colgroup col');
       var bodyRows = bodyTbl.querySelectorAll('tbody tr');
@@ -143,6 +143,10 @@
         if (c.getAttribute('name') === 'gutter' || c.classList.contains('gutter')) gutterIdx = i;
       });
 
+      // 计算 body wrapper 实际可用宽度
+      var bodyWrapper = ct.querySelector('.el-table__body-wrapper');
+      var wrapperW = bodyWrapper ? bodyWrapper.getBoundingClientRect().width : hdrTbl.getBoundingClientRect().width;
+
       hdrThs.forEach(function(hdrTh, i) {
         if (i === gutterIdx) return; // 跳过 gutter
         var w = hdrTh.getBoundingClientRect().width;
@@ -152,24 +156,26 @@
         var bodyColIdx = gutterIdx >= 0 && i > gutterIdx ? i - 1 : i;
 
         if (bodyCols[bodyColIdx]) {
-          bodyCols[bodyColIdx].style.width = w + 'px';
-          bodyCols[bodyColIdx].style.minWidth = w + 'px';
-          bodyCols[bodyColIdx].style.maxWidth = w + 'px';
+          bodyCols[bodyColIdx].style.setProperty('width', w + 'px', 'important');
+          bodyCols[bodyColIdx].style.setProperty('min-width', w + 'px', 'important');
+          bodyCols[bodyColIdx].style.setProperty('max-width', w + 'px', 'important');
         }
 
         bodyRows.forEach(function(row) {
           var tds = row.querySelectorAll('td');
           if (tds[bodyColIdx]) {
-            tds[bodyColIdx].style.width = w + 'px';
-            tds[bodyColIdx].style.minWidth = w + 'px';
-            tds[bodyColIdx].style.maxWidth = w + 'px';
-            tds[bodyColIdx].style.boxSizing = 'border-box';
+            tds[bodyColIdx].style.setProperty('width', w + 'px', 'important');
+            tds[bodyColIdx].style.setProperty('min-width', w + 'px', 'important');
+            tds[bodyColIdx].style.setProperty('max-width', w + 'px', 'important');
+            tds[bodyColIdx].style.setProperty('box-sizing', 'border-box', 'important');
           }
         });
       });
 
-      bodyTbl.style.tableLayout = 'fixed';
-      bodyTbl.style.width = hdrTbl.getBoundingClientRect().width + 'px';
+      bodyTbl.style.setProperty('table-layout', 'fixed', 'important');
+      bodyTbl.style.setProperty('width', wrapperW + 'px', 'important');
+      bodyTbl.style.setProperty('min-width', wrapperW + 'px', 'important');
+      bodyTbl.style.setProperty('max-width', wrapperW + 'px', 'important');
     });
   }
 
