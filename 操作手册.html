@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>科技奖评审表决系统 · 操作手册</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family: -apple-system,"PingFang SC","Microsoft YaHei",sans-serif; font-size:15px; line-height:1.75; color:#2c2c2a; background:#f6f7f9; }
+  .banner { background:linear-gradient(135deg,#0a1628 0%,#0d2137 40%,#0f2b4a 100%); color:#e3f2fd; padding:48px 0 40px; text-align:center; border-bottom:2px solid #1e88e5; }
+  .banner h1 { font-size:26px; font-weight:600; margin-bottom:10px; letter-spacing:2px; text-shadow:0 0 20px rgba(30,136,229,0.4); }
+  .banner p { font-size:14px; opacity:0.7; }
+  .container { max-width:880px; margin:0 auto; padding:28px 20px 60px; }
+  .card { background:#fff; border-radius:10px; padding:28px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border:1px solid #eee; }
+  .card h2 { font-size:20px; font-weight:600; margin-bottom:18px; color:#1565c0; border-left:4px solid #1565c0; padding-left:12px; }
+  .card h3 { font-size:16px; font-weight:600; margin:20px 0 10px; color:#0d47a1; }
+  .card p, .card li { margin-bottom:8px; color:#444; }
+  .card ul, .card ol { padding-left:24px; margin-bottom:12px; }
+  .card table { width:100%; border-collapse:collapse; margin:12px 0; font-size:14px; }
+  .card th, .card td { border:1px solid #dee2e6; padding:8px 12px; text-align:left; }
+  .card th { background:#f8f9fa; font-weight:600; }
+  .card tr:nth-child(even) { background:#fafbfc; }
+  .tip { background:#eef6ff; border-left:4px solid #1565c0; border-radius:6px; padding:12px 16px; margin:14px 0; font-size:13px; }
+  .warn { background:#fff8e6; border-left:4px solid #e6a700; border-radius:6px; padding:12px 16px; margin:14px 0; font-size:13px; }
+  .danger { background:#fff0f0; border-left:4px solid #dc3545; border-radius:6px; padding:12px 16px; margin:14px 0; font-size:13px; }
+  code { background:#f0f0f0; padding:2px 6px; border-radius:3px; font-size:13px; color:#d63384; }
+  pre { background:#1e1e1e; color:#d4d4d4; padding:14px 18px; border-radius:6px; font-size:13px; overflow-x:auto; margin:10px 0; }
+  pre code { background:none; color:inherit; padding:0; }
+  .img-placeholder { background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; padding:40px; text-align:center; color:#888; margin:14px 0; }
+  .step { display:flex; gap:14px; align-items:flex-start; margin:12px 0; }
+  .step .num { width:32px; height:32px; border-radius:50%; background:#1565c0; color:#fff; font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .step .content { flex:1; }
+  .toc a { color:#1565c0; text-decoration:none; }
+  .toc a:hover { text-decoration:underline; }
+  .toc li { margin:4px 0; }
+  @media (max-width:600px) { .banner h1 { font-size:20px; } .card { padding:18px; } }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <h1>国网四川省电力公司科技奖励评审系统</h1>
+  <p>Windows 端 · 安卓平板端 部署与操作手册 v1.0</p>
+</div>
+
+<div class="container">
+
+<!-- ===== 目录 ===== -->
+<div class="card toc">
+  <h2>📑 目录</h2>
+  <ol>
+    <li><a href="#ch1">系统简介</a></li>
+    <li><a href="#ch2">Windows 端 — 环境准备</a></li>
+    <li><a href="#ch3">Windows 端 — 启动系统</a></li>
+    <li><a href="#ch4">Windows 端 — 配置防火墙</a></li>
+    <li><a href="#ch5">安卓平板端 — 环境准备</a></li>
+    <li><a href="#ch6">安卓平板端 — 安装与配置</a></li>
+    <li><a href="#ch7">系统操作指南</a></li>
+    <li><a href="#ch8">常见问题</a></li>
+    <li><a href="#ch9">附录 — 网页地址一览</a></li>
+  </ol>
+</div>
+
+<!-- ===== 第1章 ===== -->
+<div class="card">
+  <h2 id="ch1">一、系统简介</h2>
+
+  <h3>系统用途</h3>
+  <p>本系统用于科技成果的评审表决，覆盖从成果录入到最终结果发布的完整流程。</p>
+
+  <h3>核心功能</h3>
+  <table>
+    <tr><th>模块</th><th>功能</th><th>使用者</th></tr>
+    <tr><td>成果管理</td><td>录入/编辑/删除成果、上传附件、批量导入Excel</td><td>管理员</td></tr>
+    <tr><td>评审表决</td><td>开始投票、结束投票、重置投票</td><td>管理员</td></tr>
+    <tr><td>投票页面</td><td>委员投票（同意/不同意/弃权 + 推荐等级）</td><td>评委委员</td></tr>
+    <tr><td>结果展示</td><td>查看每轮得票统计、一键发布、导出Excel</td><td>管理员</td></tr>
+  </table>
+
+  <h3>系统架构</h3>
+  <p><strong>后端：</strong>Spring Boot 2.7 + H2 内嵌数据库 → 运行在 Windows 电脑上（端口 7003）</p>
+  <p><strong>前端：</strong>Vue 2 + Element UI → 通过 Node.js 静态服务器托管（端口 3000）</p>
+  <p><strong>平板端：</strong>安卓设备通过浏览器访问 Windows 电脑的 IP 地址，无需安装 App</p>
+
+  <div class="tip"><strong>关键概念：</strong>Windows 电脑作为"服务器"，安卓平板作为"客户端"。平板连接同一 WiFi 后，在浏览器输入电脑 IP 即可使用。</div>
+
+  <h3>成果数据字段</h3>
+  <table>
+    <tr><th>列名</th><th>说明</th><th>是否必填</th></tr>
+    <tr><td>序号</td><td>自动编号</td><td>—</td></tr>
+    <tr><td>成果类别</td><td>专利奖 / 科技进步奖 / 技术发明奖</td><td>✅</td></tr>
+    <tr><td>成果名称</td><td>自定义文本（去重依据）</td><td>✅</td></tr>
+    <tr><td>推荐单位(部门)</td><td>如"XX科技有限公司"</td><td>✕</td></tr>
+    <tr><td>专家评审推荐</td><td>一等奖 / 二等奖 / 三等奖 / 不推荐</td><td>✕</td></tr>
+    <tr><td>操作</td><td>编辑、删除、上传附件、查看附件</td><td>—</td></tr>
+  </table>
+</div>
+
+<!-- ===== 第2章 ===== -->
+<div class="card">
+  <h2 id="ch2">二、Windows 端 — 环境准备</h2>
+
+  <h3>2.1 设备要求</h3>
+  <table>
+    <tr><td>操作系统</td><td>Windows 10 / 11（64 位）</td></tr>
+    <tr><td>内存</td><td>≥ 4 GB（推荐 8 GB）</td></tr>
+    <tr><td>硬盘</td><td>≥ 1 GB 可用空间</td></tr>
+    <tr><td>网络</td><td>需连接局域网（与平板同一 WiFi）</td></tr>
+  </table>
+
+  <h3>2.2 必需文件清单</h3>
+  <table>
+    <tr><th>文件/文件夹</th><th>说明</th></tr>
+    <tr><td><code>vote-system-windows.jar</code></td><td>后端 JAR 包</td></tr>
+    <tr><td>全部前端文件</td><td>index.html、server.js、options.js、*.js、*.css 等</td></tr>
+    <tr><td><code>vote-backend-windows/</code></td><td>后端源码（仅开发需要）</td></tr>
+  </table>
+
+  <h3>2.3 需要安装的软件</h3>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div class="content">
+      <strong>Java 17</strong>
+      <p>下载地址（任选其一）：</p>
+      <ul>
+        <li>Microsoft OpenJDK 17：<code>https://learn.microsoft.com/zh-cn/java/openjdk/download</code></li>
+        <li>Oracle JDK 17：<code>https://www.oracle.com/java/technologies/downloads/#java17</code></li>
+        <li>Eclipse Temurin：<code>https://adoptium.net/download/</code></li>
+      </ul>
+      <p>推荐下载 <strong>MSI 安装包</strong>，双击安装即可。安装完成后打开"命令提示符"输入 <code>java -version</code>，看到版本号（如 17.0.x）即表示成功。</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div class="content">
+      <strong>Node.js</strong>
+      <p>下载地址：<code>https://nodejs.org/</code>，下载 LTS 版本安装。</p>
+      <p>安装完成后打开"命令提示符"输入 <code>node -v</code>，看到版本号即表示成功。</p>
+    </div>
+  </div>
+
+  <h3>2.4 设备设置调整</h3>
+  <ul>
+    <li><strong>关闭"按电源按钮时睡眠"：</strong>控制面板 → 电源选项 → 选择"从不"</li>
+    <li><strong>关闭自动息屏：</strong>设置 → 系统 → 电源和电池 → 屏幕超时设为"从不"</li>
+    <li><strong>连接局域网：</strong>确保电脑和平板连接同一 WiFi</li>
+  </ul>
+
+  <div class="warn"><strong>⚠ 重要：</strong>电脑不能在使用期间自动休眠或断网，否则平板端将无法访问系统。</div>
+</div>
+
+<!-- ===== 第3章 ===== -->
+<div class="card">
+  <h2 id="ch3">三、Windows 端 — 启动系统</h2>
+
+  <h3>3.1 复制项目到电脑</h3>
+  <p>将整个项目文件夹复制到电脑上（建议放在 <code>C:\vote-system\</code> 或桌面），确保以下文件存在：</p>
+  <ul>
+    <li><code>vote-system-windows.jar</code> — 后端</li>
+    <li><code>server.js</code> — 前端</li>
+    <li><code>index.html</code> — 主页面</li>
+    <li><code>options.js</code> — 配置文件</li>
+  </ul>
+
+  <h3>3.2 启动后端</h3>
+  <p>在项目文件夹中打开 <strong>命令提示符</strong>（在文件夹空白处按住 Shift + 右键 → "在此处打开 PowerShell 窗口"），输入：</p>
+  <pre><code>java -jar vote-system-windows.jar --server.port=7003</code></pre>
+  <p>看到 <code>Started VoteApplication</code> 字样即表示后端启动成功。</p>
+
+  <div class="warn"><strong>⚠ 不要关闭这个黑窗口！</strong>关闭窗口后端服务就会停止，平板将无法访问。</div>
+
+  <h3>3.3 启动前端</h3>
+  <p><strong>另开一个</strong>命令提示符窗口，在项目文件夹中输入：</p>
+  <pre><code>node server.js</code></pre>
+  <p>看到 <code>Frontend: http://localhost:3000</code> 即表示前端启动成功。</p>
+
+  <h3>3.4 验证系统运行</h3>
+  <p>在电脑浏览器中打开 <code>http://localhost:3000</code>，能看到以下内容即表示成功：</p>
+  <ul>
+    <li>页面顶部深蓝色标题栏：国网四川省电力公司科技奖励评审系统</li>
+    <li>搜索栏区域：成果类别搜索框、推荐等级下拉框</li>
+    <li>操作按钮：成果新增、开始投票、导入数据</li>
+    <li>成果数据表格</li>
+  </ul>
+
+  <h3>3.5 获取电脑 IP 地址</h3>
+  <p>打开命令提示符，输入 <code>ipconfig</code>，找到"无线局域网适配器 WLAN"下的 IPv4 地址，如 <code>192.168.1.100</code>。记下这个 IP。</p>
+
+  <h3>3.6 配置 options.js</h3>
+  <p>编辑项目文件夹中的 <code>options.js</code>，确保：</p>
+  <pre><code>window._$base_url = "http://192.168.1.100:7003";  // 改为你的电脑IP</code></pre>
+  <p>修改后无需重启前端，刷新浏览器即可生效。</p>
+
+</div>
+
+<!-- ===== 第4章 ===== -->
+<div class="card">
+  <h2 id="ch4">四、Windows 端 — 配置防火墙</h2>
+
+  <p>如果平板无法访问电脑，通常是 Windows 防火墙拦截了。需放行端口 3000 和 7003。</p>
+
+  <h3>方法一：命令行快速放行（推荐）</h3>
+  <pre><code>netsh advfirewall firewall add rule name="投票系统3000" dir=in action=allow protocol=tcp localport=3000
+netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow protocol=tcp localport=7003</code></pre>
+
+  <h3>方法二：图形界面配置</h3>
+  <ol>
+    <li>打开"控制面板" → "Windows Defender 防火墙" → "高级设置"</li>
+    <li>点击"入站规则" → "新建规则"</li>
+    <li>选择"端口" → "TCP" → "特定本地端口"填入 <code>3000,7003</code></li>
+    <li>"允许连接" → 全部勾选（域/专用/公用）→ 名称填写"投票系统"</li>
+  </ol>
+
+  <div class="tip">如果仍无法访问，可临时关闭 Windows 防火墙测试：设置 → 隐私和安全性 → Windows 安全中心 → 防火墙和网络保护 → 关闭防火墙（测试后记得重新开启）。</div>
+</div>
+
+<!-- ===== 第5章 ===== -->
+<div class="card">
+  <h2 id="ch5">五、安卓平板端 — 环境准备</h2>
+
+  <h3>5.1 设备要求</h3>
+  <table>
+    <tr><td>操作系统</td><td>Android 8.0 及以上</td></tr>
+    <tr><td>屏幕尺寸</td><td>≥ 8 英寸（推荐 10 英寸及以上平板，横屏使用）</td></tr>
+    <tr><td>浏览器</td><td>Chrome / Edge / 系统自带浏览器</td></tr>
+    <tr><td>网络</td><td>需与 Windows 电脑连接同一 WiFi</td></tr>
+  </table>
+
+  <h3>5.2 软件准备</h3>
+  <ol>
+    <li><strong>推荐安装 Chrome 浏览器：</strong>应用商店搜索"Google Chrome"安装</li>
+    <li><strong>安装"全能扫描王"或类似 PDF 应用：</strong>用于评委查看成果 PDF 附件（可选）</li>
+  </ol>
+
+  <h3>5.3 平板网络设置</h3>
+  <ul>
+    <li>进入平板"设置" → "WLAN"，连接与 Windows 电脑同一 WiFi</li>
+    <li>关闭蓝牙和移动数据以省电</li>
+    <li>建议开启"保持 WLAN 在睡眠状态下开启"（设置 → WLAN → 高级）</li>
+  </ul>
+</div>
+
+<!-- ===== 第6章 ===== -->
+<div class="card">
+  <h2 id="ch6">六、安卓平板端 — 安装与配置</h2>
+
+  <h3>6.1 访问系统</h3>
+  <p>打开平板的 Chrome 浏览器，在地址栏输入：</p>
+  <pre><code>http://192.168.1.100:3000</code></pre>
+  <p>（将 <code>192.168.1.100</code> 替换为实际电脑 IP）</p>
+
+  <h3>6.2 创建桌面快捷方式</h3>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div class="content"><p>在 Chrome 中打开系统页面后，点击右上角"⋮"菜单</p></div>
+  </div>
+  <div class="step">
+    <div class="num">2</div>
+    <div class="content"><p>选择"添加到主屏幕"</p></div>
+  </div>
+  <div class="step">
+    <div class="num">3</div>
+    <div class="content"><p>名称改为"评审表决系统"，点击"添加"</p></div>
+  </div>
+  <div class="step">
+    <div class="num">4</div>
+    <div class="content"><p>桌面出现快捷图标后，可以直接点击进入（全屏模式）</p></div>
+  </div>
+
+  <h3>6.3 多台平板同时使用</h3>
+  <p>每台评委的平板都可以同时访问 <code>http://[电脑IP]:3000</code>，互不影响。系统通过 IP 或自定义 voterId 区分不同评委的投票。</p>
+</div>
+
+<!-- ===== 第7章 ===== -->
+<div class="card">
+  <h2 id="ch7">七、系统操作指南</h2>
+
+  <h3>7.1 管理员 — 录入成果</h3>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div class="content">
+      <p><strong>单个新增：</strong>点击"成果新增"按钮，弹出表单填写成果类别、成果名称、推荐单位、专家评审推荐等信息后提交。</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="num">2</div>
+    <div class="content">
+      <p><strong>批量导入：</strong>点击"导入数据"按钮，进入导入页面：</p>
+      <ol>
+        <li>点击"下载模板"获取 Excel 模板</li>
+        <li>按模板格式填写成果信息</li>
+        <li>点击上传区域选择文件或拖拽 Excel</li>
+        <li>点击"开始导入"</li>
+      </ol>
+      <div class="tip">系统会根据<b>成果名称</b>自动去重，重复的数据不会重复导入。</div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="num">3</div>
+    <div class="content">
+      <p><strong>上传附件：</strong>在每条成果的操作列中，点击红色"上传附件"按钮，选择 PDF 文件上传。上传成功后按钮变为蓝色"查看附件"，点击可预览 PDF。</p>
+    </div>
+  </div>
+
+  <h3>7.2 管理员 — 管理成果</h3>
+  <table>
+    <tr><th>操作</th><th>说明</th></tr>
+    <tr><td>☑ 勾选框</td><td>勾选一条或多条成果，顶部出现红色批量删除条</td></tr>
+    <tr><td>编辑</td><td>修改成果信息</td></tr>
+    <tr><td>删除</td><td>删除单条成果</td></tr>
+    <tr><td>批量删除</td><td>勾选多条后点击红色"批量删除"按钮</td></tr>
+    <tr><td>上传附件</td><td>上传 PDF 附件（红色→蓝色）</td></tr>
+    <tr><td>查看附件</td><td>新窗口打开已上传的 PDF</td></tr>
+  </table>
+
+  <h3>7.3 管理员 — 开始投票</h3>
+  <div class="step">
+    <div class="num">1</div>
+    <div class="content"><p>点击"开始投票"按钮，弹出确认对话框。选择是否为第一轮投票。</p></div>
+  </div>
+  <div class="step">
+    <div class="num">2</div>
+    <div class="content"><p>开始后，所有状态为"已提交"的成果进入投票池。</p></div>
+  </div>
+  <div class="step">
+    <div class="num">3</div>
+    <div class="content"><p>将投票页面地址（<code>http:// [电脑IP]:3000/#/vote</code>）发送给各位评委。</p></div>
+  </div>
+
+  <h3>7.4 评委 — 投票</h3>
+  <div class="step">
+    <div class="num">1</div>
+    <div class="content"><p>在平板浏览器打开投票地址</p></div>
+  </div>
+  <div class="step">
+    <div class="num">2</div>
+    <div class="content"><p>填写投票人姓名（或系统自动获取 IP）</p></div>
+  </div>
+  <div class="step">
+    <div class="num">3</div>
+    <div class="content"><p>逐条成果选择投票选项：<strong>同意 / 不同意 / 弃权</strong></p></div>
+  </div>
+  <div class="step">
+    <div class="num">4</div>
+    <div class="content"><p>选择推荐等级：<strong>一等奖 / 二等奖 / 三等奖 / 不推荐</strong></p></div>
+  </div>
+  <div class="step">
+    <div class="num">5</div>
+    <div class="content"><p>全部完成后点击提交。每人每轮只能投票一次（同一成果不可重复投票）。</p></div>
+  </div>
+
+  <h3>7.5 管理员 — 结束投票 & 查看结果</h3>
+  <div class="step">
+    <div class="num">1</div>
+    <div class="content"><p>所有评委投票完成后，管理员点击"结束投票"。</p></div>
+  </div>
+  <div class="step">
+    <div class="num">2</div>
+    <div class="content"><p>点击导航栏的"最终结果展示"，查看每项成果的投票统计：同意票数、不同意票数、弃权票数、同意占比。</p></div>
+  </div>
+  <div class="step">
+    <div class="num">3</div>
+    <div class="content"><p>确认无误后，点击"一键发布"将结果公开发布。</p></div>
+  </div>
+  <div class="step">
+    <div class="num">4</div>
+    <div class="content"><p>可点击"导出统计"下载 Excel 报表。</p></div>
+  </div>
+
+  <h3>7.6 重置投票</h3>
+  <p>如果需要重新开始投票，点击"重置"按钮。该操作会<strong>删除当前轮次的所有投票记录和结果</strong>。已发布的结果需要先撤回发布才能重置。</p>
+  <div class="danger"><strong>⚠ 警告：</strong>重置操作不可逆，请确认委员会一致同意后再执行。</div>
+</div>
+
+<!-- ===== 第8章 ===== -->
+<div class="card">
+  <h2 id="ch8">八、常见问题</h2>
+
+  <h3>Q1：平板打不开系统页面（显示"无法连接"）</h3>
+  <p><strong>可能原因 & 解决：</strong></p>
+  <ul>
+    <li>电脑和平板不在同一 WiFi → 检查两台设备的 WiFi 连接</li>
+    <li>电脑防火墙拦截 → 参考第四章配置防火墙</li>
+    <li>电脑 IP 地址变了 → 重新运行 <code>ipconfig</code> 获取新 IP</li>
+    <li>后端或前端没有启动 → 检查两个黑窗口是否都在运行</li>
+  </ul>
+
+  <h3>Q2：点击"导入数据"没有跳转</h3>
+  <p>尝试直接在浏览器输入 <code>http:// [电脑IP]:3000/import.html</code> 访问导入页面。</p>
+
+  <h3>Q3：批量导入时提示"成果名称已存在"</h3>
+  <p>这是正常的去重提示。同名的成果会自动跳过，不会重复导入，不计入错误。</p>
+
+  <h3>Q4：表格表头和数据没有对齐</h3>
+  <p>刷新页面即可。系统每 2 秒会自动重新对齐，如果仍然错位，按 <code>Ctrl+Shift+R</code> 强制刷新。</p>
+
+  <h3>Q5：后端 JAR 启动失败</h3>
+  <ul>
+    <li>检查 Java 是否已安装：<code>java -version</code></li>
+    <li>检查端口是否被占用：<code>netstat -ano | findstr 7003</code>，如有占用可换端口 <code>--server.port=7004</code></li>
+    <li>重置数据库：删除 <code>%USERPROFILE%\vote_db.mv.db</code> 文件后重启</li>
+  </ul>
+
+  <h3>Q6：PDF 附件上传失败</h3>
+  <ul>
+    <li>确保文件格式为 <code>.pdf</code></li>
+    <li>文件大小不宜过大（建议 ≤ 10MB）</li>
+    <li>检查后端是否正常运行</li>
+  </ul>
+</div>
+
+<!-- ===== 第9章 ===== -->
+<div class="card">
+  <h2 id="ch9">九、附录 — 网页地址一览</h2>
+
+  <table>
+    <tr><th>页面</th><th>地址（电脑端）</th><th>地址（平板端）</th><th>使用者</th></tr>
+    <tr><td>成果管理首页</td><td><code>http://localhost:3000</code></td><td><code>http://[IP]:3000</code></td><td>管理员</td></tr>
+    <tr><td>批量导入</td><td><code>http://localhost:3000/import.html</code></td><td><code>http://[IP]:3000/import.html</code></td><td>管理员</td></tr>
+    <tr><td>评审表决</td><td><code>http://localhost:3000/#/vote</code></td><td><code>http://[IP]:3000/#/vote</code></td><td>评委</td></tr>
+    <tr><td>结果展示</td><td><code>http://localhost:3000/#/result-show</code></td><td><code>http://[IP]:3000/#/result-show</code></td><td>管理员</td></tr>
+  </table>
+
+  <div class="tip">
+    <strong>提示：</strong>[IP] 需替换为 Windows 电脑的实际 IP 地址（如 192.168.1.100）。<br>
+    平板端可以直接将常用页面添加到桌面快捷方式，方便评委快速进入。
+  </div>
+
+  <h3>常用命令速查</h3>
+  <pre><code># 启动后端
+java -jar vote-system-windows.jar --server.port=7003
+
+# 启动前端
+node server.js
+
+# 查看电脑 IP
+ipconfig
+
+# 防火墙放行端口
+netsh advfirewall firewall add rule name="投票系统" dir=in action=allow protocol=tcp localport=3000,7003
+
+# 查看端口占用
+netstat -ano | findstr 7003
+
+# 停止后端（在黑窗口按）
+Ctrl + C
+
+# 停止前端（在黑窗口按）
+Ctrl + C
+
+# 强制结束所有 Java 进程
+taskkill /F /IM java.exe</code></pre>
+
+  <h3>数据备份</h3>
+  <p>数据库文件位于：<code>%USERPROFILE%\vote_db.mv.db</code>（即 <code>C:\Users\[用户名]\vote_db.mv.db</code>）</p>
+  <p>备份方法：复制此文件到安全位置。恢复时覆盖回原位即可。</p>
+  <div class="warn"><strong>⚠ 注意：</strong>备份和恢复前务必先停止后端服务。</div>
+</div>
+
+<div style="text-align:center;color:#888;font-size:13px;padding:20px 0;">
+  文档版本 1.0 · 最后更新 2026-06-28<br>
+  系统版本：vote-system 1.0.0
+</div>
+
+</div>
+</body>
+</html>
