@@ -10,15 +10,22 @@ const MAX_BODY_SIZE = 50 * 1024 * 1024; // 50MB max request body
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
-  '.js': 'application/javascript',
-  '.css': 'text/css',
+  '.js':   'application/javascript',
+  '.css':  'text/css',
   '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.svg': 'image/svg+xml',
+  '.png':  'image/png',
+  '.jpg':  'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.svg':  'image/svg+xml',
+  '.ico':  'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2':'font/woff2',
+  '.ttf':  'font/ttf',
+  '.pdf':  'application/pdf',
+  '.map':  'application/json',
 };
 
-// [P0修复] 代理所有后端API路径（与Nginx部署配置保持一致）
+// [P0修复] 代理所有后端API路径
 const API_PATHS = ['/api/', '/achievement/', '/voteRound/', '/voteResult/'];
 
 function isApiPath(url) {
@@ -26,10 +33,13 @@ function isApiPath(url) {
 }
 
 function proxy(req, res) {
-  // /api/* 去掉前缀，其他路径原样转发
-  const targetPath = req.url.startsWith('/api/')
-    ? req.url.replace(/^\/api/, '') || '/'
-    : req.url;
+  // /api/files/ 不剥离前缀（后端 WebConfig 映射为 /api/files/**）
+  // 其余 /api/ 路径剥离前缀后转发
+  const targetPath = req.url.startsWith('/api/files/')
+    ? req.url
+    : req.url.startsWith('/api/')
+      ? req.url.replace(/^\/api/, '') || '/'
+      : req.url;
 
   const options = {
     hostname: BACKEND_HOST,

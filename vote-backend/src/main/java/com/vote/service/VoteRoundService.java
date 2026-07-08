@@ -116,16 +116,19 @@ public class VoteRoundService {
     /**
      * 重置投票（清空当前轮次数据）
      * [P2修复] 增加发布状态检查，防止误删已发布结果
+     * [P1修复] 阻止在投票进行中重置
      */
     @Transactional
     public String resetVote() {
         VoteRound running = getCurrentRound();
-        if (running == null) {
-            // 也允许重置最近一轮已结束的
-            LambdaQueryWrapper<VoteRound> w = new LambdaQueryWrapper<>();
-            w.orderByDesc(VoteRound::getId).last("LIMIT 1");
-            running = voteRoundMapper.selectOne(w);
+        if (running != null) {
+            throw new IllegalArgumentException("当前投票正在运行中，请先结束投票再重置");
         }
+
+        // 找最近一轮已结束的
+        LambdaQueryWrapper<VoteRound> w = new LambdaQueryWrapper<>();
+        w.orderByDesc(VoteRound::getId).last("LIMIT 1");
+        running = voteRoundMapper.selectOne(w);
         if (running == null) {
             return "没有可重置的投票轮次";
         }
@@ -227,7 +230,8 @@ public class VoteRoundService {
 
     /**
      * 获取当前轮次已提交的委员人数
-     * [P0修复] total 返回应参与投票的委员总数，而非等于 submitNum
+     * [P0修复] total 返回应参与投票的委员总数
+     * [P1修复] 使用 SQL COUNT(DISTINCT) 避免全表加载内存
      */
     public Map<String, Object> getRoundSubmitNum(Long roundId) {
         Long actualRoundId = roundId;
@@ -242,18 +246,20 @@ public class VoteRoundService {
             actualRoundId = current.getId();
         }
 
-        // 统计已提交投票的委员人数（按 voterId 去重）
+        // [P1修复] 使用 SQL COUNT(DISTINCT voter_id) 避免全表加载
         LambdaQueryWrapper<VoteRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(VoteRecord::getRoundId, actualRoundId)
-               .select(VoteRecord::getVoterId);
-        List<VoteRecord> records = voteRecordMapper.selectList(wrapper);
-        long submitNum = records.stream()
-                .map(VoteRecord::getVoterId)
-                .filter(id -> id != null && !id.isEmpty())
-                .distinct()
-                .count();
+               .select("COUNT(DISTINCT voter_id) AS cnt");
+        // MyBatis-Plus 的 selectCount 不支持聚合函数，改用 selectMaps
+        List<Map<String, Object>> maps = voteRecordMapper.selectMaps(wrapper);
+        long submitNum = 0;
+        if (maps != null && !maps.isEmpty()) {
+            Object cnt = maps.get(0).get("cnt");
+            if (cnt != null) {
+                submitNum = Long.parseLong(cnt.toString());
+            }
+        }
 
-        // [P0修复] total = 应参与投票的委员总数
         long total = getTotalVoters();
 
         Map<String, Object> result = new HashMap<>();

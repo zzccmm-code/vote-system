@@ -9,7 +9,7 @@ spring:
   datasource:
     url: jdbc:h2:file:./data/vote_db;MODE=MySQL;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE;DATABASE_TO_LOWER=TRUE
     username: sa
-    password:
+    password: vote_h2_2024
     driver-class-name: org.h2.Driver
 
   # 首次启动自动执行建表脚本和初始数据
@@ -19,13 +19,13 @@ spring:
       schema-locations: classpath:schema-h2.sql
       data-locations: classpath:data-h2.sql
 
-  # H2 Web控制台（可选，用于查看数据，访问地址 http://localhost:7003/h2-console）
+  # H2 Web控制台（仅限本机访问，生产环境建议关闭 enabled: false）
   h2:
     console:
-      enabled: true
+      enabled: false
       path: /h2-console
       settings:
-        web-allow-others: true
+        web-allow-others: false
 
   servlet:
     multipart:

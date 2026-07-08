@@ -68,15 +68,25 @@ public class VoteResultService {
     }
 
     /**
-     * 发布所有投票结果（一键发布）
+     * 发布当前轮次的投票结果（一键发布）
+     * [P1修复] 限制只发布当前进行中/最近结束的轮次，防止误发布历史数据
      */
     public String push() {
+        VoteRound currentRound = voteRoundMapper.selectOne(
+            new LambdaQueryWrapper<VoteRound>()
+                .orderByDesc(VoteRound::getId)
+                .last("LIMIT 1"));
+        if (currentRound == null) {
+            throw new IllegalArgumentException("没有可发布的投票轮次");
+        }
+
         VoteResult update = new VoteResult();
         update.setIsPublished(1);
         LambdaQueryWrapper<VoteResult> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(VoteResult::getIsPublished, 0);
+        wrapper.eq(VoteResult::getRoundId, currentRound.getId())
+               .eq(VoteResult::getIsPublished, 0);
         voteResultMapper.update(update, wrapper);
-        return "结果已发布";
+        return "第" + currentRound.getRoundNum() + "轮结果已发布";
     }
 
     /**
@@ -150,13 +160,6 @@ public class VoteResultService {
     }
 
     /**
-     * 附加分页（二次投票结果等）
-     */
-    public PageResult<VoteResultVO> additionalPage(VoteResultReq req) {
-        return this.page(req);
-    }
-
-    /**
      * 导出统计 Excel
      */
     public ResponseEntity<byte[]> exportStatistics(VoteResultReq req) throws IOException {
@@ -207,9 +210,11 @@ public class VoteResultService {
         workbook.write(baos);
         workbook.close();
 
-        String filename = URLEncoder.encode("投票统计结果.xlsx", StandardCharsets.UTF_8);
+        String filename = "投票统计结果.xlsx";
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + URLEncoder.encode(filename, StandardCharsets.UTF_8)
+                                + "\"; filename*=UTF-8''" + URLEncoder.encode(filename, StandardCharsets.UTF_8))
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(baos.toByteArray());
     }

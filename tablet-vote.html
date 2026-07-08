@@ -332,8 +332,12 @@ body {
 <script>
 // ==================== 全局状态 ====================
 var API = (function() {
-  var u = (window._$base_url || 'http://localhost:7003').replace(/\/+$/, '');
-  return function(path) { return u + path; };
+  // 平板端优先使用相对路径（通过Node代理），回退到直连
+  var b = window._$base_url;
+  if (!b || b === 'http://localhost:7003') {
+    return function(path) { return path; };
+  }
+  return function(path) { return b.replace(/\/+$/, '') + path; };
 })();
 
 var state = {
@@ -417,7 +421,7 @@ function renderCurrent() {
 
   if (detail.fileSrc) {
     $('cardAttach').classList.remove('hidden');
-    $('cardAttach').href = API('/api/files/' + encodeURIComponent(detail.fileSrc));
+    $('cardAttach').href = '/api/files/' + encodeURIComponent(detail.fileSrc);
   } else {
     $('cardAttach').classList.add('hidden');
   }
