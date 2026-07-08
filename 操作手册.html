@@ -53,11 +53,11 @@
     <li><a href="#ch2">Windows 端 — 环境准备</a></li>
     <li><a href="#ch3">Windows 端 — 启动系统</a></li>
     <li><a href="#ch4">Windows 端 — 配置防火墙</a></li>
-    <li><a href="#ch5">安卓平板端 — 环境准备</a></li>
-    <li><a href="#ch6">安卓平板端 — 安装与配置</a></li>
+    <li><a href="#ch5">安卓平板端 — 环境与配置</a></li>
+    <li><a href="#ch6">鸿蒙平板端 — 环境与配置</a></li>
     <li><a href="#ch7">系统操作指南</a></li>
     <li><a href="#ch8">常见问题</a></li>
-    <li><a href="#ch9">附录 — 网页地址一览</a></li>
+    <li><a href="#ch9">附录 — 地址一览 & 命令速查</a></li>
   </ol>
 </div>
 
@@ -229,7 +229,7 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
 
 <!-- ===== 第5章 ===== -->
 <div class="card">
-  <h2 id="ch5">五、安卓平板端 — 环境准备</h2>
+  <h2 id="ch5">五、安卓平板端 — 环境与配置</h2>
 
   <h3>5.1 设备要求</h3>
   <table>
@@ -242,47 +242,108 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
   <h3>5.2 软件准备</h3>
   <ol>
     <li><strong>推荐安装 Chrome 浏览器：</strong>应用商店搜索"Google Chrome"安装</li>
-    <li><strong>安装"全能扫描王"或类似 PDF 应用：</strong>用于评委查看成果 PDF 附件（可选）</li>
+    <li><strong>PDF 阅读器：</strong>用于查看成果附件（可选，推荐 WPS Office）</li>
   </ol>
 
   <h3>5.3 平板网络设置</h3>
   <ul>
-    <li>进入平板"设置" → "WLAN"，连接与 Windows 电脑同一 WiFi</li>
+    <li>"设置" → "WLAN"，连接与 Windows 电脑同一 WiFi</li>
     <li>关闭蓝牙和移动数据以省电</li>
-    <li>建议开启"保持 WLAN 在睡眠状态下开启"（设置 → WLAN → 高级）</li>
+    <li>建议开启"保持 WLAN 在睡眠状态下开启"</li>
   </ul>
+
+  <h3>5.4 访问系统</h3>
+  <p>打开 Chrome 浏览器，输入：</p>
+  <pre><code>http://192.168.1.100:3000/tablet-vote.html</code></pre>
+  <p>（将 IP 替换为实际电脑 IP）</p>
+
+  <h3>5.5 创建桌面快捷方式</h3>
+  <div class="step"><div class="num">1</div><div class="content"><p>打开系统页面后，点击右上角"⋮"菜单</p></div></div>
+  <div class="step"><div class="num">2</div><div class="content"><p>选择"添加到主屏幕"</p></div></div>
+  <div class="step"><div class="num">3</div><div class="content"><p>命名为"评审表决"，点击添加</p></div></div>
+  <div class="step"><div class="num">4</div><div class="content"><p>点击桌面图标即可全屏进入投票</p></div></div>
+
+  <div class="tip">支持同时多台平板访问，互不影响。</div>
 </div>
 
-<!-- ===== 第6章 ===== -->
+<!-- ===== 第6章 鸿蒙平板 ===== -->
 <div class="card">
-  <h2 id="ch6">六、安卓平板端 — 安装与配置</h2>
+  <h2 id="ch6">六、鸿蒙平板端 — 环境与配置</h2>
 
-  <h3>6.1 访问系统</h3>
-  <p>打开平板的 Chrome 浏览器，在地址栏输入：</p>
-  <pre><code>http://192.168.1.100:3000</code></pre>
-  <p>（将 <code>192.168.1.100</code> 替换为实际电脑 IP）</p>
+  <div class="tip"><strong>本系统为鸿蒙平板提供了专用投票页面 <code>tablet-vote.html</code></strong>，无需安装 App，通过浏览器即可使用。支持 PWA 安装到桌面，获得类原生应用体验。</div>
 
-  <h3>6.2 创建桌面快捷方式</h3>
+  <h3>6.1 设备要求</h3>
+  <table>
+    <tr><td>操作系统</td><td>HarmonyOS 3.0 及以上</td></tr>
+    <tr><td>屏幕尺寸</td><td>≥ 10 英寸平板（横屏使用，推荐 MatePad 系列）</td></tr>
+    <tr><td>浏览器</td><td>系统自带浏览器 / 华为浏览器 / Chrome</td></tr>
+    <tr><td>网络</td><td>需与 Windows 电脑连接同一 WiFi</td></tr>
+  </table>
+
+  <h3>6.2 软件准备</h3>
+  <ol>
+    <li><strong>无需额外安装软件：</strong>使用平板自带的"浏览器"或"华为浏览器"即可</li>
+    <li><strong>PDF 阅读：</strong>HarmonyOS 系统内置 PDF 能力，点击附件链接自动打开</li>
+  </ol>
+
+  <h3>6.3 访问投票页面</h3>
+  <p>打开浏览器，在地址栏输入投票专用地址：</p>
+  <pre><code>http://192.168.1.100:3000/tablet-vote.html</code></pre>
+  <p>将 <code>192.168.1.100</code> 替换为实际电脑 IP 地址。</p>
+
+  <h3>6.4 安装到桌面（PWA）</h3>
+  <p>投票页面支持 PWA 渐进式安装，添加到桌面后可以像原生 App 一样使用（全屏、无浏览器边框）。</p>
 
   <div class="step">
     <div class="num">1</div>
-    <div class="content"><p>在 Chrome 中打开系统页面后，点击右上角"⋮"菜单</p></div>
+    <div class="content">
+      <p>在华为浏览器中打开 <code>http://[IP]:3000/tablet-vote.html</code></p>
+    </div>
   </div>
   <div class="step">
     <div class="num">2</div>
-    <div class="content"><p>选择"添加到主屏幕"</p></div>
+    <div class="content">
+      <p>点击浏览器底部工具栏的"⋮"或"更多"按钮</p>
+    </div>
   </div>
   <div class="step">
     <div class="num">3</div>
-    <div class="content"><p>名称改为"评审表决系统"，点击"添加"</p></div>
+    <div class="content">
+      <p>选择"添加到桌面"（HarmonyOS 3/4）或"添加至桌面"（HarmonyOS NEXT）</p>
+    </div>
   </div>
   <div class="step">
     <div class="num">4</div>
-    <div class="content"><p>桌面出现快捷图标后，可以直接点击进入（全屏模式）</p></div>
+    <div class="content">
+      <p>输入名称"评审表决"，点击"添加"</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="num">5</div>
+    <div class="content">
+      <p>桌面出现图标后，点击图标即可进入全屏投票模式</p>
+    </div>
   </div>
 
-  <h3>6.3 多台平板同时使用</h3>
-  <p>每台评委的平板都可以同时访问 <code>http://[电脑IP]:3000</code>，互不影响。系统通过 IP 或自定义 voterId 区分不同评委的投票。</p>
+  <h3>6.5 投票操作说明</h3>
+  <p>鸿蒙平板投票页面专为大屏触控优化：</p>
+  <table>
+    <tr><th>操作</th><th>方式</th></tr>
+    <tr><td>切换成果</td><td>左右滑动屏幕 / 点击底部"上一项""下一项"按钮 / 键盘 ← → 键</td></tr>
+    <tr><td>投票</td><td>点击"同意""不同意""弃权"大按钮</td></tr>
+    <tr><td>选择等级</td><td>点击"一等奖""二等奖""三等奖""不推荐"按钮</td></tr>
+    <tr><td>提交投票</td><td>全部投票完成后，点击底部绿色"提交投票"按钮</td></tr>
+    <tr><td>查看摘要</td><td>点击"查看摘要"查看所有成果的投票状态</td></tr>
+    <tr><td>键盘快捷键</td><td>1=同意 2=不同意 3=弃权，← → 切换成果</td></tr>
+  </table>
+
+  <h3>6.6 HarmonyOS NEXT 特别说明</h3>
+  <p>HarmonyOS NEXT (5.0) 可使用系统自带浏览器正常访问。如使用华为浏览器遇到 PWA 安装选项不可用，可直接将页面添加到书签或使用"添加到桌面"功能。</p>
+
+  <div class="tip">
+    <strong>多台鸿蒙平板同时使用：</strong>与安卓平板相同，多台设备可同时访问投票页面，互不影响。<br>
+    <strong>适配说明：</strong>投票页面采用深色科技风设计，适配 HarmonyOS 的沉浸式状态栏和横屏布局，主卡片区域支持触控滚动。
+  </div>
 </div>
 
 <!-- ===== 第7章 ===== -->
@@ -425,6 +486,12 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
 
   <h3>Q7：点击上传附件提示"先切换到成果管理页面"</h3>
   <p>刷新页面等待 3-5 秒让数据加载完毕后再点击。如果仍提示，强制刷新 <code>Ctrl+Shift+R</code>。</p>
+
+  <h3>Q8：鸿蒙平板 PWA 安装后打开是白屏</h3>
+  <p>PWA 图标可能缓存了旧地址。长按图标删除，重新在浏览器中打开 <code>http://[IP]:3000/tablet-vote.html</code> 后再次"添加到桌面"。</p>
+
+  <h3>Q9：平板端投票页面提示"投票未开始"</h3>
+  <p>请管理员先在 Windows 管理端点击"开始投票"。只有投票状态为"进行中"时平板端才能投票。</p>
 </div>
 
 <!-- ===== 第9章 ===== -->
@@ -435,7 +502,8 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
     <tr><th>页面</th><th>地址（电脑端）</th><th>地址（平板端）</th><th>使用者</th></tr>
     <tr><td>成果管理首页</td><td><code>http://localhost:3000</code></td><td><code>http://[IP]:3000</code></td><td>管理员</td></tr>
     <tr><td>批量导入</td><td><code>http://localhost:3000/import.html</code></td><td><code>http://[IP]:3000/import.html</code></td><td>管理员</td></tr>
-    <tr><td>评审表决</td><td><code>http://localhost:3000/#/vote</code></td><td><code>http://[IP]:3000/#/vote</code></td><td>评委</td></tr>
+    <tr><td>平板投票端（推荐）</td><td><code>http://localhost:3000/tablet-vote.html</code></td><td><code>http://[IP]:3000/tablet-vote.html</code></td><td>评委（安卓/鸿蒙）</td></tr>
+    <tr><td>评审表决（旧版）</td><td><code>http://localhost:3000/#/vote</code></td><td><code>http://[IP]:3000/#/vote</code></td><td>评委</td></tr>
     <tr><td>结果展示</td><td><code>http://localhost:3000/#/result-show</code></td><td><code>http://[IP]:3000/#/result-show</code></td><td>管理员</td></tr>
   </table>
 
@@ -486,8 +554,8 @@ del %USERPROFILE%\vote_db.mv.db</code></pre>
 </div>
 
 <div style="text-align:center;color:#888;font-size:13px;padding:20px 0;">
-  文档版本 1.1 · 最后更新 2026-06-28<br>
-  系统版本：vote-system 1.0.0
+  文档版本 1.2 · 最后更新 2026-07-08<br>
+  系统版本：vote-system 1.0.0 · 新增鸿蒙平板端 table-vote.html
 </div>
 
 </div>

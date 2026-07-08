@@ -1,0 +1,18 @@
+{
+  "name": "科技奖评审表决 - 平板端",
+  "short_name": "评审表决",
+  "description": "国网四川省电力公司科技奖励评审系统平板投票端",
+  "start_url": "/tablet-vote.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "theme_color": "#0a1628",
+  "background_color": "#0d2137",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%230a1628'/><text x='96' y='110' text-anchor='middle' font-size='72' fill='%23e3f2fd'>✓</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

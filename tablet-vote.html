@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>评审表决 - 平板端</title>
+<link rel="manifest" href="manifest.json">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, "PingFang SC", "HarmonyOS Sans", "Microsoft YaHei", sans-serif;
+  background: linear-gradient(135deg, #0a1628 0%, #0d2137 50%, #0f2b4a 100%);
+  color: #e3f2fd;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+/* ===== 顶部栏 ===== */
+.top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid rgba(30,136,229,0.3);
+}
+.top-bar h1 { font-size: 20px; font-weight: 600; letter-spacing: 1px; text-shadow: 0 0 12px rgba(30,136,229,0.3); }
+.top-bar .badge {
+  background: rgba(30,136,229,0.2); border: 1px solid rgba(30,136,229,0.4);
+  border-radius: 6px; padding: 4px 12px; font-size: 13px; color: #90caf9;
+}
+.top-bar .status-dot {
+  width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px;
+}
+.top-bar .status-dot.active { background: #4caf50; box-shadow: 0 0 6px #4caf50; }
+.top-bar .status-dot.ended { background: #f44336; box-shadow: 0 0 6px #f44336; }
+
+/* ===== 进度条 ===== */
+.progress-wrap {
+  padding: 10px 24px 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.progress-bar {
+  flex: 1; height: 6px; background: rgba(255,255,255,0.1);
+  border-radius: 3px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, #42a5f5, #1e88e5);
+  border-radius: 3px; transition: width 0.3s;
+}
+.progress-text { font-size: 13px; color: #90caf9; white-space: nowrap; }
+
+/* ===== 主体内容 ===== */
+.main-content {
+  display: flex; flex-direction: column;
+  height: calc(100vh - 160px);
+  height: calc(100dvh - 160px);
+  padding: 0 24px;
+}
+
+/* ===== 成果展示卡片 ===== */
+.achievement-card {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(30,136,229,0.2);
+  border-radius: 16px;
+  padding: 28px 32px;
+  display: flex; flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.card-label {
+  font-size: 12px; color: #90caf9; text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.card-title {
+  font-size: 22px; font-weight: 700; line-height: 1.4; margin-bottom: 12px;
+  word-break: break-all;
+}
+.card-meta {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+}
+.card-meta .tag {
+  background: rgba(30,136,229,0.15); border: 1px solid rgba(30,136,229,0.3);
+  border-radius: 6px; padding: 4px 12px; font-size: 13px; color: #bbdefb;
+}
+.card-meta .tag.level {
+  background: rgba(76,175,80,0.15); border-color: rgba(76,175,80,0.3); color: #a5d6a7;
+}
+
+.attachment-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px; padding: 8px 16px; color: #90caf9; font-size: 14px;
+  text-decoration: none; margin-bottom: 16px; transition: all 0.2s;
+}
+.attachment-link:hover, .attachment-link:active { background: rgba(30,136,229,0.2); }
+
+/* ===== 投票选项按钮 ===== */
+.vote-section { margin-top: auto; padding-top: 20px; }
+.vote-section h3 { font-size: 14px; font-weight: 500; color: #90caf9; margin-bottom: 12px; }
+
+.vote-options {
+  display: flex; gap: 12px; margin-bottom: 16px;
+}
+.vote-btn {
+  flex: 1; padding: 16px 12px;
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+  color: #b0bec5;
+  font-size: 16px; font-weight: 600;
+  cursor: pointer; text-align: center;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.vote-btn:active { transform: scale(0.96); }
+.vote-btn.selected-agree { background: rgba(76,175,80,0.25); border-color: #4caf50; color: #a5d6a7; }
+.vote-btn.selected-disagree { background: rgba(244,67,54,0.25); border-color: #f44336; color: #ef9a9a; }
+.vote-btn.selected-abstain { background: rgba(255,152,0,0.25); border-color: #ff9800; color: #ffcc80; }
+
+/* ===== 等级选择 ===== */
+.level-options {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.level-btn {
+  padding: 10px 16px;
+  border: 2px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  color: #90caf9;
+  font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.level-btn:active { transform: scale(0.95); }
+.level-btn.selected {
+  background: rgba(30,136,229,0.3); border-color: #1e88e5; color: #e3f2fd;
+}
+
+/* ===== 底部导航 ===== */
+.nav-bar {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  padding: 14px 24px;
+}
+.nav-btn {
+  padding: 12px 28px;
+  border: 1px solid rgba(30,136,229,0.3);
+  border-radius: 10px;
+  background: rgba(30,136,229,0.1);
+  color: #90caf9;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-btn:active { background: rgba(30,136,229,0.25); }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+.submit-btn {
+  padding: 12px 32px;
+  border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #43a047, #66bb6a);
+  color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 1px;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(76,175,80,0.3);
+}
+.submit-btn:active { transform: scale(0.96); }
+.submit-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+/* ===== 初始登录区域 ===== */
+.login-screen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 100vh; min-height: 100dvh; padding: 32px;
+}
+.login-card {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(30,136,229,0.2);
+  border-radius: 20px; padding: 40px 36px; width: 100%; max-width: 480px;
+  text-align: center;
+}
+.login-card h2 { font-size: 24px; margin-bottom: 8px; }
+.login-card p { color: #90caf9; font-size: 14px; margin-bottom: 28px; }
+.login-card label { display: block; text-align: left; font-size: 13px; color: #90caf9; margin-bottom: 6px; }
+.login-card input {
+  width: 100%; padding: 14px 16px; border-radius: 10px;
+  border: 2px solid rgba(30,136,229,0.3); background: rgba(0,0,0,0.3);
+  color: #e3f2fd; font-size: 18px; outline: none; margin-bottom: 24px;
+  transition: border-color 0.2s;
+}
+.login-card input:focus { border-color: #1e88e5; }
+.login-card button {
+  width: 100%; padding: 14px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, #1e88e5, #42a5f5);
+  color: #fff; font-size: 18px; font-weight: 700; cursor: pointer;
+  transition: all 0.2s;
+}
+.login-card button:active { transform: scale(0.97); }
+.login-card button:disabled { opacity: 0.5; }
+
+/* ===== 提交确认 ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center; z-index: 999;
+}
+.modal-box {
+  background: #0d2137; border: 1px solid rgba(30,136,229,0.3);
+  border-radius: 16px; padding: 32px; max-width: 420px; width: 90%;
+  text-align: center;
+}
+.modal-box h2 { font-size: 20px; margin-bottom: 12px; }
+.modal-box p { color: #90caf9; font-size: 14px; margin-bottom: 24px; }
+.modal-actions { display: flex; gap: 12px; justify-content: center; }
+.modal-actions button {
+  padding: 10px 24px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.modal-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #b0bec5; }
+.modal-confirm { background: #43a047; border: none; color: #fff; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  z-index: 9999; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+}
+.toast.show { opacity: 1; }
+.toast.success { background: #43a047; color: #fff; }
+.toast.error { background: #e53935; color: #fff; }
+.toast.info { background: #1e88e5; color: #fff; }
+
+/* hidden */
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- ========== 登录界面 ========== -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <h2>评审表决系统</h2>
+    <p>请输入您的姓名进入投票</p>
+    <label for="voterName">投票人姓名</label>
+    <input type="text" id="voterName" placeholder="请输入姓名" autocomplete="name" maxlength="20">
+    <button id="loginBtn" onclick="doLogin()">进入投票</button>
+  </div>
+</div>
+
+<!-- ========== 投票主界面 ========== -->
+<div id="voteScreen" class="hidden" style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;">
+  <!-- 顶部栏 -->
+  <div class="top-bar">
+    <h1>评审表决</h1>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="badge" id="roundBadge"></div>
+      <div class="badge" id="voterBadge"></div>
+    </div>
+  </div>
+
+  <!-- 进度 -->
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-text" id="progressText">0 / 0</div>
+  </div>
+
+  <!-- 主体 -->
+  <div class="main-content" id="mainContent">
+    <div class="achievement-card" id="achievementCard">
+      <div class="card-label" id="cardCategory"></div>
+      <div class="card-title" id="cardName"></div>
+      <div class="card-meta">
+        <span class="tag" id="cardUnit"></span>
+        <span class="tag level" id="cardLevel"></span>
+      </div>
+      <a class="attachment-link hidden" id="cardAttach" href="#" target="_blank">📎 查看附件</a>
+
+      <div class="vote-section">
+        <h3>投票选项</h3>
+        <div class="vote-options">
+          <button class="vote-btn" id="btnAgree" onclick="setVote('agree')">✓ 同意</button>
+          <button class="vote-btn" id="btnDisagree" onclick="setVote('disagree')">✗ 不同意</button>
+          <button class="vote-btn" id="btnAbstain" onclick="setVote('abstain')">— 弃权</button>
+        </div>
+
+        <h3>推荐等级</h3>
+        <div class="level-options">
+          <button class="level-btn" data-level="一等奖" onclick="setLevel(this)">一等奖</button>
+          <button class="level-btn" data-level="二等奖" onclick="setLevel(this)">二等奖</button>
+          <button class="level-btn" data-level="三等奖" onclick="setLevel(this)">三等奖</button>
+          <button class="level-btn" data-level="不推荐" onclick="setLevel(this)">不推荐</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部导航 -->
+  <div class="nav-bar">
+    <button class="nav-btn" id="btnPrev" onclick="prevAchievement()">← 上一项</button>
+    <button class="nav-btn" id="btnNext" onclick="nextAchievement()">下一项 →</button>
+    <button class="submit-btn" id="btnSubmit" onclick="confirmSubmit()">提交投票</button>
+    <button class="nav-btn" id="btnSummary" onclick="showSummary()">查看摘要</button>
+  </div>
+</div>
+
+<!-- ========== 确认弹窗 ========== -->
+<div class="modal-overlay hidden" id="confirmModal">
+  <div class="modal-box">
+    <h2>确认提交投票</h2>
+    <p id="confirmMsg"></p>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="hideModal()">继续投票</button>
+      <button class="modal-confirm" id="confirmBtn" onclick="doSubmit()">确认提交</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 摘要弹窗 ========== -->
+<div class="modal-overlay hidden" id="summaryModal">
+  <div class="modal-box" style="max-width:560px;max-height:70vh;overflow-y:auto;">
+    <h2 style="margin-bottom:16px;">投票摘要</h2>
+    <div id="summaryList" style="text-align:left;font-size:14px;line-height:2;max-height:50vh;overflow-y:auto;"></div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="modal-cancel" onclick="hideModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== 全局状态 ====================
+var API = (function() {
+  var u = (window._$base_url || 'http://localhost:7003').replace(/\/+$/, '');
+  return function(path) { return u + path; };
+})();
+
+var state = {
+  voterName: '',
+  roundId: 0,
+  achievements: [],
+  currentIndex: 0,
+  votes: {},      // achievementId → { voteOption, voteLevel }
+  submitted: false
+};
+
+// ==================== DOM 工具 ====================
+function $(id) { return document.getElementById(id); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+function showToast(msg, type) {
+  var t = $('toast');
+  t.textContent = msg; t.className = 'toast ' + (type || 'info') + ' show';
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+function showModal(id) { $(id).classList.remove('hidden'); }
+function hideModal() { $$('.modal-overlay').forEach(function(m) { m.classList.add('hidden'); }); }
+
+// ==================== 登录 ====================
+function doLogin() {
+  var name = $('voterName').value.trim();
+  if (!name) { showToast('请输入姓名', 'error'); return; }
+  state.voterName = name;
+  $('loginBtn').disabled = true;
+  $('loginBtn').textContent = '加载中...';
+
+  fetchVoteData()
+    .then(function() {
+      $('loginScreen').classList.add('hidden');
+      $('voteScreen').classList.remove('hidden');
+      $('voteScreen').style.display = 'flex';
+      $('voterBadge').textContent = state.voterName;
+      renderCurrent();
+    })
+    .catch(function(err) {
+      showToast(err.message || '加载失败', 'error');
+      $('loginBtn').disabled = false;
+      $('loginBtn').textContent = '进入投票';
+    });
+}
+
+// 回车登录
+$('voterName').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ==================== 数据加载 ====================
+function fetchVoteData() {
+  return fetch(API('/voteRound/current'), { method: 'POST', headers: { 'Content-Type': 'application/json' } })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d || d.code !== 200) throw new Error('投票未开始或无可用轮次');
+      var round = d.data;
+      if (!round || round.status !== 'running') throw new Error('当前没有进行中的投票，请联系管理员');
+      if (!round.achievementDetails || !round.achievementDetails.length) throw new Error('没有可投票的成果');
+
+      state.roundId = round.id;
+      state.achievements = round.achievementDetails;
+      $('roundBadge').textContent = '第' + (round.roundNum || 1) + '轮';
+    });
+}
+
+// ==================== 渲染 ====================
+function renderCurrent() {
+  if (state.achievements.length === 0) return;
+  var idx = state.currentIndex;
+  var ach = state.achievements[idx];
+  if (!ach) return;
+
+  var detail = ach.achievementDetail || ach;
+  $('cardCategory').textContent = detail.achievementCategory || '';
+  $('cardName').textContent = detail.achievementName || '';
+  $('cardUnit').textContent = (detail.creationUnits || '');
+  $('cardLevel').textContent = (detail.expertLevel || '');
+
+  if (detail.fileSrc) {
+    $('cardAttach').classList.remove('hidden');
+    $('cardAttach').href = API('/api/files/' + encodeURIComponent(detail.fileSrc));
+  } else {
+    $('cardAttach').classList.add('hidden');
+  }
+
+  // 恢复已选投票
+  var vid = ach.achievementId || ach.id;
+  var saved = state.votes[vid];
+  clearSelection();
+  if (saved) {
+    if (saved.voteOption === 'agree') $('btnAgree').classList.add('selected-agree');
+    if (saved.voteOption === 'disagree') $('btnDisagree').classList.add('selected-disagree');
+    if (saved.voteOption === 'abstain') $('btnAbstain').classList.add('selected-abstain');
+    if (saved.voteLevel) {
+      $$('.level-btn').forEach(function(lb) {
+        if (lb.getAttribute('data-level') === saved.voteLevel) lb.classList.add('selected');
+      });
+    }
+  }
+
+  updateProgress();
+  updateNavButtons();
+  $('achievementCard').scrollTop = 0;
+}
+
+function clearSelection() {
+  $('btnAgree').classList.remove('selected-agree');
+  $('btnDisagree').classList.remove('selected-disagree');
+  $('btnAbstain').classList.remove('selected-abstain');
+  $$('.level-btn').forEach(function(lb) { lb.classList.remove('selected'); });
+}
+
+function updateProgress() {
+  var total = state.achievements.length;
+  var voted = Object.keys(state.votes).length;
+  var pct = total > 0 ? Math.round(voted / total * 100) : 0;
+  $('progressFill').style.width = pct + '%';
+  $('progressText').textContent = voted + ' / ' + total;
+}
+
+function updateNavButtons() {
+  $('btnPrev').disabled = state.currentIndex <= 0;
+  $('btnNext').disabled = state.currentIndex >= state.achievements.length - 1;
+  $('btnSubmit').disabled = state.submitted;
+  if (state.submitted) $('btnSubmit').textContent = '已提交';
+}
+
+// ==================== 投票操作 ====================
+function setVote(option) {
+  if (state.submitted) return;
+  var ach = state.achievements[state.currentIndex];
+  if (!ach) return;
+  var vid = ach.achievementId || ach.id;
+  if (!state.votes[vid]) state.votes[vid] = {};
+  state.votes[vid].voteOption = option;
+
+  clearSelection();
+  if (option === 'agree') $('btnAgree').classList.add('selected-agree');
+  if (option === 'disagree') $('btnDisagree').classList.add('selected-disagree');
+  if (option === 'abstain') $('btnAbstain').classList.add('selected-abstain');
+  updateProgress();
+}
+
+function setLevel(el) {
+  if (state.submitted) return;
+  var ach = state.achievements[state.currentIndex];
+  if (!ach) return;
+  var vid = ach.achievementId || ach.id;
+  if (!state.votes[vid]) state.votes[vid] = {};
+  state.votes[vid].voteLevel = el.getAttribute('data-level');
+
+  $$('.level-btn').forEach(function(lb) { lb.classList.remove('selected'); });
+  el.classList.add('selected');
+  updateProgress();
+}
+
+// ==================== 导航 ====================
+function nextAchievement() {
+  if (state.currentIndex < state.achievements.length - 1) {
+    state.currentIndex++;
+    renderCurrent();
+  }
+}
+
+function prevAchievement() {
+  if (state.currentIndex > 0) {
+    state.currentIndex--;
+    renderCurrent();
+  }
+}
+
+// 滑动手势（左右滑动切换）
+(function() {
+  var startX = 0;
+  document.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 80) {
+      if (dx < 0) nextAchievement();
+      else prevAchievement();
+    }
+  }, { passive: true });
+})();
+
+// ==================== 提交 ====================
+function confirmSubmit() {
+  if (state.submitted) return;
+  var total = state.achievements.length;
+  var voted = Object.keys(state.votes).length;
+  if (voted === 0) { showToast('请至少投票一项', 'error'); return; }
+  if (voted < total) {
+    var msg = '您还有 ' + (total - voted) + ' 项没有投票，确认提交吗？';
+  } else {
+    var msg = '所有 ' + total + ' 项已投票完毕，确认提交吗？';
+  }
+  $('confirmMsg').textContent = msg;
+  showModal('confirmModal');
+}
+
+function doSubmit() {
+  hideModal();
+  if (state.submitted) return;
+  $('confirmBtn').disabled = true;
+  $('confirmBtn').textContent = '提交中...';
+
+  var promises = [];
+  Object.keys(state.votes).forEach(function(aid) {
+    if (!state.votes[aid].voteOption) return;
+    promises.push(
+      fetch(API('/voteRound/push'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roundId: state.roundId,
+          achievementId: Number(aid),
+          voterId: state.voterName,
+          voterName: state.voterName,
+          voteOption: state.votes[aid].voteOption,
+          voteLevel: state.votes[aid].voteLevel || ''
+        })
+      }).then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.code !== 200) throw new Error(d.msg || '提交失败');
+        })
+    );
+  });
+
+  Promise.all(promises)
+    .then(function() {
+      state.submitted = true;
+      $('btnSubmit').textContent = '已提交 ✓';
+      $('btnSubmit').disabled = true;
+      updateNavButtons();
+      showToast('投票提交成功！', 'success');
+    })
+    .catch(function(err) {
+      showToast('提交失败: ' + (err.message || '请重试'), 'error');
+    })
+    .finally(function() {
+      $('confirmBtn').disabled = false;
+      $('confirmBtn').textContent = '确认提交';
+    });
+}
+
+// ==================== 摘要 ====================
+function showSummary() {
+  var html = '';
+  state.achievements.forEach(function(ach, i) {
+    var vid = ach.achievementId || ach.id;
+    var v = state.votes[vid];
+    var detail = ach.achievementDetail || ach;
+    var name = detail.achievementName || ('成果 ' + (i+1));
+    var opts = { agree: '✓ 同意', disagree: '✗ 不同意', abstain: '— 弃权' };
+    var optTxt = v && v.voteOption ? opts[v.voteOption] : '未投票';
+    var lvlTxt = v && v.voteLevel ? v.voteLevel : '';
+    var color = v ? '#a5d6a7' : '#ef9a9a';
+    html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">' +
+      '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px;">' + (i+1) + '. ' + name + '</span>' +
+      '<span style="color:' + color + ';white-space:nowrap;">' + optTxt + (lvlTxt ? ' / ' + lvlTxt : '') + '</span>' +
+      '</div>';
+  });
+  $('summaryList').innerHTML = html || '<p>暂无数据</p>';
+  showModal('summaryModal');
+}
+
+// 键盘导航
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight') nextAchievement();
+  if (e.key === 'ArrowLeft') prevAchievement();
+  if (e.key === '1') setVote('agree');
+  if (e.key === '2') setVote('disagree');
+  if (e.key === '3') setVote('abstain');
+});
+
+// 自动聚焦
+setTimeout(function() { $('voterName').focus(); }, 300);
+</script>
+</body>
+</html>
