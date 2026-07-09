@@ -16,6 +16,6 @@ window._$recommends = [
   { id: 3, value: "三等奖", label: "三等奖" },
 ];
 
-window._$base_url = "http://localhost:7003";
-// window._$base_url = "http://192.168.2.188:7003";
-// window._$base_url = "/";
+// 自动适配：本机和平板端自动使用正确的后端地址
+// 空字符串 = 相对路径，通过 Node.js 代理转发到后端
+window._$base_url = "";

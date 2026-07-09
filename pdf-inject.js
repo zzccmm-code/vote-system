@@ -4,7 +4,7 @@
 (function() {
   'use strict';
 
-  var API_BASE = window._$base_url || 'http://localhost:7003';
+  var API_BASE = (window._$base_url != null && window._$base_url !== '') ? window._$base_url : 'http://localhost:7003';
   var achievementCache = {};    // id → { fileSrc, name }
   var nameToId = {};
   var isMutating = false;
