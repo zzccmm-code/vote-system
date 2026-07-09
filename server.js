@@ -49,9 +49,9 @@ function proxy(req, res) {
     headers: {},
   };
 
-  // Copy headers, fix host
+  // Copy headers, strip browser CORS headers to avoid cross-origin rejection
   for (const key of Object.keys(req.headers)) {
-    if (key === 'host') continue;
+    if (key === 'host' || key === 'origin' || key === 'referer') continue;
     if (key === 'content-length' && !req.headers['content-length']) continue;
     options.headers[key] = req.headers[key];
   }
