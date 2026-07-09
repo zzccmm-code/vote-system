@@ -392,17 +392,41 @@ $('voterName').addEventListener('keydown', function(e) {
 
 // ==================== 数据加载 ====================
 function fetchVoteData() {
+  // 第1步：获取当前轮次
   return fetch(API('/voteRound/current'), { method: 'POST', headers: { 'Content-Type': 'application/json' } })
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (!d || d.code !== 200) throw new Error('投票未开始或无可用轮次');
       var round = d.data;
       if (!round || round.status !== 'running') throw new Error('当前没有进行中的投票，请联系管理员');
-      if (!round.achievementDetails || !round.achievementDetails.length) throw new Error('没有可投票的成果');
-
       state.roundId = round.id;
-      state.achievements = round.achievementDetails;
       $('roundBadge').textContent = '第' + (round.roundNum || 1) + '轮';
+
+      // 第2步：获取本轮成果列表（含投票结果数据）
+      return fetch(API('/voteResult/eachRoundSituation'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roundId: round.id, isPublished: 0 })
+      });
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d || d.code !== 200) throw new Error('获取成果列表失败');
+      var list = d.data || [];
+      if (!list.length) throw new Error('没有可投票的成果');
+      // eachRoundSituation 返回的已包含 achievementName 等字段
+      state.achievements = list.map(function(item) {
+        return {
+          achievementId: item.achievementId,
+          achievementDetail: {
+            achievementCategory: item.achievementCategory || '',
+            achievementName: item.achievementName || '',
+            creationUnits: item.creationUnits || '',
+            expertLevel: item.expertLevel || '',
+            fileSrc: item.fileSrc || ''
+          }
+        };
+      });
     });
 }
 
