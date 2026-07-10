@@ -5,6 +5,19 @@
 (function () {
   'use strict';
 
+  // -------------------- 访问方式检查 --------------------
+  // 必须通过 http(s) 访问；若直接双击以 file:// 打开，所有接口请求都会失败
+  if (location.protocol === 'file:') {
+    var sh = document.querySelector('.shell');
+    if (sh) {
+      sh.innerHTML = '<div class="state error" style="padding:48px;text-align:center;line-height:1.8;">' +
+        '<div style="font-size:18px;margin-bottom:12px;">⚠️ 访问方式不正确</div>' +
+        '<div>请通过浏览器访问 <b style="color:var(--accent)">http://localhost:3000</b>（双击“启动服务.bat”会自动打开），' +
+        '不要直接双击打开 HTML 文件，否则所有数据请求都会失败（Failed to fetch）。</div></div>';
+    }
+    return;
+  }
+
   // -------------------- 基础工具 --------------------
   function $(id) { return document.getElementById(id); }
   function esc(s) {

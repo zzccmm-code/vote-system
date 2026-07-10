@@ -25,6 +25,18 @@ const MIME = {
   '.map':  'application/json',
 };
 
+// [P3修复] 统一 CORS 头：允许任意来源（内部局域网工具），避免浏览器跨域报 "Failed to fetch"
+function corsHeaders(req) {
+  const origin = req.headers.origin || '*';
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization,Origin,Accept,X-Requested-With',
+    'Access-Control-Allow-Credentials': 'true',
+    'Vary': 'Origin'
+  };
+}
+
 // [P0修复] 代理所有后端API路径
 const API_PATHS = ['/api/', '/achievement/', '/voteRound/', '/voteResult/'];
 
@@ -58,7 +70,9 @@ function proxy(req, res) {
   options.headers['host'] = BACKEND_HOST + ':' + BACKEND_PORT;
 
   const proxyReq = http.request(options, (proxyRes) => {
-    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    // 把 CORS 头合并进代理响应，确保浏览器（含跨域/平板）能正常接收
+    const outHeaders = Object.assign({}, proxyRes.headers, corsHeaders(req));
+    res.writeHead(proxyRes.statusCode, outHeaders);
     proxyRes.pipe(res);
   });
   proxyReq.on('error', () => {
@@ -69,6 +83,13 @@ function proxy(req, res) {
 }
 
 http.createServer((req, res) => {
+  // [P3修复] 跨域预检：浏览器对带自定义头/JSON 的跨域请求会先发 OPTIONS
+  // 在代理层直接返回 204 + 允许头，避免预检失败导致 "Failed to fetch"
+  if (req.method === 'OPTIONS' && isApiPath(req.url)) {
+    res.writeHead(204, corsHeaders(req));
+    return res.end();
+  }
+
   // [P0修复] 代理所有后端API路径（/api/*, /achievement/*, /voteRound/*, /voteResult/*）
   if (isApiPath(req.url)) {
     // [P2修复] 限制请求体大小，防止大文件上传撑爆内存
@@ -98,12 +119,12 @@ http.createServer((req, res) => {
 
   // 禁止 JS 文件缓存，保证热更新生效
   if (ext === '.js') {
-    res.writeHead(200, {
+    res.writeHead(200, Object.assign({
       'Content-Type': 'application/javascript',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0'
-    });
+    }, corsHeaders(req)));
     fs.createReadStream(filePath).pipe(res);
     return;
   }
@@ -111,11 +132,15 @@ http.createServer((req, res) => {
   fs.readFile(filePath, (err, data) => {
     if (err) {
       // SPA fallback: return index.html for any unknown route
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.writeHead(200, Object.assign({
+        'Content-Type': 'text/html; charset=utf-8'
+      }, corsHeaders(req)));
       fs.createReadStream(path.join(ROOT, 'index.html')).pipe(res);
       return;
     }
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+    res.writeHead(200, Object.assign({
+      'Content-Type': MIME[ext] || 'application/octet-stream'
+    }, corsHeaders(req)));
     res.end(data);
   });
 }).listen(PORT, () => {
