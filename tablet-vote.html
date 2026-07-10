@@ -138,6 +138,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .level-btn:active { transform: scale(0.95); }
+.level-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .level-btn.selected {
   background: rgba(30,136,229,0.3); border-color: #1e88e5; color: #e3f2fd;
 }
@@ -462,6 +463,7 @@ function renderCurrent() {
     }
   }
 
+  updateLevelState();
   updateProgress();
   updateNavButtons();
   $('achievementCard').scrollTop = 0;
@@ -500,11 +502,13 @@ function setVote(option) {
   clearSelection();
   if (option === 'agree') $('btnAgree').classList.add('selected-agree');
   if (option === 'disagree') $('btnDisagree').classList.add('selected-disagree');
+  updateLevelState();
   updateProgress();
 }
 
 function setLevel(el) {
   if (state.submitted) return;
+  if (el.disabled) return;
   var ach = state.achievements[state.currentIndex];
   if (!ach) return;
   var vid = ach.achievementId || ach.id;
@@ -514,6 +518,20 @@ function setLevel(el) {
   $$('.level-btn').forEach(function(lb) { lb.classList.remove('selected'); });
   el.classList.add('selected');
   updateProgress();
+}
+
+// 等级按钮可用性：仅“同意”时可选择等级；“不同意”或未选择时禁用
+function updateLevelState() {
+  var ach = state.achievements[state.currentIndex];
+  if (!ach) return;
+  var vid = ach.achievementId || ach.id;
+  var v = state.votes[vid];
+  var disabled = !(v && v.voteOption === 'agree');
+  $$('.level-btn').forEach(function(lb) { lb.disabled = disabled; });
+  if (disabled && v && v.voteLevel) {
+    delete v.voteLevel;
+    $$('.level-btn').forEach(function(lb) { lb.classList.remove('selected'); });
+  }
 }
 
 // ==================== 导航 ====================
