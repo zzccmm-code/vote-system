@@ -77,7 +77,6 @@ body {
   text-shadow: 0 0 22px rgba(30, 136, 229, 0.4);
   margin: 0;
 }
-.global-header .hdr-icon { position: relative; margin-right: 12px; color: var(--accent-2); display: inline-flex; }
 
 /* ===================== 布局 ===================== */
 .shell { max-width: 1440px; margin: 0 auto; padding: 18px 22px 60px; }
