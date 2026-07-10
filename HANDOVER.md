@@ -27,18 +27,18 @@
 ├── server.js                     ← Node.js静态文件服务器+API代理（端口3000）
 ├── options.js                    ← 前端全局配置（base_url、下拉选项）
 │
-├── 【前端Vue编译产物（勿手动修改）】
-│   ├── chunk-vendors.e58ab867.js  ← Vue + Element UI + 第三方库
-│   ├── chunk-vendors.7eec43d6.css
-│   ├── app.b1193a83.js            ← 业务代码（成果管理/投票/结果展示页面）
-│   └── app.5007c485.css
+├── 【前端管理台（原生HTML/CSS/JS，已重写，主维护对象）】
+│   ├── assets/css/admin.css      ← 科技风暗色主题样式
+│   └── assets/js/admin.js       ← 全部前端逻辑（成果/投票/结果三标签页）
 │
-├── 【注入脚本（运行期修改UI）】
-│   ├── batch-delete.js           ← 全选勾选框 + 批量删除 + 表头对齐同步
-│   ├── pdf-inject.js             ← 操作列"上传附件"/"查看附件"按钮
-│   ├── hide-time-col.js          ← 隐藏"上传时间"列
-│   ├── expert-column.js          ← 表头"专家评审推荐"改名 + 搜索栏标签改名
-│   └── inline-import.js          ← "导入数据"按钮注入工具栏 + 搜索框尺寸调整
+├── 【已弃用（保留不删，请勿再维护）】
+│   ├── chunk-vendors.*.js / app.*.js / app.*.css  ← 旧 Vue 编译产物，index.html 不再引用
+│   ├── batch-delete.js / pdf-inject.js / hide-time-col.js / expert-column.js / inline-import.js
+│   │                                 ← 旧运行期注入脚本，功能已由 admin.js 原生实现
+│
+├── 【平板投票端（独立页面，保持不变）】
+│   ├── table-vote.html           ← 鸿蒙/安卓平板投票页（PWA）
+│   ├── manifest.json / sw.js     ← PWA 清单与 Service Worker
 │
 ├── 【后端源码（需要时可编译）】
 │   └── vote-backend-windows/
@@ -169,9 +169,11 @@
 
 ---
 
-## 五、注入脚本详细说明
+## 五、注入脚本详细说明（已弃用）
 
-由于无法修改 Vue 前端源码（仅有编译产物 `app.b1193a83.js`），所有 UI 改造通过 JS 脚本注入实现。
+> **注意：** 以下 5 个注入脚本与旧 Vue 编译产物（`app.*.js` 等）自前端重写后**已不再被 `index.html` 引用**，其功能已由 `assets/js/admin.js` 原生实现。仅作历史存档，请勿再维护。
+
+旧版因无法修改 Vue 前端源码（仅有编译产物 `app.b1193a83.js`），所有 UI 改造通过 JS 脚本注入实现。
 
 ### 5.1 `batch-delete.js` — 全选+批量删除+表头对齐
 

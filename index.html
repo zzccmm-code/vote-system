@@ -1,86 +1,202 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>科技奖评审表决系统</title>
-  <link rel="stylesheet" href="chunk-vendors.7eec43d6.css">
-  <link rel="stylesheet" href="app.5007c485.css">
-  <script src="options.js"></script>
-  <style>
-    /* 全局标题栏 - 科技风格 */
-    .global-header {
-      background: linear-gradient(135deg, #0a1628 0%, #0d2137 40%, #0f2b4a 100%);
-      padding: 10px 24px;
-      display: flex; align-items: center; justify-content: center;
-      border-bottom: 2px solid #1e88e5;
-      position: relative; overflow: hidden;
-    }
-    .global-header::before {
-      content: '';
-      position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, #42a5f5, #1e88e5, #42a5f5, transparent);
-    }
-    .global-header::after {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(30,136,229,0.3), transparent);
-    }
-    .global-header h1 {
-      color: #e3f2fd; font-size: 18px; font-weight: 600;
-      letter-spacing: 2px; margin: 0;
-      text-shadow: 0 0 20px rgba(30,136,229,0.4);
-    }
-
-    /* 导入数据浮动按钮 */
-    .import-float-btn {
-      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
-      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-      color: #fff; border: none; border-radius: 12px;
-      padding: 12px 20px; font-size: 14px; font-weight: 600;
-      cursor: pointer; box-shadow: 0 4px 14px rgba(34,197,94,0.4);
-      text-decoration: none; display: flex; align-items: center; gap: 8px;
-      transition: all 0.2s;
-    }
-    .import-float-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(34,197,94,0.5); }
-
-    /* 批量删除条按钮 */
-    #batch-bar button {
-      background: #fff; color: #ef4444; border: none;
-      padding: 4px 14px; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer;
-    }
-    #batch-bar button:hover { background: #fde8e8; }
-    #batch-bar button + button {
-      background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.6);
-      margin-left: 8px; font-size: 12px;
-    }
-    #batch-bar button + button:hover { background: rgba(255,255,255,0.15); }
-
-    /* 表头+数据居中 + 勾选框flex居中 + 操作列按钮并排 */
-    .el-table th .cell { text-align: center !important; }
-    .el-table__body-wrapper td .cell { text-align: center !important; }
-    .el-table__body-wrapper td:last-child .cell {
-      display: flex !important; flex-wrap: wrap !important;
-      align-items: center !important; justify-content: center !important;
-      gap: 4px !important; text-align: center !important;
-    }
-    .wb-cb-th, .wb-cb-cell { display: flex !important; align-items: center !important; justify-content: center !important; }
-
-    /* 工具栏紧凑布局 */
-    .el-button--small { min-width: auto !important; padding: 7px 12px !important; font-size: 12px !important; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>国网四川省电力公司科技奖励评审系统</title>
+  <link rel="stylesheet" href="assets/css/admin.css">
 </head>
 <body>
-  <div class="global-header"><h1>国网四川省电力公司科技奖励评审系统</h1></div>
-  <div id="app"></div>
-  <a href="import.html" class="import-float-btn" title="批量导入成果">📊 导入数据</a>
-  <script src="chunk-vendors.e58ab867.js"></script>
-  <script src="app.b1193a83.js"></script>
-  <script src="pdf-inject.js"></script>
-  <script src="hide-time-col.js?v=2"></script>
-  <script src="batch-delete.js?v=2"></script>
-  <script src="expert-column.js"></script>
-  <script src="inline-import.js"></script>
+
+  <!-- 全局标题栏（科技风） -->
+  <header class="global-header">
+    <svg class="hdr-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"></path>
+      <path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"></path>
+    </svg>
+    <h1>国网四川省电力公司科技奖励评审系统</h1>
+  </header>
+
+  <div class="shell">
+    <!-- Tab 导航 -->
+    <nav class="tabs">
+      <button class="tab active" data-view="manage">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        成果管理
+      </button>
+      <button class="tab" data-view="vote">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        投票管理
+      </button>
+      <button class="tab" data-view="result">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
+        结果查看
+      </button>
+    </nav>
+
+    <!-- ============ 成果管理 ============ -->
+    <section id="view-manage" class="view panel">
+      <div class="toolbar">
+        <div class="field">
+          <label>成果类别</label>
+          <select class="select" id="fCategory">
+            <option value="">全部</option>
+            <option>专利奖</option>
+            <option>科技进步奖</option>
+            <option>技术发明奖</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>推荐等级</label>
+          <select class="select" id="fLevel">
+            <option value="">全部</option>
+            <option>一等奖</option>
+            <option>二等奖</option>
+            <option>三等奖</option>
+            <option>不推荐</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>成果名称</label>
+          <input class="input" id="fName" placeholder="输入关键字搜索" style="min-width:200px;">
+        </div>
+        <button class="btn btn-ghost" id="btnSearch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          查询
+        </button>
+        <button class="btn btn-ghost" id="btnReset">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          重置
+        </button>
+        <div class="spacer"></div>
+        <a class="btn btn-ghost" href="import.html" style="text-decoration:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          导入数据
+        </a>
+        <button class="btn btn-success" id="btnAdd">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          成果新增
+        </button>
+      </div>
+
+      <div class="table-wrap" id="tableWrap"></div>
+
+      <div class="pager" id="pager"></div>
+    </section>
+
+    <!-- ============ 投票管理 ============ -->
+    <section id="view-vote" class="view panel hidden">
+      <div class="round-banner" id="roundBanner"></div>
+      <div class="stat-grid" id="voteStats"></div>
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btnStart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l14 9-14 9V3z"/></svg>
+          开始投票
+        </button>
+        <button class="btn btn-danger" id="btnStop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          结束投票
+        </button>
+        <button class="btn btn-ghost" id="btnResetVote">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          重置投票
+        </button>
+        <div class="spacer"></div>
+        <button class="btn btn-primary" id="btnPublish">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          发布结果
+        </button>
+      </div>
+      <div id="voteHint" class="state hidden"></div>
+    </section>
+
+    <!-- ============ 结果查看 ============ -->
+    <section id="view-result" class="view panel hidden">
+      <div class="toolbar">
+        <div class="field">
+          <label>选择轮次</label>
+          <select class="select" id="rRound"></select>
+        </div>
+        <button class="btn btn-ghost" id="btnLoadResult">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg>
+          加载
+        </button>
+        <label style="display:flex;align-items:center;gap:8px;color:var(--text-dim);font-size:13px;cursor:pointer;">
+          <input type="checkbox" id="rPublished" style="width:auto;"> 仅查看已发布
+        </label>
+        <div class="spacer"></div>
+        <button class="btn btn-primary" id="btnExport">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          导出Excel
+        </button>
+      </div>
+      <div class="table-wrap" id="resultWrap"></div>
+    </section>
+  </div>
+
+  <!-- 批量删除条 -->
+  <div class="batch-bar" id="batchBar">
+    <div class="bb-info">已选 <b id="bbCount">0</b> 项</div>
+    <div class="bb-actions">
+      <button class="bb-del" id="bbDelete">批量删除</button>
+      <button class="bb-clear" id="bbClear">取消</button>
+    </div>
+  </div>
+
+  <!-- 新增 / 编辑 模态框 -->
+  <div class="modal-overlay hidden" id="formModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="formTitle">成果新增</h3>
+        <button class="x" id="formClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <label>成果名称 *</label>
+          <input class="input" id="fmName" placeholder="请输入成果名称">
+        </div>
+        <div class="form-row">
+          <label>成果类别 *</label>
+          <select class="select" id="fmCategory">
+            <option>专利奖</option>
+            <option>科技进步奖</option>
+            <option>技术发明奖</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>推荐单位（部门）</label>
+          <input class="input" id="fmUnits" placeholder="请输入推荐单位 / 部门">
+        </div>
+        <div class="form-row">
+          <label>推荐等级</label>
+          <select class="select" id="fmLevel">
+            <option value="">（未设置）</option>
+            <option>一等奖</option>
+            <option>二等奖</option>
+            <option>三等奖</option>
+            <option>不推荐</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>附加信息</label>
+          <input class="input" id="fmExtra" placeholder="选填">
+        </div>
+        <div class="form-row">
+          <label>PDF 附件</label>
+          <div class="file-drop" id="fmDrop">点击选择 PDF 文件（可选）</div>
+          <input type="file" id="fmFile" accept=".pdf" class="hidden">
+          <div class="hint" id="fmFileHint"></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" id="formCancel">取消</button>
+        <button class="btn btn-primary" id="formSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="assets/js/admin.js"></script>
 </body>
 </html>

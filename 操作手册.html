@@ -79,8 +79,8 @@
 
   <h3>系统架构</h3>
   <p><strong>后端：</strong>Spring Boot 2.7 + H2 内嵌数据库 → 运行在 Windows 电脑上（端口 7003）</p>
-  <p><strong>前端：</strong>Vue 2 + Element UI → 通过 Node.js 静态服务器托管（端口 3000）</p>
-  <p><strong>平板端：</strong>安卓设备通过浏览器访问 Windows 电脑的 IP 地址，无需安装 App</p>
+  <p><strong>前端：</strong>原生 HTML/CSS/JavaScript 单页管理台（assets/js/admin.js）→ 通过 Node.js 静态服务器托管（端口 3000）。已彻底重写，不再依赖旧版 Vue 打包产物与注入脚本。</p>
+  <p><strong>平板端：</strong>安卓 / 鸿蒙设备通过浏览器访问 Windows 电脑的 IP 地址，无需安装 App</p>
 
   <div class="tip"><strong>关键概念：</strong>Windows 电脑作为"服务器"，安卓平板作为"客户端"。平板连接同一 WiFi 后，在浏览器输入电脑 IP 即可使用。</div>
 
@@ -192,17 +192,16 @@
   <h3>3.5 验证系统运行</h3>
   <p>浏览器打开 <code>http://localhost:3000</code>，能看到：</p>
   <ul>
-    <li>顶部深蓝色标题栏：国网四川省电力公司科技奖励评审系统</li>
-    <li>工具栏一行：搜索框 + 成果新增 + 开始投票 + 导入数据</li>
-    <li>成果数据表格（含勾选框、序号、类别、名称、推荐单位、专家评审推荐、操作）</li>
+    <li>顶部深蓝色科技风标题栏：国网四川省电力公司科技奖励评审系统</li>
+    <li>三个标签页：<b>成果管理</b> / <b>投票管理</b> / <b>结果查看</b></li>
+    <li>成果管理页：搜索栏（成果类别、推荐等级、成果名称）+ 查询 / 重置 / 导入数据 / 成果新增 按钮 + 数据表格（含勾选框、序号、类别、名称、推荐单位、推荐等级、操作）</li>
   </ul>
 
   <h3>3.6 获取电脑 IP 地址</h3>
   <p>一键启动脚本会自动获取。手动方式：命令提示符输入 <code>ipconfig</code>，找"IPv4 地址"。</p>
 
-  <h3>3.7 配置 options.js（平板访问必须）</h3>
-  <p>编辑 <code>options.js</code>，将 <code>_$base_url</code> 改为电脑 IP：</p>
-  <pre><code>window._$base_url = "http://192.168.1.100:7003";  // 改为实际电脑IP</code></pre>
+  <h3>3.7 局域网访问配置（已自动化）</h3>
+  <p>旧版需要手动修改 <code>options.js</code> 的 <code>_$base_url</code> 指向电脑 IP。新版前端已实现<strong>自动适配</strong>：所有请求走相对路径，由 Node.js 代理转发到后端，<strong>无需手动配置</strong>。平板直接访问 <code>http://[电脑IP]:3000</code> 即可。</p>
 
 </div>
 
@@ -351,17 +350,18 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
   <h2 id="ch7">七、系统操作指南</h2>
 
   <h3>7.1 管理员 — 录入成果</h3>
+  <p>进入首页默认在 <b>成果管理</b> 标签页。</p>
 
   <div class="step">
     <div class="num">1</div>
     <div class="content">
-      <p><strong>单个新增：</strong>点击"成果新增"按钮，弹出表单填写成果类别、成果名称、推荐单位、专家评审推荐等信息后提交。</p>
+      <p><strong>单个新增：</strong>点击右上角绿色"成果新增"按钮，弹出表单填写成果名称（必填）、成果类别（必填）、推荐单位、推荐等级、附加信息，可选上传 PDF 附件，点击"保存"提交。</p>
     </div>
   </div>
   <div class="step">
     <div class="num">2</div>
     <div class="content">
-      <p><strong>批量导入：</strong>点击"导入数据"按钮，进入导入页面：</p>
+      <p><strong>批量导入：</strong>点击"导入数据"按钮（链接到独立导入页 <code>import.html</code>）：</p>
       <ol>
         <li>点击"下载模板"获取 Excel 模板</li>
         <li>按模板格式填写成果信息</li>
@@ -374,33 +374,38 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
   <div class="step">
     <div class="num">3</div>
     <div class="content">
-      <p><strong>上传附件：</strong>在每条成果的操作列中，点击红色"上传附件"按钮，选择 PDF 文件上传。上传成功后按钮变为蓝色"查看附件"，点击可预览 PDF。</p>
+      <p><strong>上传附件：</strong>在每条成果的操作列中，点击"上传附件"按钮，选择 PDF 文件上传。上传成功后变为"查看附件"，点击可预览 PDF。</p>
     </div>
   </div>
 
   <h3>7.2 管理员 — 管理成果</h3>
   <table>
     <tr><th>操作</th><th>说明</th></tr>
-    <tr><td>☑ 勾选框</td><td>勾选一条或多条成果，顶部出现红色批量删除条</td></tr>
-    <tr><td>编辑</td><td>修改成果信息</td></tr>
+    <tr><td>☑ 勾选框</td><td>勾选一条或多条成果，底部出现批量删除条</td></tr>
+    <tr><td>编辑</td><td>修改成果信息（含重新上传 PDF）</td></tr>
     <tr><td>删除</td><td>删除单条成果</td></tr>
-    <tr><td>批量删除</td><td>勾选多条后点击红色"批量删除"按钮</td></tr>
-    <tr><td>上传附件</td><td>上传 PDF 附件（红色→蓝色）</td></tr>
+    <tr><td>批量删除</td><td>勾选多条后点击"批量删除"按钮</td></tr>
+    <tr><td>上传附件</td><td>上传 PDF 附件</td></tr>
     <tr><td>查看附件</td><td>新窗口打开已上传的 PDF</td></tr>
   </table>
 
-  <h3>7.3 管理员 — 开始投票</h3>
+  <h3>7.3 管理员 — 开始 / 结束投票</h3>
+  <p>切换到 <b>投票管理</b> 标签页。</p>
   <div class="step">
     <div class="num">1</div>
-    <div class="content"><p>点击"开始投票"按钮，弹出确认对话框。选择是否为第一轮投票。</p></div>
+    <div class="content"><p>点击"开始投票"按钮，弹出确认对话框，选择是否为第一轮投票。</p></div>
   </div>
   <div class="step">
     <div class="num">2</div>
-    <div class="content"><p>开始后，所有状态为"已提交"的成果进入投票池。</p></div>
+    <div class="content"><p>开始后，页面显示当前轮次状态与投票进度（已提交人数 / 总人数）。</p></div>
   </div>
   <div class="step">
     <div class="num">3</div>
-    <div class="content"><p>将投票页面地址（<code>http:// [电脑IP]:3000/#/vote</code>）发送给各位评委。</p></div>
+    <div class="content"><p>将投票页面地址（<code>http://[电脑IP]:3000/tablet-vote.html</code>）发送给各位评委。</p></div>
+  </div>
+  <div class="step">
+    <div class="num">4</div>
+    <div class="content"><p>所有评委完成后点击"结束投票"。如需重投，点击"重置投票"（会清空当前轮投票记录，已发布结果需先撤回）。</p></div>
   </div>
 
   <h3>7.4 评委 — 投票</h3>
@@ -425,18 +430,23 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
     <div class="content"><p>全部完成后点击提交。每人每轮只能投票一次（同一成果不可重复投票）。</p></div>
   </div>
 
-  <h3>7.5 管理员 — 结束投票 & 查看结果</h3>
+  <h3>7.5 管理员 — 查看结果 & 发布</h3>
+  <p>切换到 <b>结果查看</b> 标签页。</p>
   <div class="step">
     <div class="num">1</div>
-    <div class="content"><p>所有评委投票完成后，管理员点击"结束投票"。</p></div>
+    <div class="content"><p>在"选择轮次"下拉框选择要查看的投票轮次，点击"加载"（可勾选"仅查看已发布"过滤）。</p></div>
   </div>
   <div class="step">
     <div class="num">2</div>
-    <div class="content"><p>点击导航栏的"最终结果展示"，查看每项成果的投票统计：同意票数、不同意票数、弃权票数、同意占比。</p></div>
+    <div class="content"><p>表格展示每项成果的投票统计：同意票数、不同意票数、弃权票数、同意占比。</p></div>
   </div>
   <div class="step">
     <div class="num">3</div>
-    <div class="content"><p>确认无误后，点击"一键发布"将结果公开发布。</p></div>
+    <div class="content"><p>回到 <b>投票管理</b> 标签页，点击"发布结果"将当前轮次结果公开发布。</p></div>
+  </div>
+  <div class="step">
+    <div class="num">4</div>
+    <div class="content"><p>在结果查看页点击"导出Excel"下载统计报表。</p></div>
   </div>
   <div class="step">
     <div class="num">4</div>
@@ -554,8 +564,8 @@ del %USERPROFILE%\vote_db.mv.db</code></pre>
 </div>
 
 <div style="text-align:center;color:#888;font-size:13px;padding:20px 0;">
-  文档版本 1.2 · 最后更新 2026-07-08<br>
-  系统版本：vote-system 1.0.0 · 新增鸿蒙平板端 table-vote.html
+  文档版本 1.3 · 最后更新 2026-07-10<br>
+  系统版本：vote-system 1.0.0 · 前端已重写为原生单页管理台（assets/js/admin.js），弃用旧 Vue 产物与 5 个注入脚本
 </div>
 
 </div>
