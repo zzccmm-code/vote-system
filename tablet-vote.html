@@ -548,12 +548,16 @@ function prevAchievement() {
 function confirmSubmit() {
   if (state.submitted) return;
   var total = state.achievements.length;
-  var voted = Object.keys(state.votes).length;
-  if (voted === 0) { showToast('请至少投票一项', 'error'); return; }
-  if (voted < total) {
-    var msg = '您还有 ' + (total - voted) + ' 项没有投票，确认提交吗？';
+  var voted = Object.keys(state.votes).filter(function(k) {
+    return state.votes[k] && state.votes[k].voteOption;
+  }).length;
+  var msg;
+  if (voted === 0) {
+    msg = '您未对任何成果投票，全部将计为“弃权”，确认提交吗？';
+  } else if (voted < total) {
+    msg = '您还有 ' + (total - voted) + ' 项没有投票，将计为“弃权”，确认提交吗？';
   } else {
-    var msg = '所有 ' + total + ' 项已投票完毕，确认提交吗？';
+    msg = '所有 ' + total + ' 项已投票完毕，确认提交吗？';
   }
   $('confirmMsg').textContent = msg;
   showModal('confirmModal');
@@ -566,8 +570,12 @@ function doSubmit() {
   $('confirmBtn').textContent = '提交中...';
 
   var promises = [];
-  Object.keys(state.votes).forEach(function(aid) {
-    if (!state.votes[aid].voteOption) return;
+  // 遍历本轮全部成果：已投票的按所选发送，未投票（未选同意/不同意）的按“弃权”计
+  state.achievements.forEach(function(ach) {
+    var aid = ach.achievementId || ach.id;
+    var v = state.votes[aid];
+    var option = (v && v.voteOption) ? v.voteOption : 'abstain';
+    var level = (v && v.voteLevel) ? v.voteLevel : '';
     promises.push(
       fetch(API('/voteRound/push'), {
         method: 'POST',
@@ -577,8 +585,8 @@ function doSubmit() {
           achievementId: Number(aid),
           voterId: state.voterName,
           voterName: state.voterName,
-          voteOption: state.votes[aid].voteOption,
-          voteLevel: state.votes[aid].voteLevel || ''
+          voteOption: option,
+          voteLevel: level
         })
       }).then(function(r) { return r.json(); })
         .then(function(d) {
