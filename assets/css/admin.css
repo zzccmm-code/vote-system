@@ -412,3 +412,11 @@ table.data tbody tr:last-child td { border-bottom: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
+
+/* ===================== 版权角标 ===================== */
+.copyright {
+  position: fixed; right: 12px; bottom: 8px;
+  font-size: 11px; letter-spacing: 0.3px;
+  color: var(--text-mute); opacity: 0.5;
+  pointer-events: none; z-index: 50; user-select: none;
+}

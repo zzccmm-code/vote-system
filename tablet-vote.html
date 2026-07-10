@@ -233,6 +233,14 @@ body {
 
 /* hidden */
 .hidden { display: none !important; }
+
+/* ===== 版权角标 ===== */
+.copyright {
+  position: fixed; right: 10px; bottom: 6px;
+  font-size: 10px; letter-spacing: 0.3px;
+  color: rgba(227, 242, 253, 0.45);
+  pointer-events: none; z-index: 9998; user-select: none;
+}
 </style>
 </head>
 <body>
@@ -327,6 +335,9 @@ body {
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+<!-- 版权角标 -->
+<div class="copyright">Copyright 张晨萌</div>
 
 <script>
 // ==================== 全局状态 ====================
