@@ -121,19 +121,19 @@ body {
 .vote-btn:active { transform: scale(0.96); }
 .vote-btn.selected-agree { background: rgba(76,175,80,0.25); border-color: #4caf50; color: #a5d6a7; }
 .vote-btn.selected-disagree { background: rgba(244,67,54,0.25); border-color: #f44336; color: #ef9a9a; }
-.vote-btn.selected-abstain { background: rgba(255,152,0,0.25); border-color: #ff9800; color: #ffcc80; }
 
 /* ===== 等级选择 ===== */
 .level-options {
-  display: flex; gap: 8px; flex-wrap: wrap;
+  display: flex; gap: 10px;
 }
 .level-btn {
-  padding: 10px 16px;
+  flex: 1;
+  padding: 18px 12px;
   border: 2px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
+  border-radius: 10px;
   background: rgba(255,255,255,0.04);
   color: #90caf9;
-  font-size: 14px; font-weight: 500;
+  font-size: 18px; font-weight: 600;
   cursor: pointer; transition: all 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
@@ -280,7 +280,6 @@ body {
         <div class="vote-options">
           <button class="vote-btn" id="btnAgree" onclick="setVote('agree')">✓ 同意</button>
           <button class="vote-btn" id="btnDisagree" onclick="setVote('disagree')">✗ 不同意</button>
-          <button class="vote-btn" id="btnAbstain" onclick="setVote('abstain')">— 弃权</button>
         </div>
 
         <h3>推荐等级</h3>
@@ -456,7 +455,6 @@ function renderCurrent() {
   if (saved) {
     if (saved.voteOption === 'agree') $('btnAgree').classList.add('selected-agree');
     if (saved.voteOption === 'disagree') $('btnDisagree').classList.add('selected-disagree');
-    if (saved.voteOption === 'abstain') $('btnAbstain').classList.add('selected-abstain');
     if (saved.voteLevel) {
       $$('.level-btn').forEach(function(lb) {
         if (lb.getAttribute('data-level') === saved.voteLevel) lb.classList.add('selected');
@@ -472,7 +470,6 @@ function renderCurrent() {
 function clearSelection() {
   $('btnAgree').classList.remove('selected-agree');
   $('btnDisagree').classList.remove('selected-disagree');
-  $('btnAbstain').classList.remove('selected-abstain');
   $$('.level-btn').forEach(function(lb) { lb.classList.remove('selected'); });
 }
 
@@ -503,7 +500,6 @@ function setVote(option) {
   clearSelection();
   if (option === 'agree') $('btnAgree').classList.add('selected-agree');
   if (option === 'disagree') $('btnDisagree').classList.add('selected-disagree');
-  if (option === 'abstain') $('btnAbstain').classList.add('selected-abstain');
   updateProgress();
 }
 
@@ -616,7 +612,7 @@ function showSummary() {
     var v = state.votes[vid];
     var detail = ach.achievementDetail || ach;
     var name = detail.achievementName || ('成果 ' + (i+1));
-    var opts = { agree: '✓ 同意', disagree: '✗ 不同意', abstain: '— 弃权' };
+    var opts = { agree: '✓ 同意', disagree: '✗ 不同意' };
     var optTxt = v && v.voteOption ? opts[v.voteOption] : '未投票';
     var lvlTxt = v && v.voteLevel ? v.voteLevel : '';
     var color = v ? '#a5d6a7' : '#ef9a9a';
@@ -635,7 +631,6 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowLeft') prevAchievement();
   if (e.key === '1') setVote('agree');
   if (e.key === '2') setVote('disagree');
-  if (e.key === '3') setVote('abstain');
 });
 
 // 自动聚焦
