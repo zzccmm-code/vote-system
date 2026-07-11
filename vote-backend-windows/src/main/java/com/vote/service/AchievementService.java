@@ -289,7 +289,7 @@ public class AchievementService {
         noteStyle.setFont(noteFont);
 
         // 表头
-        String[] headers = {"成果名称*", "成果类别*", "申报单位", "专家推荐等级", "附加信息", "排序号"};
+        String[] headers = {"成果名称*", "成果类别*", "完成单位", "专家推荐等级", "完成人", "排序号"};
         Row headerRow = sheet.createRow(0);
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -304,7 +304,7 @@ public class AchievementService {
         exampleRow.createCell(1).setCellValue("科技进步奖");
         exampleRow.createCell(2).setCellValue("XX科技有限公司");
         exampleRow.createCell(3).setCellValue("一等奖");
-        exampleRow.createCell(4).setCellValue("该项目实现了...");
+        exampleRow.createCell(4).setCellValue("张三;李四");
         exampleRow.createCell(5).setCellValue(1);
         for (int i = 0; i < 6; i++) {
             exampleRow.getCell(i).setCellStyle(exampleStyle);
@@ -406,7 +406,7 @@ public class AchievementService {
                     }
                     a.setAchievementCategory(category);
 
-                    // 申报单位
+                    // 完成单位
                     String units = getCellString(row, 2);
                     if (units != null && !units.trim().isEmpty()) {
                         a.setCreationUnits(units.trim());
@@ -423,10 +423,10 @@ public class AchievementService {
                         a.setExpertLevel(level);
                     }
 
-                    // 附加信息
-                    String extra = getCellString(row, 4);
-                    if (extra != null && !extra.trim().isEmpty()) {
-                        a.setExtraInfo(extra.trim());
+                    // 完成人
+                    String person = getCellString(row, 4);
+                    if (person != null && !person.trim().isEmpty()) {
+                        a.setCompletionPerson(person.trim());
                     }
 
                     // 排序号
