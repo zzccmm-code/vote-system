@@ -74,22 +74,22 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 .card-label {
-  font-size: 12px; color: #90caf9; text-transform: uppercase; letter-spacing: 2px;
+  font-size: 14px; color: #90caf9; text-transform: uppercase; letter-spacing: 2px;
   margin-bottom: 8px;
 }
 .card-title {
-  font-size: 22px; font-weight: 700; line-height: 1.4; margin-bottom: 12px;
+  font-size: 24px; font-weight: 700; line-height: 1.4; margin-bottom: 16px;
   word-break: break-all;
 }
-.card-meta {
-  display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+.card-info {
+  margin-bottom: 20px;
 }
-.card-meta .tag {
-  background: rgba(30,136,229,0.15); border: 1px solid rgba(30,136,229,0.3);
-  border-radius: 6px; padding: 4px 12px; font-size: 13px; color: #bbdefb;
+.info-row {
+  font-size: 15px; color: #bbdefb; padding: 6px 0;
+  line-height: 1.6;
 }
-.card-meta .tag.level {
-  background: rgba(76,175,80,0.15); border-color: rgba(76,175,80,0.3); color: #a5d6a7;
+.info-row span {
+  color: #e3f2fd; font-weight: 500;
 }
 
 .attachment-link {
@@ -278,10 +278,10 @@ body {
     <div class="achievement-card" id="achievementCard">
       <div class="card-label" id="cardCategory"></div>
       <div class="card-title" id="cardName"></div>
-      <div class="card-meta">
-        <span class="tag" id="cardUnit"></span>
-        <span class="tag person" id="cardPerson"></span>
-        <span class="tag level" id="cardLevel"></span>
+      <div class="card-info">
+        <div class="info-row">完成单位：<span id="cardUnit"></span></div>
+        <div class="info-row">完成人：<span id="cardPerson"></span></div>
+        <div class="info-row">推荐等级：<span id="cardLevel"></span></div>
       </div>
       <a class="attachment-link hidden" id="cardAttach" href="#" target="_blank">📎 查看附件</a>
 
