@@ -181,4 +181,10 @@ public class AchievementController {
     public Result<Map<String, Object>> batchImport(@RequestParam("file") MultipartFile file) throws IOException {
         return Result.ok(achievementService.batchImport(file));
     }
+
+    /** 数据迁移：将 extraInfo 中的完成人数据复制到 completionPerson */
+    @PostMapping("/migrateCompletion")
+    public Result<Integer> migrateCompletion() {
+        return Result.ok(achievementService.migrateCompletionPerson());
+    }
 }

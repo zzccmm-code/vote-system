@@ -508,4 +508,20 @@ public class AchievementService {
         err.put("message", msg);
         return err;
     }
+
+    /** 数据迁移：将 extraInfo 中的完成人数据复制到 completionPerson */
+    public int migrateCompletionPerson() {
+        List<Achievement> list = achievementMapper.selectList(
+            new LambdaQueryWrapper<Achievement>().isNotNull(Achievement::getExtraInfo)
+        );
+        int count = 0;
+        for (Achievement a : list) {
+            if (a.getCompletionPerson() == null && a.getExtraInfo() != null) {
+                a.setCompletionPerson(a.getExtraInfo());
+                achievementMapper.updateById(a);
+                count++;
+            }
+        }
+        return count;
+    }
 }
