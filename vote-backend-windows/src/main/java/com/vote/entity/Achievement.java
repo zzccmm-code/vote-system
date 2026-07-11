@@ -24,6 +24,9 @@ public class Achievement {
     /** 创建单位（部门） */
     private String creationUnits;
 
+    /** 完成人 */
+    private String completionPerson;
+
     /** 专家组推荐等级：一等奖 / 二等奖 / 三等奖 / 不推荐 */
     private String expertLevel;
 

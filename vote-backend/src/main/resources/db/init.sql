@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `achievement` (
   `achievement_name`     VARCHAR(200) NOT NULL COMMENT '成果名称',
   `achievement_category` VARCHAR(50)  NOT NULL COMMENT '成果类别（专利奖/科技进步奖/技术发明奖）',
   `creation_units`       VARCHAR(300)          COMMENT '创建单位（部门）',
+  `completion_person`    VARCHAR(300)          COMMENT '完成人',
   `expert_level`         VARCHAR(20)           COMMENT '专家组推荐等级（一等奖/二等奖/三等奖/不推荐）',
   `extra_info`           TEXT                  COMMENT '附加信息',
   `file_src`             VARCHAR(500)          COMMENT '附件文件路径',

@@ -129,6 +129,7 @@ public class AchievementService {
         if (achievement.getAchievementName() != null) wrapper.set(Achievement::getAchievementName, achievement.getAchievementName());
         if (achievement.getAchievementCategory() != null) wrapper.set(Achievement::getAchievementCategory, achievement.getAchievementCategory());
         if (achievement.getCreationUnits() != null) wrapper.set(Achievement::getCreationUnits, achievement.getCreationUnits());
+        if (achievement.getCompletionPerson() != null) wrapper.set(Achievement::getCompletionPerson, achievement.getCompletionPerson());
         if (achievement.getExpertLevel() != null) wrapper.set(Achievement::getExpertLevel, achievement.getExpertLevel());
         if (achievement.getExtraInfo() != null) wrapper.set(Achievement::getExtraInfo, achievement.getExtraInfo());
         if (achievement.getFileSrc() != null) wrapper.set(Achievement::getFileSrc, achievement.getFileSrc());

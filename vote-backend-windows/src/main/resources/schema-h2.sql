@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS achievement (
   achievement_name     VARCHAR(200) NOT NULL,
   achievement_category VARCHAR(50)  NOT NULL,
   creation_units       VARCHAR(300),
+  completion_person    VARCHAR(300),
   expert_level         VARCHAR(20),
   extra_info           TEXT,
   file_src             VARCHAR(500),
@@ -19,6 +20,9 @@ CREATE TABLE IF NOT EXISTS achievement (
   update_time          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id)
 );
+
+-- [v1.4.3] 新增“完成人”字段：兼容性迁移（H2 每次启动均执行，IF NOT EXISTS 保证幂等）
+ALTER TABLE achievement ADD COLUMN IF NOT EXISTS completion_person VARCHAR(300);
 
 -- 投票轮次表
 CREATE TABLE IF NOT EXISTS vote_round (

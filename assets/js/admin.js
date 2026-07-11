@@ -113,9 +113,7 @@
       var lvl = r.expertLevel
         ? '<span class="tag tag-level">' + esc(r.expertLevel) + '</span>' : '<span class="tag tag-none">—</span>';
       var units = r.creationUnits ? esc(r.creationUnits) : '<span style="color:var(--text-mute)">—</span>';
-      var attach = r.fileSrc
-        ? '<a class="link-btn link-view" href="/api/files/' + encodeURIComponent(r.fileSrc) + '" target="_blank">查看附件</a>'
-        : '<button class="link-btn link-upload" data-upload="' + r.id + '">上传附件</button>';
+      var completer = r.completionPerson ? esc(r.completionPerson) : '<span style="color:var(--text-mute)">—</span>';
       var checked = S.selected[r.id] ? 'checked' : '';
       return '<tr>' +
         '<td class="col-check"><input type="checkbox" class="row-cb" data-id="' + r.id + '" ' + checked + '></td>' +
@@ -123,8 +121,8 @@
         '<td>' + cat + '</td>' +
         '<td>' + esc(r.achievementName || '') + '</td>' +
         '<td>' + units + '</td>' +
+        '<td>' + completer + '</td>' +
         '<td>' + lvl + '</td>' +
-        '<td>' + attach + '</td>' +
         '<td><span class="cell-actions">' +
           '<button class="link-btn link-edit" data-edit="' + r.id + '">编辑</button>' +
           '<button class="link-btn link-del" data-del="' + r.id + '">删除</button>' +
@@ -138,9 +136,9 @@
         '<th class="col-idx">序号</th>' +
         '<th>成果类别</th>' +
         '<th>成果名称</th>' +
-        '<th>推荐单位（部门）</th>' +
+        '<th>完成单位</th>' +
+        '<th>完成人</th>' +
         '<th>推荐等级</th>' +
-        '<th>附件</th>' +
         '<th>操作</th>' +
       '</tr></thead><tbody>' + rows + '</tbody></table>';
   }
@@ -217,6 +215,7 @@
     currentFileSrc = '';
     $('fmName').value = '';
     $('fmUnits').value = '';
+    $('fmCompleter').value = '';
     $('fmExtra').value = '';
     $('fmLevel').value = '';
     $('fmFileHint').textContent = '';
@@ -228,6 +227,7 @@
         $('fmName').value = rec.achievementName || '';
         $('fmCategory').value = rec.achievementCategory || '专利奖';
         $('fmUnits').value = rec.creationUnits || '';
+        $('fmCompleter').value = rec.completionPerson || '';
         $('fmLevel').value = rec.expertLevel || '';
         $('fmExtra').value = rec.extraInfo || '';
         currentFileSrc = rec.fileSrc || '';
@@ -256,6 +256,7 @@
     if (!name) { toast('请填写成果名称', 'error'); return; }
     var cat = $('fmCategory').value;
     var units = $('fmUnits').value.trim();
+    var completer = $('fmCompleter').value.trim();
     var level = $('fmLevel').value;
     var extra = $('fmExtra').value.trim();
 
@@ -265,6 +266,7 @@
       fd.append('achievementName', name);
       fd.append('achievementCategory', cat);
       if (units) fd.append('creationUnits', units);
+      if (completer) fd.append('completionPerson', completer);
       if (level) fd.append('expertLevel', level);
       if (extra) fd.append('extraInfo', extra);
       fd.append('status', 1);
@@ -423,6 +425,7 @@
         '<td>' + esc(v.achievementName || '') + '</td>' +
         '<td>' + (v.achievementCategory ? '<span class="tag tag-cat">' + esc(v.achievementCategory) + '</span>' : '—') + '</td>' +
         '<td>' + (v.creationUnits ? esc(v.creationUnits) : '—') + '</td>' +
+        '<td>' + (v.completionPerson ? esc(v.completionPerson) : '—') + '</td>' +
         '<td>' + (v.expertLevel ? esc(v.expertLevel) : '—') + '</td>' +
         '<td class="center">' + (v.agree || 0) + '</td>' +
         '<td class="center">' + (v.disagree || 0) + '</td>' +
@@ -434,7 +437,7 @@
     }).join('');
     $('resultWrap').innerHTML =
       '<table class="data"><thead><tr>' +
-        '<th class="col-idx">序号</th><th>成果名称</th><th>类别</th><th>推荐单位</th>' +
+        '<th class="col-idx">序号</th><th>成果名称</th><th>类别</th><th>完成单位</th><th>完成人</th>' +
         '<th>推荐等级</th><th class="center">同意</th><th class="center">不同意</th>' +
         '<th class="center">弃权</th><th class="center">总票数</th><th class="center">同意占比</th>' +
         '<th>最终授奖</th>' +

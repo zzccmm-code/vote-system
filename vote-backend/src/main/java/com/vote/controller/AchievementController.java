@@ -59,6 +59,7 @@ public class AchievementController {
             @RequestParam String achievementName,
             @RequestParam String achievementCategory,
             @RequestParam(required = false) String creationUnits,
+            @RequestParam(required = false) String completionPerson,
             @RequestParam(required = false) String expertLevel,
             @RequestParam(required = false) String extraInfo,
             @RequestParam(required = false) String fileSrc,
@@ -71,6 +72,7 @@ public class AchievementController {
         achievement.setAchievementName(achievementName);
         achievement.setAchievementCategory(achievementCategory);
         achievement.setCreationUnits(creationUnits);
+        achievement.setCompletionPerson(completionPerson);
         achievement.setExpertLevel(expertLevel);
         achievement.setExtraInfo(extraInfo);
         achievement.setFileSrc(fileSrc);
@@ -92,6 +94,7 @@ public class AchievementController {
             @RequestParam(required = false) String achievementName,
             @RequestParam(required = false) String achievementCategory,
             @RequestParam(required = false) String creationUnits,
+            @RequestParam(required = false) String completionPerson,
             @RequestParam(required = false) String expertLevel,
             @RequestParam(required = false) String extraInfo,
             @RequestParam(required = false) String fileSrc,
@@ -105,6 +108,7 @@ public class AchievementController {
         achievement.setAchievementName(achievementName);
         achievement.setAchievementCategory(achievementCategory);
         achievement.setCreationUnits(creationUnits);
+        achievement.setCompletionPerson(completionPerson);
         achievement.setExpertLevel(expertLevel);
         achievement.setExtraInfo(extraInfo);
         achievement.setFileSrc(fileSrc);

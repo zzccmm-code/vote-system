@@ -130,6 +130,7 @@ public class VoteResultService {
                 vo.setAchievementName(a.getAchievementName());
                 vo.setAchievementCategory(a.getAchievementCategory());
                 vo.setCreationUnits(a.getCreationUnits());
+                vo.setCompletionPerson(a.getCompletionPerson());
                 vo.setExpertLevel(a.getExpertLevel());
             }
             vo.setAgree(r.getAgree());
@@ -171,7 +172,7 @@ public class VoteResultService {
         Sheet sheet = workbook.createSheet("投票统计");
 
         // 标题行
-        String[] headers = {"序号", "成果名称", "成果类别", "申报单位", "专家推荐等级",
+        String[] headers = {"序号", "成果名称", "成果类别", "完成单位", "完成人", "专家推荐等级",
                 "同意票", "不同意票", "弃权票", "总投票数", "同意票占比", "最终授奖等级"};
         Row headerRow = sheet.createRow(0);
         CellStyle headerStyle = workbook.createCellStyle();
@@ -192,13 +193,14 @@ public class VoteResultService {
             row.createCell(1).setCellValue(vo.getAchievementName() != null ? vo.getAchievementName() : "");
             row.createCell(2).setCellValue(vo.getAchievementCategory() != null ? vo.getAchievementCategory() : "");
             row.createCell(3).setCellValue(vo.getCreationUnits() != null ? vo.getCreationUnits() : "");
-            row.createCell(4).setCellValue(vo.getExpertLevel() != null ? vo.getExpertLevel() : "");
-            row.createCell(5).setCellValue(vo.getAgree() != null ? vo.getAgree() : 0);
-            row.createCell(6).setCellValue(vo.getDisagree() != null ? vo.getDisagree() : 0);
-            row.createCell(7).setCellValue(vo.getAbstain() != null ? vo.getAbstain() : 0);
-            row.createCell(8).setCellValue(vo.getTotalVoters() != null ? vo.getTotalVoters() : 0);
-            row.createCell(9).setCellValue(vo.getAgreeRatio() != null ? vo.getAgreeRatio() : "0%");
-            row.createCell(10).setCellValue(vo.getVoteLevel() != null ? vo.getVoteLevel() : "");
+            row.createCell(4).setCellValue(vo.getCompletionPerson() != null ? vo.getCompletionPerson() : "");
+            row.createCell(5).setCellValue(vo.getExpertLevel() != null ? vo.getExpertLevel() : "");
+            row.createCell(6).setCellValue(vo.getAgree() != null ? vo.getAgree() : 0);
+            row.createCell(7).setCellValue(vo.getDisagree() != null ? vo.getDisagree() : 0);
+            row.createCell(8).setCellValue(vo.getAbstain() != null ? vo.getAbstain() : 0);
+            row.createCell(9).setCellValue(vo.getTotalVoters() != null ? vo.getTotalVoters() : 0);
+            row.createCell(10).setCellValue(vo.getAgreeRatio() != null ? vo.getAgreeRatio() : "0%");
+            row.createCell(11).setCellValue(vo.getVoteLevel() != null ? vo.getVoteLevel() : "");
         }
 
         // 自动列宽
@@ -257,6 +259,7 @@ public class VoteResultService {
         private String achievementName;
         private String achievementCategory;
         private String creationUnits;
+        private String completionPerson;
         private String expertLevel;
         private Integer agree;
         private Integer disagree;
