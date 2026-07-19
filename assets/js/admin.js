@@ -389,7 +389,7 @@
       .catch(function (err) { toast('操作失败：' + err.message, 'error'); });
   }
   function resetVote() {
-    if (!confirm('确定重置投票？将清空最近一轮的投票记录与结果（已发布的结果不可重置）。')) return;
+    if (!confirm('确定完全重置投票？此操作将清空全部投票轮次、记录和结果，不可恢复！')) return;
     post('/voteRound/resetting')
       .then(function (d) { toast(d.msg || '已重置', 'success'); loadVote(); })
       .catch(function (err) { toast('操作失败：' + err.message, 'error'); });

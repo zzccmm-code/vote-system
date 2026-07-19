@@ -115,50 +115,20 @@ public class VoteRoundService {
     }
 
     /**
-     * 重置投票（清空当前轮次数据）
-     * [P2修复] 增加发布状态检查，防止误删已发布结果
-     * [P1修复] 阻止在投票进行中重置
+     * 完全重置投票：删除全部轮次、投票记录、投票结果，恢复到初始状态
+     * 不论是否已发布、是否在运行中，全部清空
      */
     @Transactional
     public String resetVote() {
-        VoteRound running = getCurrentRound();
-        if (running != null) {
-            throw new IllegalArgumentException("当前投票正在运行中，请先结束投票再重置");
-        }
+        // 删除全部投票记录
+        voteRecordMapper.delete(new QueryWrapper<>());
+        // 删除全部投票结果
+        voteResultMapper.delete(new QueryWrapper<>());
+        // 删除全部轮次
+        voteRoundMapper.delete(new QueryWrapper<>());
 
-        // 找最近一轮已结束的
-        LambdaQueryWrapper<VoteRound> w = new LambdaQueryWrapper<>();
-        w.orderByDesc(VoteRound::getId).last("LIMIT 1");
-        running = voteRoundMapper.selectOne(w);
-        if (running == null) {
-            return "没有可重置的投票轮次";
-        }
-
-        Long roundId = running.getId();
-
-        // [P2修复] 检查该轮次是否已有发布的投票结果
-        LambdaQueryWrapper<VoteResult> pubCheck = new LambdaQueryWrapper<>();
-        pubCheck.eq(VoteResult::getRoundId, roundId)
-                .eq(VoteResult::getIsPublished, 1);
-        Long pubCount = voteResultMapper.selectCount(pubCheck);
-        if (pubCount > 0) {
-            throw new IllegalArgumentException("该轮次投票结果已发布，不能重置。如需重置，请先撤回发布");
-        }
-
-        // 删除投票记录
-        LambdaQueryWrapper<VoteRecord> rw = new LambdaQueryWrapper<>();
-        rw.eq(VoteRecord::getRoundId, roundId);
-        voteRecordMapper.delete(rw);
-
-        // 删除投票结果
-        LambdaQueryWrapper<VoteResult> rv = new LambdaQueryWrapper<>();
-        rv.eq(VoteResult::getRoundId, roundId);
-        voteResultMapper.delete(rv);
-
-        // 删除轮次
-        voteRoundMapper.deleteById(roundId);
-
-        return "投票已重置";
+        clearTotalVotersCache();
+        return "投票已完全重置，所有轮次、记录、结果已清空";
     }
 
     /**
