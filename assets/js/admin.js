@@ -145,13 +145,21 @@
 
   function renderPager() {
     var totalPages = Math.max(1, Math.ceil(S.total / S.size));
+    var sizeOpts = [10, 20, 50, 100];
+    var sizeSel = '<select id="pgSize">';
+    sizeOpts.forEach(function (n) {
+      sizeSel += '<option value="' + n + '"' + (S.size === n ? ' selected' : '') + '>' + n + ' 条/页</option>';
+    });
+    sizeSel += '</select>';
     $('pager').innerHTML =
       '<span class="pinfo">共 ' + S.total + ' 条 · 第 ' + S.page + '/' + totalPages + ' 页</span>' +
+      sizeSel +
       '<button id="pgPrev"' + (S.page <= 1 ? ' disabled' : '') + '>上一页</button>' +
       '<button id="pgNext"' + (S.page >= totalPages ? ' disabled' : '') + '>下一页</button>';
-    var pv = $('pgPrev'), nx = $('pgNext');
+    var pv = $('pgPrev'), nx = $('pgNext'), sz = $('pgSize');
     if (pv) pv.onclick = function () { if (S.page > 1) { S.page--; loadList(); } };
     if (nx) nx.onclick = function () { if (S.page < totalPages) { S.page++; loadList(); } };
+    if (sz) sz.onchange = function () { S.size = Number(sz.value); S.page = 1; loadList(); };
   }
 
   // 表格事件委托
