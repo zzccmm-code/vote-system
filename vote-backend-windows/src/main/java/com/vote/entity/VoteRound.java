@@ -33,6 +33,9 @@ public class VoteRound {
     /** 是否为第一轮 */
     private Integer isFirst;
 
+    /** 手动设置的应参与委员总数（0=自动计算） */
+    private Integer totalVoters;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 }

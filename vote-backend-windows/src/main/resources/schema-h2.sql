@@ -33,10 +33,12 @@ CREATE TABLE IF NOT EXISTS vote_round (
   rule_json   TEXT,
   status      VARCHAR(20) NOT NULL DEFAULT 'not_started',
   is_first    INT         NOT NULL DEFAULT 0,
+  total_voters INT        NOT NULL DEFAULT 0,
   create_time TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   CONSTRAINT uk_round_num UNIQUE (round_num)
 );
+ALTER TABLE vote_round ADD COLUMN IF NOT EXISTS total_voters INT NOT NULL DEFAULT 0;
 
 -- 投票结果表
 CREATE TABLE IF NOT EXISTS vote_result (

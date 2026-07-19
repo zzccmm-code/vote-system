@@ -1,6 +1,7 @@
 package com.vote.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.vote.dto.StartVoteReq;
 import com.vote.dto.VoteRoundPushReq;
@@ -247,8 +248,8 @@ public class VoteRoundService {
         }
 
         // [P1修复] 使用 SQL COUNT(DISTINCT voter_id) 避免全表加载
-        LambdaQueryWrapper<VoteRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(VoteRecord::getRoundId, actualRoundId)
+        QueryWrapper<VoteRecord> wrapper = new QueryWrapper<>();
+        wrapper.eq("round_id", actualRoundId)
                .select("COUNT(DISTINCT voter_id) AS cnt");
         // MyBatis-Plus 的 selectCount 不支持聚合函数，改用 selectMaps
         List<Map<String, Object>> maps = voteRecordMapper.selectMaps(wrapper);
@@ -270,10 +271,15 @@ public class VoteRoundService {
 
     /**
      * 获取应参与投票的委员总数
-     * 优先使用配置的 app.total-voters，若未配置则取历史最大投票人数
+     * 优先使用手动设置的值，若未设置则取配置 app.total-voters，若再未配则取历史最大投票人数
      * [P2修复] 增加内存缓存，避免每次调用都全表扫描
      */
     private int getTotalVoters() {
+        // 优先使用当前轮次手动设置的值
+        VoteRound current = getCurrentRound();
+        if (current != null && current.getTotalVoters() != null && current.getTotalVoters() > 0) {
+            return current.getTotalVoters();
+        }
         if (configuredTotalVoters > 0) {
             return configuredTotalVoters;
         }
@@ -305,5 +311,17 @@ public class VoteRoundService {
     public void clearTotalVotersCache() {
         cachedTotalVoters = -1;
         cachedTotalVotersTime = 0;
+    }
+
+    /** 设置当前轮次的应参与委员总数（手动输入） */
+    public int setTotalVoters(int totalVoters) {
+        VoteRound current = getCurrentRound();
+        if (current == null) {
+            throw new RuntimeException("没有进行中的投票轮次，无法设置委员总数");
+        }
+        current.setTotalVoters(totalVoters);
+        voteRoundMapper.updateById(current);
+        clearTotalVotersCache();
+        return totalVoters;
     }
 }

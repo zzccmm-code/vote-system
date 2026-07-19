@@ -95,4 +95,10 @@ public class VoteRoundController {
             @RequestParam(value = "roundId", required = false) Long roundId) {
         return Result.ok(voteRoundService.getRoundSubmitNum(roundId));
     }
+
+    /** 手动设置当前轮次应参与委员总数 */
+    @PostMapping("/setTotalVoters")
+    public Result<Integer> setTotalVoters(@RequestParam int totalVoters) {
+        return Result.ok(voteRoundService.setTotalVoters(totalVoters));
+    }
 }

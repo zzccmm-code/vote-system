@@ -354,11 +354,26 @@
 
     var pct = num.total > 0 ? Math.round(num.submitNum / num.total * 100) : 0;
     $('voteStats').innerHTML =
-      '<div class="stat-card"><div class="label">应参与委员</div><div class="value">' + (num.total || 0) + ' <small>人</small></div></div>' +
+      '<div class="stat-card"><div class="label">应参与委员</div>' +
+        '<div class="value" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+          '<input type="number" id="totalVotersInput" value="' + (num.total || 0) + '" min="0" style="width:90px;text-align:center;font-size:28px;font-weight:700;background:var(--panel-strong);border:1px solid var(--border);color:var(--accent);border-radius:6px;padding:4px 8px;font-family:inherit;">' +
+          '<small>人</small>' +
+          '<button id="saveTotalBtn" style="padding:4px 12px;font-size:13px;border-radius:6px;cursor:pointer;background:var(--accent);color:#fff;border:none;font-family:inherit;">保存</button>' +
+        '</div></div>' +
       '<div class="stat-card"><div class="label">已提交委员</div><div class="value">' + (num.submitNum || 0) + ' <small>人</small></div></div>' +
       '<div class="stat-card" style="grid-column:1/-1"><div class="label">提交进度</div>' +
         '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
         '<div style="font-size:13px;color:var(--text-mute);margin-top:6px;">' + pct + '% 完成</div></div>';
+
+    var btn = $('saveTotalBtn');
+    if (btn) btn.onclick = function () {
+      var val = parseInt($('totalVotersInput').value, 10);
+      if (isNaN(val) || val < 0) { toast('请输入有效的委员人数', 'error'); return; }
+      btn.disabled = true; btn.textContent = '保存中…';
+      post('/voteRound/setTotalVoters', { totalVoters: val })
+        .then(function () { toast('已更新', 'success'); loadVote(); })
+        .catch(function (err) { toast('保存失败：' + err.message, 'error'); btn.disabled = false; btn.textContent = '保存'; });
+    };
   }
 
   function startVote() {
