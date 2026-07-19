@@ -122,27 +122,6 @@ body {
 .vote-btn.selected-agree { background: rgba(76,175,80,0.25); border-color: #4caf50; color: #a5d6a7; }
 .vote-btn.selected-disagree { background: rgba(244,67,54,0.25); border-color: #f44336; color: #ef9a9a; }
 
-/* ===== 等级选择 ===== */
-.level-options {
-  display: flex; gap: 10px;
-}
-.level-btn {
-  flex: 1;
-  padding: 18px 12px;
-  border: 2px solid rgba(255,255,255,0.12);
-  border-radius: 10px;
-  background: rgba(255,255,255,0.04);
-  color: #90caf9;
-  font-size: 18px; font-weight: 600;
-  cursor: pointer; transition: all 0.2s;
-  -webkit-tap-highlight-color: transparent;
-}
-.level-btn:active { transform: scale(0.95); }
-.level-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.level-btn.selected {
-  background: rgba(30,136,229,0.3); border-color: #1e88e5; color: #e3f2fd;
-}
-
 /* ===== 底部导航 ===== */
 .nav-bar {
   display: flex; align-items: center; justify-content: center; gap: 16px;
@@ -290,13 +269,6 @@ body {
         <div class="vote-options">
           <button class="vote-btn" id="btnAgree" onclick="setVote('agree')">✓ 同意</button>
           <button class="vote-btn" id="btnDisagree" onclick="setVote('disagree')">✗ 不同意</button>
-        </div>
-
-        <h3>推荐等级</h3>
-        <div class="level-options">
-          <button class="level-btn" data-level="一等奖" onclick="setLevel(this)">一等奖</button>
-          <button class="level-btn" data-level="二等奖" onclick="setLevel(this)">二等奖</button>
-          <button class="level-btn" data-level="三等奖" onclick="setLevel(this)">三等奖</button>
         </div>
       </div>
     </div>
@@ -470,14 +442,8 @@ function renderCurrent() {
   if (saved) {
     if (saved.voteOption === 'agree') $('btnAgree').classList.add('selected-agree');
     if (saved.voteOption === 'disagree') $('btnDisagree').classList.add('selected-disagree');
-    if (saved.voteLevel) {
-      $$('.level-btn').forEach(function(lb) {
-        if (lb.getAttribute('data-level') === saved.voteLevel) lb.classList.add('selected');
-      });
-    }
   }
 
-  updateLevelState();
   updateProgress();
   updateNavButtons();
   $('achievementCard').scrollTop = 0;
@@ -486,7 +452,6 @@ function renderCurrent() {
 function clearSelection() {
   $('btnAgree').classList.remove('selected-agree');
   $('btnDisagree').classList.remove('selected-disagree');
-  $$('.level-btn').forEach(function(lb) { lb.classList.remove('selected'); });
 }
 
 function updateProgress() {
@@ -516,36 +481,7 @@ function setVote(option) {
   clearSelection();
   if (option === 'agree') $('btnAgree').classList.add('selected-agree');
   if (option === 'disagree') $('btnDisagree').classList.add('selected-disagree');
-  updateLevelState();
   updateProgress();
-}
-
-function setLevel(el) {
-  if (state.submitted) return;
-  if (el.disabled) return;
-  var ach = state.achievements[state.currentIndex];
-  if (!ach) return;
-  var vid = ach.achievementId || ach.id;
-  if (!state.votes[vid]) state.votes[vid] = {};
-  state.votes[vid].voteLevel = el.getAttribute('data-level');
-
-  $$('.level-btn').forEach(function(lb) { lb.classList.remove('selected'); });
-  el.classList.add('selected');
-  updateProgress();
-}
-
-// 等级按钮可用性：仅“同意”时可选择等级；“不同意”或未选择时禁用
-function updateLevelState() {
-  var ach = state.achievements[state.currentIndex];
-  if (!ach) return;
-  var vid = ach.achievementId || ach.id;
-  var v = state.votes[vid];
-  var disabled = !(v && v.voteOption === 'agree');
-  $$('.level-btn').forEach(function(lb) { lb.disabled = disabled; });
-  if (disabled && v && v.voteLevel) {
-    delete v.voteLevel;
-    $$('.level-btn').forEach(function(lb) { lb.classList.remove('selected'); });
-  }
 }
 
 // ==================== 导航 ====================
@@ -607,7 +543,6 @@ function doSubmit() {
     var aid = ach.achievementId || ach.id;
     var v = state.votes[aid];
     var option = (v && v.voteOption) ? v.voteOption : 'abstain';
-    var level = (v && v.voteLevel) ? v.voteLevel : '';
     promises.push(
       fetch(API('/voteRound/push'), {
         method: 'POST',
@@ -617,8 +552,7 @@ function doSubmit() {
           achievementId: Number(aid),
           voterId: state.voterName,
           voterName: state.voterName,
-          voteOption: option,
-          voteLevel: level
+          voteOption: option
         })
       }).then(function(r) { return r.json(); })
         .then(function(d) {
@@ -657,11 +591,10 @@ function showSummary() {
     var info = name + (units ? ' — ' + units : '') + (person ? ' / ' + person : '');
     var opts = { agree: '✓ 同意', disagree: '✗ 不同意' };
     var optTxt = v && v.voteOption ? opts[v.voteOption] : '未投票';
-    var lvlTxt = v && v.voteLevel ? v.voteLevel : '';
     var color = v ? '#a5d6a7' : '#ef9a9a';
     html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">' +
       '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px;">' + (i+1) + '. ' + info + '</span>' +
-      '<span style="color:' + color + ';white-space:nowrap;">' + optTxt + (lvlTxt ? ' / ' + lvlTxt : '') + '</span>' +
+      '<span style="color:' + color + ';white-space:nowrap;">' + optTxt + '</span>' +
       '</div>';
   });
   $('summaryList').innerHTML = html || '<p>暂无数据</p>';
