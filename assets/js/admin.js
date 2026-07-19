@@ -370,7 +370,7 @@
       var val = parseInt($('totalVotersInput').value, 10);
       if (isNaN(val) || val < 0) { toast('请输入有效的委员人数', 'error'); return; }
       btn.disabled = true; btn.textContent = '保存中…';
-      post('/voteRound/setTotalVoters', { totalVoters: val })
+      post('/voteRound/setTotalVoters?totalVoters=' + val, {})
         .then(function () { toast('已更新', 'success'); loadVote(); })
         .catch(function (err) { toast('保存失败：' + err.message, 'error'); btn.disabled = false; btn.textContent = '保存'; });
     };
