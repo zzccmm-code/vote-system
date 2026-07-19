@@ -12,12 +12,11 @@ spring:
     password: vote_h2_2024
     driver-class-name: org.h2.Driver
 
-  # 首次启动自动执行建表脚本和初始数据
+  # 每次启动执行幂等建表脚本，不重置已有数据
   sql:
     init:
       mode: always
       schema-locations: classpath:schema-h2.sql
-      data-locations: classpath:data-h2.sql
 
   # H2 Web控制台（仅限本机访问，生产环境建议关闭 enabled: false）
   h2:
