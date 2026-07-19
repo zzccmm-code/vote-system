@@ -59,7 +59,7 @@
 
   // -------------------- 全局状态 --------------------
   var S = {
-    page: 1, size: 10,
+    page: 1, size: 100,
     category: '', level: '', name: '',
     total: 0, records: [],
     selected: {},          // id -> true
