@@ -351,9 +351,22 @@ function doLogin() {
   if (!name) { showToast('请输入姓名', 'error'); return; }
   state.voterName = name;
   $('loginBtn').disabled = true;
-  $('loginBtn').textContent = '加载中...';
+  $('loginBtn').textContent = '验证中...';
 
-  fetchVoteData()
+  // 先检查是否已投票
+  fetch(API('/voteRound/checkVoter?voterName=' + encodeURIComponent(name)))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.data === true) {
+        showToast('该姓名已投过票，不能重复投票', 'error');
+        $('loginBtn').disabled = false;
+        $('loginBtn').textContent = '进入投票';
+        return Promise.reject(new Error('ALREADY_VOTED'));
+      }
+      // 未投票，继续加载数据
+      $('loginBtn').textContent = '加载中...';
+      return fetchVoteData();
+    })
     .then(function() {
       $('loginScreen').classList.add('hidden');
       $('voteScreen').classList.remove('hidden');
@@ -362,7 +375,9 @@ function doLogin() {
       renderCurrent();
     })
     .catch(function(err) {
-      showToast(err.message || '加载失败', 'error');
+      if (err && err.message !== 'ALREADY_VOTED') {
+        showToast(err.message || '加载失败', 'error');
+      }
       $('loginBtn').disabled = false;
       $('loginBtn').textContent = '进入投票';
     });

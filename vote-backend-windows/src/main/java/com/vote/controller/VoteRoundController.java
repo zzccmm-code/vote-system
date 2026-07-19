@@ -101,4 +101,10 @@ public class VoteRoundController {
     public Result<Integer> setTotalVoters(@RequestParam int totalVoters) {
         return Result.ok(voteRoundService.setTotalVoters(totalVoters));
     }
+
+    /** 检查指定姓名是否已在当前轮次投票 */
+    @GetMapping("/checkVoter")
+    public Result<Boolean> checkVoter(@RequestParam String voterName) {
+        return Result.ok(voteRoundService.hasVoterVoted(voterName));
+    }
 }

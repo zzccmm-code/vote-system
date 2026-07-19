@@ -324,4 +324,14 @@ public class VoteRoundService {
         clearTotalVotersCache();
         return totalVoters;
     }
+
+    /** 检查指定姓名是否已在当前轮次中投过票 */
+    public boolean hasVoterVoted(String voterName) {
+        VoteRound current = getCurrentRound();
+        if (current == null) return false;
+        QueryWrapper<VoteRecord> wrapper = new QueryWrapper<>();
+        wrapper.eq("round_id", current.getId())
+               .eq("voter_name", voterName);
+        return voteRecordMapper.selectCount(wrapper) > 0;
+    }
 }
