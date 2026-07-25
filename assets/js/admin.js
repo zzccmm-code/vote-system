@@ -487,6 +487,25 @@
     }).catch(function (err) { toast('导出失败：' + (err.message || ''), 'error'); });
   }
 
+  function exportVoteDetail() {
+    var rid = (S.curRound && S.curRound.id) ? S.curRound.id : '';
+    fetch('/voteRound/exportVoteDetail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roundId: rid || null })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('导出失败');
+      return r.blob();
+    }).then(function (blob) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '投票明细.xlsx';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      toast('导出成功', 'success');
+    }).catch(function (err) { toast('导出失败：' + (err.message || ''), 'error'); });
+  }
+
   // ====================================================
   //  Tab 切换
   // ====================================================
@@ -541,6 +560,7 @@
   $('btnLoadResult').addEventListener('click', loadResult);
   $('rPublished').addEventListener('change', loadResult);
   $('btnExport').addEventListener('click', exportExcel);
+  $('btnExportDetail').addEventListener('click', exportVoteDetail);
 
   // 初始加载
   loadList();

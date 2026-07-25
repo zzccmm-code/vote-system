@@ -14,13 +14,20 @@ import com.vote.mapper.VoteRecordMapper;
 import com.vote.mapper.VoteResultMapper;
 import com.vote.mapper.VoteRoundMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.ByteArrayOutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -303,5 +310,94 @@ public class VoteRoundService {
         wrapper.eq("round_id", current.getId())
                .eq("voter_name", voterName);
         return voteRecordMapper.selectCount(wrapper) > 0;
+    }
+
+    /** 导出投票明细Excel：每个专家一个sheet */
+    public ResponseEntity<byte[]> exportVoteDetail(Long roundId) throws Exception {
+        if (roundId == null) {
+            VoteRound current = getCurrentRound();
+            if (current == null) throw new RuntimeException("没有可导出的投票轮次");
+            roundId = current.getId();
+        }
+
+        // 加载本轮全部投票记录
+        List<VoteRecord> records = voteRecordMapper.selectList(
+            new QueryWrapper<VoteRecord>().eq("round_id", roundId)
+        );
+
+        // 加载成果信息
+        List<Achievement> achievements = achievementMapper.selectList(null);
+        Map<Long, Achievement> achMap = achievements.stream()
+            .collect(Collectors.toMap(Achievement::getId, a -> a));
+
+        // 按投票人分组
+        Map<String, List<VoteRecord>> voterGroups = records.stream()
+            .collect(Collectors.groupingBy(VoteRecord::getVoterName));
+
+        Workbook workbook = new XSSFWorkbook();
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setBorderBottom(BorderStyle.THIN);
+        headerStyle.setBorderTop(BorderStyle.THIN);
+        headerStyle.setBorderLeft(BorderStyle.THIN);
+        headerStyle.setBorderRight(BorderStyle.THIN);
+
+        String[] headers = {"序号", "成果名称", "成果类别", "完成单位", "完成人", "投票选项"};
+
+        for (Map.Entry<String, List<VoteRecord>> entry : voterGroups.entrySet()) {
+            String voterName = entry.getKey();
+            // sheet名不能超过31个字符
+            String sheetName = voterName.length() > 30 ? voterName.substring(0, 30) : voterName;
+            Sheet sheet = workbook.createSheet(sheetName);
+
+            // 表头
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // 数据行
+            List<VoteRecord> voterRecords = entry.getValue();
+            int rowNum = 1;
+            for (VoteRecord r : voterRecords) {
+                Row row = sheet.createRow(rowNum++);
+                Achievement a = achMap.get(r.getAchievementId());
+                row.createCell(0).setCellValue(rowNum - 1);
+                row.createCell(1).setCellValue(a != null ? a.getAchievementName() : "");
+                row.createCell(2).setCellValue(a != null ? a.getAchievementCategory() : "");
+                row.createCell(3).setCellValue(a != null ? a.getCreationUnits() : "");
+                row.createCell(4).setCellValue(a != null ? a.getCompletionPerson() : "");
+                row.createCell(5).setCellValue("agree".equals(r.getVoteOption()) ? "同意" :
+                    "disagree".equals(r.getVoteOption()) ? "不同意" : "弃权");
+            }
+
+            // 自动列宽
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+                int width = sheet.getColumnWidth(i);
+                if (width > 15000) sheet.setColumnWidth(i, 15000);
+                if (width < 3000) sheet.setColumnWidth(i, 3000);
+            }
+        }
+
+        if (voterGroups.isEmpty()) {
+            workbook.createSheet("无投票记录");
+        }
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        workbook.write(bos);
+        workbook.close();
+
+        String filename = URLEncoder.encode("投票明细.xlsx", StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + filename)
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .body(bos.toByteArray());
     }
 }

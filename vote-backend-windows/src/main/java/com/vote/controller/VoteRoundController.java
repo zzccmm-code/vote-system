@@ -6,8 +6,10 @@ import com.vote.dto.VoteRoundPushReq;
 import com.vote.entity.VoteRound;
 import com.vote.service.VoteRoundService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -106,5 +108,16 @@ public class VoteRoundController {
     @GetMapping("/checkVoter")
     public Result<Boolean> checkVoter(@RequestParam String voterName) {
         return Result.ok(voteRoundService.hasVoterVoted(voterName));
+    }
+
+    /** 导出投票明细Excel：每个专家一个sheet */
+    @PostMapping("/exportVoteDetail")
+    public ResponseEntity<byte[]> exportVoteDetail(
+            @RequestBody(required = false) Map<String, Object> body) throws Exception {
+        Long roundId = null;
+        if (body != null && body.get("roundId") != null) {
+            roundId = Long.valueOf(body.get("roundId").toString());
+        }
+        return voteRoundService.exportVoteDetail(roundId);
     }
 }
