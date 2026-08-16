@@ -33,11 +33,6 @@ body {
   background: rgba(30,136,229,0.2); border: 1px solid rgba(30,136,229,0.4);
   border-radius: 6px; padding: 4px 12px; font-size: 13px; color: #90caf9;
 }
-.top-bar .status-dot {
-  width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px;
-}
-.top-bar .status-dot.active { background: #4caf50; box-shadow: 0 0 6px #4caf50; }
-.top-bar .status-dot.ended { background: #f44336; box-shadow: 0 0 6px #f44336; }
 
 /* ===== 进度条 ===== */
 .progress-wrap {
@@ -52,80 +47,91 @@ body {
   height: 100%; background: linear-gradient(90deg, #42a5f5, #1e88e5);
   border-radius: 3px; transition: width 0.3s;
 }
-.progress-text { font-size: 13px; color: #90caf9; white-space: nowrap; }
+.progress-text { font-size: 14px; color: #90caf9; white-space: nowrap; }
 
-/* ===== 主体内容 ===== */
-.main-content {
-  display: flex; flex-direction: column;
-  height: calc(100vh - 160px);
-  height: calc(100dvh - 160px);
-  padding: 0 24px;
+/* ===== 分组页签 ===== */
+.tab-bar {
+  display: flex; gap: 10px; padding: 12px 24px 8px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
-
-/* ===== 成果展示卡片 ===== */
-.achievement-card {
-  flex: 1;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(30,136,229,0.2);
-  border-radius: 16px;
-  padding: 28px 32px;
-  display: flex; flex-direction: column;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.card-label {
-  font-size: 17px; color: #90caf9; text-transform: uppercase; letter-spacing: 2px;
-  margin-bottom: 8px;
-}
-.card-title {
-  font-size: 28px; font-weight: 700; line-height: 1.4; margin-bottom: 16px;
-  word-break: break-all;
-}
-.card-info {
-  margin-bottom: 20px;
-}
-.info-row {
-  font-size: 19px; color: #bbdefb; padding: 8px 0;
-  line-height: 1.6;
-}
-.info-row span {
-  color: #e3f2fd; font-weight: 500;
-}
-
-.attachment-link {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 8px; padding: 10px 18px; color: #90caf9; font-size: 16px;
-  text-decoration: none; margin-bottom: 16px; transition: all 0.2s;
-}
-.attachment-link:hover, .attachment-link:active { background: rgba(30,136,229,0.2); }
-
-/* ===== 投票选项按钮 ===== */
-.vote-section { margin-top: auto; padding-top: 20px; }
-.vote-section h3 { font-size: 14px; font-weight: 500; color: #90caf9; margin-bottom: 12px; }
-
-.vote-options {
-  display: flex; gap: 12px; margin-bottom: 16px;
-}
-.vote-btn {
-  flex: 1; padding: 16px 12px;
-  border: 2px solid rgba(255,255,255,0.15);
-  border-radius: 12px;
-  background: rgba(255,255,255,0.05);
-  color: #b0bec5;
-  font-size: 16px; font-weight: 600;
-  cursor: pointer; text-align: center;
-  transition: all 0.2s;
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex-shrink: 0;
+  padding: 10px 20px;
+  border: 1px solid rgba(30,136,229,0.3);
+  border-radius: 10px;
+  background: rgba(30,136,229,0.08);
+  color: #90caf9;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
-.vote-btn:active { transform: scale(0.96); }
-.vote-btn.selected-agree { background: rgba(76,175,80,0.25); border-color: #4caf50; color: #a5d6a7; }
-.vote-btn.selected-disagree { background: rgba(244,67,54,0.25); border-color: #f44336; color: #ef9a9a; }
+.tab-btn .cnt { font-size: 12px; opacity: 0.75; margin-left: 4px; }
+.tab-btn.active {
+  background: linear-gradient(135deg, #1e88e5, #42a5f5);
+  color: #fff; border-color: transparent;
+  box-shadow: 0 4px 16px rgba(30,136,229,0.35);
+}
+
+/* ===== 主体列表 ===== */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 24px 16px;
+}
+.group-title {
+  font-size: 16px; font-weight: 600; color: #90caf9;
+  margin: 8px 0 10px; letter-spacing: 0.5px;
+}
+.proj-list { display: flex; flex-direction: column; gap: 10px; }
+
+.proj-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(30,136,229,0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.proj-info { flex: 1; min-width: 0; }
+.proj-name {
+  font-size: 18px; font-weight: 600; color: #e3f2fd;
+  line-height: 1.4; word-break: break-all;
+}
+.proj-unit {
+  font-size: 14px; color: #90caf9;
+  margin-top: 4px; line-height: 1.5;
+}
+.proj-rank { font-size: 13px; color: #4dd0e1; margin-top: 4px; }
+
+.level-select {
+  flex-shrink: 0;
+  width: 130px; padding: 10px 8px;
+  border: 2px solid rgba(30,136,229,0.35);
+  border-radius: 8px;
+  background: rgba(0,0,0,0.35);
+  color: #e3f2fd;
+  font-size: 16px; font-weight: 600;
+  text-align: center;
+  outline: none;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2390caf9' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+.level-select:focus { border-color: #1e88e5; }
+.level-select option { background: #0d2137; color: #e3f2fd; font-size: 15px; }
+.level-select.has-value {
+  background-color: rgba(30,136,229,0.2);
+  border-color: #1e88e5; color: #fff;
+}
 
 /* ===== 底部导航 ===== */
 .nav-bar {
   display: flex; align-items: center; justify-content: center; gap: 16px;
   padding: 14px 24px;
+  border-top: 1px solid rgba(30,136,229,0.2);
 }
 .nav-btn {
   padding: 12px 28px;
@@ -144,7 +150,7 @@ body {
   padding: 12px 32px;
   border: none; border-radius: 10px;
   background: linear-gradient(135deg, #43a047, #66bb6a);
-  color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 1px;
+  color: #fff; font-size: 17px; font-weight: 700; letter-spacing: 1px;
   cursor: pointer; transition: all 0.2s;
   box-shadow: 0 4px 16px rgba(76,175,80,0.3);
 }
@@ -252,34 +258,18 @@ body {
     <div class="progress-text" id="progressText">0 / 0</div>
   </div>
 
-  <!-- 主体 -->
-  <div class="main-content" id="mainContent">
-    <div class="achievement-card" id="achievementCard">
-      <div class="card-label" id="cardCategory"></div>
-      <div class="card-title" id="cardName"></div>
-      <div class="card-info">
-        <div class="info-row">完成单位：<span id="cardUnit"></span></div>
-        <div class="info-row">完成人：<span id="cardPerson"></span></div>
-        <div class="info-row">推荐等级：<span id="cardLevel"></span></div>
-      </div>
-      <a class="attachment-link hidden" id="cardAttach" href="#" target="_blank">📎 查看附件</a>
+  <!-- 分组页签 -->
+  <div class="tab-bar" id="tabBar"></div>
 
-      <div class="vote-section">
-        <h3>投票选项</h3>
-        <div class="vote-options">
-          <button class="vote-btn" id="btnAgree" onclick="setVote('agree')">✓ 同意</button>
-          <button class="vote-btn" id="btnDisagree" onclick="setVote('disagree')">✗ 不同意</button>
-        </div>
-      </div>
-    </div>
+  <!-- 列表主体 -->
+  <div class="main-content" id="mainContent">
+    <div class="proj-list" id="projList"></div>
   </div>
 
   <!-- 底部导航 -->
   <div class="nav-bar">
-    <button class="nav-btn" id="btnPrev" onclick="prevAchievement()">← 上一项</button>
-    <button class="nav-btn" id="btnNext" onclick="nextAchievement()">下一项 →</button>
-    <button class="submit-btn" id="btnSubmit" onclick="confirmSubmit()">提交投票</button>
     <button class="nav-btn" id="btnSummary" onclick="showSummary()">投票总览</button>
+    <button class="submit-btn" id="btnSubmit" onclick="confirmSubmit()">提交投票</button>
   </div>
 </div>
 
@@ -297,9 +287,9 @@ body {
 
 <!-- ========== 摘要弹窗 ========== -->
 <div class="modal-overlay hidden" id="summaryModal">
-  <div class="modal-box" style="max-width:560px;max-height:70vh;overflow-y:auto;">
+  <div class="modal-box" style="max-width:620px;max-height:76vh;overflow-y:auto;">
     <h2 style="margin-bottom:16px;">投票摘要</h2>
-    <div id="summaryList" style="text-align:left;font-size:14px;line-height:2;max-height:50vh;overflow-y:auto;"></div>
+    <div id="summaryList" style="text-align:left;font-size:14px;line-height:2;max-height:55vh;overflow-y:auto;"></div>
     <div class="modal-actions" style="margin-top:20px;">
       <button class="modal-cancel" onclick="hideModal()">关闭</button>
     </div>
@@ -323,12 +313,15 @@ var API = (function() {
   return function(path) { return b.replace(/\/+$/, '') + path; };
 })();
 
+var LEVEL_TABS = ['一等奖', '二等奖', '三等奖'];
+
 var state = {
   voterName: '',
   roundId: 0,
   achievements: [],
-  currentIndex: 0,
-  votes: {},      // achievementId → { voteOption, voteLevel }
+  groups: {},          // 等级 → 成果数组
+  currentTab: '一等奖',
+  votes: {},           // achievementId → { voteLevel }
   submitted: false
 };
 
@@ -372,7 +365,8 @@ function doLogin() {
       $('voteScreen').classList.remove('hidden');
       $('voteScreen').style.display = 'flex';
       $('voterBadge').textContent = state.voterName;
-      renderCurrent();
+      renderTabs();
+      renderList();
     })
     .catch(function(err) {
       if (err && err.message !== 'ALREADY_VOTED') {
@@ -426,121 +420,119 @@ function fetchVoteData() {
           }
         };
       });
+      buildGroups();
     });
 }
 
+// 按推荐等级分组
+function buildGroups() {
+  var groups = { '一等奖': [], '二等奖': [], '三等奖': [], '其他': [] };
+  state.achievements.forEach(function(ach) {
+    var lvl = (ach.achievementDetail && ach.achievementDetail.expertLevel) || '';
+    if (groups[lvl] !== undefined) groups[lvl].push(ach);
+    else groups['其他'].push(ach);
+  });
+  state.groups = groups;
+}
+
 // ==================== 渲染 ====================
-function renderCurrent() {
-  if (state.achievements.length === 0) return;
-  var idx = state.currentIndex;
-  var ach = state.achievements[idx];
-  if (!ach) return;
+function renderTabs() {
+  var html = '';
+  var tabs = LEVEL_TABS.slice();
+  if (state.groups['其他'] && state.groups['其他'].length) tabs.push('其他');
+  tabs.forEach(function(lvl) {
+    var n = state.groups[lvl] ? state.groups[lvl].length : 0;
+    html += '<button class="tab-btn' + (state.currentTab === lvl ? ' active' : '') +
+      '" data-tab="' + lvl + '" onclick="switchTab(\'' + lvl + '\')">' +
+      (lvl === '其他' ? '其他' : '推荐' + lvl) + '<span class="cnt">(' + n + ')</span></button>';
+  });
+  $('tabBar').innerHTML = html;
+}
 
-  var detail = ach.achievementDetail || ach;
-  $('cardCategory').textContent = detail.achievementCategory || '';
-  $('cardName').textContent = detail.achievementName || '';
-  $('cardUnit').textContent = (detail.creationUnits || '');
-  $('cardPerson').textContent = (detail.completionPerson || '');
-  $('cardLevel').textContent = (detail.expertLevel || '');
+function switchTab(lvl) {
+  state.currentTab = lvl;
+  renderTabs();
+  renderList();
+}
 
-  if (detail.fileSrc) {
-    $('cardAttach').classList.remove('hidden');
-    $('cardAttach').href = '/api/files/' + encodeURIComponent(detail.fileSrc);
-  } else {
-    $('cardAttach').classList.add('hidden');
+function renderList() {
+  var list = state.groups[state.currentTab] || [];
+  if (!list.length) {
+    $('projList').innerHTML = '<div style="text-align:center;color:#90caf9;padding:40px 0;font-size:15px;">该分组暂无项目</div>';
+    updateProgress();
+    return;
   }
-
-  // 恢复已选投票
-  var vid = ach.achievementId || ach.id;
-  var saved = state.votes[vid];
-  clearSelection();
-  if (saved) {
-    if (saved.voteOption === 'agree') $('btnAgree').classList.add('selected-agree');
-    if (saved.voteOption === 'disagree') $('btnDisagree').classList.add('selected-disagree');
-  }
-
+  var html = '';
+  list.forEach(function(ach) {
+    var vid = ach.achievementId || ach.id;
+    var detail = ach.achievementDetail || ach;
+    var name = detail.achievementName || ('成果 ' + vid);
+    var unit = detail.creationUnits || '';
+    var saved = state.votes[vid];
+    var selVal = (saved && saved.voteLevel) ? saved.voteLevel : '';
+    html += '<div class="proj-row">' +
+      '<div class="proj-info">' +
+        '<div class="proj-name">' + name + '</div>' +
+        (unit ? '<div class="proj-unit">完成单位：' + unit + '</div>' : '') +
+        (detail.expertLevel ? '<div class="proj-rank">推荐等级：' + detail.expertLevel + '</div>' : '') +
+      '</div>' +
+      '<select class="level-select' + (selVal ? ' has-value' : '') + '" data-id="' + vid + '">' +
+        '<option value=""' + (selVal === '' ? ' selected' : '') + '>请选择</option>' +
+        '<option value="一等奖"' + (selVal === '一等奖' ? ' selected' : '') + '>一等奖</option>' +
+        '<option value="二等奖"' + (selVal === '二等奖' ? ' selected' : '') + '>二等奖</option>' +
+        '<option value="三等奖"' + (selVal === '三等奖' ? ' selected' : '') + '>三等奖</option>' +
+        '<option value="不授奖"' + (selVal === '不授奖' ? ' selected' : '') + '>不授奖</option>' +
+      '</select>' +
+    '</div>';
+  });
+  $('projList').innerHTML = html;
   updateProgress();
-  updateNavButtons();
-  $('achievementCard').scrollTop = 0;
+  updateSubmitBtn();
 }
 
-function clearSelection() {
-  $('btnAgree').classList.remove('selected-agree');
-  $('btnDisagree').classList.remove('selected-disagree');
-}
+// 下拉框变更（事件委托）
+$('projList').addEventListener('change', function(e) {
+  if (e.target && e.target.classList.contains('level-select')) {
+    var sel = e.target;
+    var vid = Number(sel.getAttribute('data-id'));
+    var val = sel.value;
+    if (!state.votes[vid]) state.votes[vid] = {};
+    state.votes[vid].voteLevel = val;
+    sel.classList.toggle('has-value', !!val);
+    updateProgress();
+    updateSubmitBtn();
+  }
+});
 
 function updateProgress() {
   var total = state.achievements.length;
-  var voted = Object.keys(state.votes).length;
+  var voted = Object.keys(state.votes).filter(function(k) {
+    return state.votes[k] && state.votes[k].voteLevel;
+  }).length;
   var pct = total > 0 ? Math.round(voted / total * 100) : 0;
   $('progressFill').style.width = pct + '%';
   $('progressText').textContent = voted + ' / ' + total;
 }
 
-function updateNavButtons() {
-  $('btnPrev').disabled = state.currentIndex <= 0;
-  $('btnNext').disabled = state.currentIndex >= state.achievements.length - 1;
+function updateSubmitBtn() {
   $('btnSubmit').disabled = state.submitted;
-  if (state.submitted) $('btnSubmit').textContent = '已提交';
+  $('btnSubmit').textContent = state.submitted ? '已提交 ✓' : '提交投票';
 }
-
-// ==================== 投票操作 ====================
-function setVote(option) {
-  if (state.submitted) return;
-  var ach = state.achievements[state.currentIndex];
-  if (!ach) return;
-  var vid = ach.achievementId || ach.id;
-  if (!state.votes[vid]) state.votes[vid] = {};
-  state.votes[vid].voteOption = option;
-
-  clearSelection();
-  if (option === 'agree') $('btnAgree').classList.add('selected-agree');
-  if (option === 'disagree') $('btnDisagree').classList.add('selected-disagree');
-  updateProgress();
-}
-
-// ==================== 导航 ====================
-function nextAchievement() {
-  if (state.currentIndex < state.achievements.length - 1) {
-    state.currentIndex++;
-    renderCurrent();
-  }
-}
-
-function prevAchievement() {
-  if (state.currentIndex > 0) {
-    state.currentIndex--;
-    renderCurrent();
-  }
-}
-
-// 滑动手势（左右滑动切换）
-(function() {
-  var startX = 0;
-  document.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; }, { passive: true });
-  document.addEventListener('touchend', function(e) {
-    var dx = e.changedTouches[0].clientX - startX;
-    if (Math.abs(dx) > 80) {
-      if (dx < 0) nextAchievement();
-      else prevAchievement();
-    }
-  }, { passive: true });
-})();
 
 // ==================== 提交 ====================
 function confirmSubmit() {
   if (state.submitted) return;
   var total = state.achievements.length;
   var voted = Object.keys(state.votes).filter(function(k) {
-    return state.votes[k] && state.votes[k].voteOption;
+    return state.votes[k] && state.votes[k].voteLevel;
   }).length;
   var msg;
   if (voted === 0) {
-    msg = '您未对任何成果投票，全部将计为“弃权”，确认提交吗？';
+    msg = '您未对任何项目选择授奖等级，全部将计为"未投票"，确认提交吗？';
   } else if (voted < total) {
-    msg = '您还有 ' + (total - voted) + ' 项没有投票，将计为“弃权”，确认提交吗？';
+    msg = '您还有 ' + (total - voted) + ' 个项目未选择等级，将计为"未投票"，确认提交吗？';
   } else {
-    msg = '所有 ' + total + ' 项已投票完毕，确认提交吗？';
+    msg = '所有 ' + total + ' 个项目均已选择授奖等级，确认提交吗？';
   }
   $('confirmMsg').textContent = msg;
   showModal('confirmModal');
@@ -553,11 +545,12 @@ function doSubmit() {
   $('confirmBtn').textContent = '提交中...';
 
   var promises = [];
-  // 遍历本轮全部成果：已投票的按所选发送，未投票（未选同意/不同意）的按“弃权”计
+  // 遍历本轮全部成果：已选择等级的发送 voteLevel，未选择的按弃权计
   state.achievements.forEach(function(ach) {
     var aid = ach.achievementId || ach.id;
     var v = state.votes[aid];
-    var option = (v && v.voteOption) ? v.voteOption : 'abstain';
+    var level = (v && v.voteLevel) ? v.voteLevel : '';
+    var option = level ? 'agree' : 'abstain';
     promises.push(
       fetch(API('/voteRound/push'), {
         method: 'POST',
@@ -567,7 +560,8 @@ function doSubmit() {
           achievementId: Number(aid),
           voterId: state.voterName,
           voterName: state.voterName,
-          voteOption: option
+          voteOption: option,
+          voteLevel: level
         })
       }).then(function(r) { return r.json(); })
         .then(function(d) {
@@ -579,9 +573,7 @@ function doSubmit() {
   Promise.all(promises)
     .then(function() {
       state.submitted = true;
-      $('btnSubmit').textContent = '已提交 ✓';
-      $('btnSubmit').disabled = true;
-      updateNavButtons();
+      updateSubmitBtn();
       showToast('投票提交成功！', 'success');
     })
     .catch(function(err) {
@@ -601,28 +593,18 @@ function showSummary() {
     var v = state.votes[vid];
     var detail = ach.achievementDetail || ach;
     var name = detail.achievementName || ('成果 ' + (i+1));
-    var units = detail.creationUnits || '';
-    var person = detail.completionPerson || '';
-    var info = name + (units ? ' — ' + units : '') + (person ? ' / ' + person : '');
-    var opts = { agree: '✓ 同意', disagree: '✗ 不同意' };
-    var optTxt = v && v.voteOption ? opts[v.voteOption] : '未投票';
-    var color = v ? '#a5d6a7' : '#ef9a9a';
+    var unit = detail.creationUnits || '';
+    var info = name + (unit ? ' — ' + unit : '');
+    var lvlTxt = (v && v.voteLevel) ? v.voteLevel : '未选择';
+    var color = (v && v.voteLevel) ? '#a5d6a7' : '#ef9a9a';
     html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">' +
       '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px;">' + (i+1) + '. ' + info + '</span>' +
-      '<span style="color:' + color + ';white-space:nowrap;">' + optTxt + '</span>' +
+      '<span style="color:' + color + ';white-space:nowrap;">' + lvlTxt + '</span>' +
       '</div>';
   });
   $('summaryList').innerHTML = html || '<p>暂无数据</p>';
   showModal('summaryModal');
 }
-
-// 键盘导航
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowRight') nextAchievement();
-  if (e.key === 'ArrowLeft') prevAchievement();
-  if (e.key === '1') setVote('agree');
-  if (e.key === '2') setVote('disagree');
-});
 
 // 自动聚焦
 setTimeout(function() { $('voterName').focus(); }, 300);
