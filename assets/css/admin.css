@@ -276,6 +276,8 @@ table.data tbody tr:last-child td { border-bottom: none; }
 .link-del:hover { background: var(--red-soft); }
 .link-upload { color: #ffd28a; }
 .link-upload:hover { background: var(--amber-soft); }
+.link-file { color: #7ee2a8; }
+.link-file:hover { background: rgba(76,175,80,0.18); }
 
 /* ===================== 状态区 ===================== */
 .state {

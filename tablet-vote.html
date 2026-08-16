@@ -99,6 +99,12 @@ body {
   font-size: 18px; font-weight: 600; color: #e3f2fd;
   line-height: 1.4; word-break: break-all;
 }
+.proj-name.clickable {
+  color: #82b1ff; cursor: pointer;
+  text-decoration: underline; text-decoration-color: rgba(130,177,255,0.5);
+  -webkit-tap-highlight-color: transparent;
+}
+.proj-name.clickable:active { opacity: 0.7; }
 .proj-unit {
   font-size: 14px; color: #90caf9;
   margin-top: 4px; line-height: 1.5;
@@ -470,9 +476,13 @@ function renderList() {
     var unit = detail.creationUnits || '';
     var saved = state.votes[vid];
     var selVal = (saved && saved.voteLevel) ? saved.voteLevel : '';
+    var fileSrc = detail.fileSrc || '';
+    var nameHtml = fileSrc
+      ? '<div class="proj-name clickable" data-file="' + encodeURIComponent(fileSrc) + '">📄 ' + name + '</div>'
+      : '<div class="proj-name">' + name + '</div>';
     html += '<div class="proj-row">' +
       '<div class="proj-info">' +
-        '<div class="proj-name">' + name + '</div>' +
+        nameHtml +
         (unit ? '<div class="proj-unit">完成单位：' + unit + '</div>' : '') +
         (detail.expertLevel ? '<div class="proj-rank">推荐等级：' + detail.expertLevel + '</div>' : '') +
       '</div>' +
@@ -489,6 +499,14 @@ function renderList() {
   updateProgress();
   updateSubmitBtn();
 }
+
+// 项目名称点击查看PDF
+$('projList').addEventListener('click', function(e) {
+  var t = e.target;
+  if (t.classList && t.classList.contains('proj-name') && t.getAttribute('data-file')) {
+    window.open('/api/files/' + t.getAttribute('data-file'), '_blank');
+  }
+});
 
 // 下拉框变更（事件委托）
 $('projList').addEventListener('change', function(e) {

@@ -115,6 +115,9 @@
       var units = r.creationUnits ? esc(r.creationUnits) : '<span style="color:var(--text-mute)">—</span>';
       var completer = r.completionPerson ? esc(r.completionPerson) : '<span style="color:var(--text-mute)">—</span>';
       var checked = S.selected[r.id] ? 'checked' : '';
+      var fileBtn = r.fileSrc
+        ? '<button class="link-btn link-file" data-upload="' + r.id + '" title="重新上传PDF附件">附件✓</button>'
+        : '<button class="link-btn link-file" data-upload="' + r.id + '" title="上传PDF附件">传附件</button>';
       return '<tr>' +
         '<td class="col-check"><input type="checkbox" class="row-cb" data-id="' + r.id + '" ' + checked + '></td>' +
         '<td class="col-idx center">' + idx + '</td>' +
@@ -124,6 +127,7 @@
         '<td>' + completer + '</td>' +
         '<td>' + lvl + '</td>' +
         '<td><span class="cell-actions">' +
+          fileBtn +
           '<button class="link-btn link-edit" data-edit="' + r.id + '">编辑</button>' +
           '<button class="link-btn link-del" data-del="' + r.id + '">删除</button>' +
         '</span></td>' +
