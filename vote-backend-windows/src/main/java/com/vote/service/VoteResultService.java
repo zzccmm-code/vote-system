@@ -132,6 +132,7 @@ public class VoteResultService {
                 vo.setCreationUnits(a.getCreationUnits());
                 vo.setCompletionPerson(a.getCompletionPerson());
                 vo.setExpertLevel(a.getExpertLevel());
+                vo.setFileSrc(a.getFileSrc());
             }
             vo.setAgree(r.getAgree());
             vo.setDisagree(r.getDisagree());
@@ -261,6 +262,7 @@ public class VoteResultService {
         private String creationUnits;
         private String completionPerson;
         private String expertLevel;
+        private String fileSrc;
         private Integer agree;
         private Integer disagree;
         private Integer abstain;
