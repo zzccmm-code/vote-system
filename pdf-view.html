@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>成果附件预览</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, "PingFang SC", "HarmonyOS Sans", "Microsoft YaHei", sans-serif;
+  background: #0d2137;
+  color: #e3f2fd;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.preview-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 16px;
+  background: #0f2b4a;
+  border-bottom: 1px solid rgba(30,136,229,0.3);
+}
+.preview-top .title {
+  flex: 1; min-width: 0;
+  font-size: 16px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.back-btn {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  border: 1px solid rgba(30,136,229,0.4);
+  border-radius: 8px;
+  background: rgba(30,136,229,0.15);
+  color: #90caf9;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.back-btn:active { background: rgba(30,136,229,0.3); }
+.pdf-frame {
+  flex: 1; width: 100%; border: none;
+  background: #fff;
+}
+.loading {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  color: #90caf9; font-size: 15px;
+}
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="preview-top">
+  <div class="title" id="pvTitle">成果附件预览</div>
+  <button class="back-btn" onclick="goBack()">← 返回投票</button>
+</div>
+<div class="loading" id="pvLoading">正在加载附件，请稍候…</div>
+<iframe class="pdf-frame hidden" id="pvFrame"></iframe>
+
+<script>
+(function() {
+  var params = new URLSearchParams(location.search);
+  var file = params.get('file') || '';
+  var name = params.get('name') || '';
+  if (name) document.getElementById('pvTitle').textContent = name;
+
+  if (!file) {
+    document.getElementById('pvLoading').textContent = '附件不存在或已被移除';
+    return;
+  }
+
+  var frame = document.getElementById('pvFrame');
+  var loading = document.getElementById('pvLoading');
+  // 通过相对路径走 Node 代理到后端 /api/files/{filename}
+  frame.src = '/api/files/' + file;
+
+  // iframe 加载完成后隐藏 loading（PDF 由浏览器内置查看器渲染，无需下载）
+  frame.onload = function() {
+    loading.classList.add('hidden');
+    frame.classList.remove('hidden');
+  };
+  // 兜底：3 秒后无论是否触发 onload 都切换显示
+  setTimeout(function() {
+    loading.classList.add('hidden');
+    frame.classList.remove('hidden');
+  }, 3000);
+})();
+
+function goBack() {
+  if (window.history.length > 1) { history.back(); }
+  else { window.close(); }
+}
+</script>
+</body>
+</html>

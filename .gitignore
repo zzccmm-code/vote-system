@@ -19,6 +19,10 @@ target/
 *.class
 *.jar.original
 
+# === 构建产物/备份 jar（仅保留源 jar） ===
+*.jar.new
+*.jar.bak-*
+
 # === Maven Wrapper JAR (keep .cmd and properties, skip binary jar) ===
 # Actually keep maven-wrapper.jar so mvnw works out of the box
 
@@ -34,5 +38,6 @@ vote-backend-windows/data/
 logs/
 
 # === Uploaded files (runtime data) ===
+uploads/
 vote-backend-windows/uploads/
 vote-backend/uploads/

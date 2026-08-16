@@ -501,11 +501,12 @@ function renderList() {
   updateSubmitBtn();
 }
 
-// 项目名称点击查看PDF
+// 项目名称点击 → 打开内嵌预览页查看PDF
 $('projList').addEventListener('click', function(e) {
   var t = e.target;
   if (t.classList && t.classList.contains('proj-name') && t.getAttribute('data-file')) {
-    window.open('/api/files/' + t.getAttribute('data-file'), '_blank');
+    var name = t.textContent.replace(/^📄\s*/, '') || '';
+    window.open('/pdf-view.html?file=' + t.getAttribute('data-file') + '&name=' + encodeURIComponent(name), '_blank');
   }
 });
 
