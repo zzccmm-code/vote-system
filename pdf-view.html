@@ -16,18 +16,18 @@ body {
 }
 .preview-top {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 12px 16px;
+  padding: 10px 16px;
   background: #0f2b4a;
   border-bottom: 1px solid rgba(30,136,229,0.3);
 }
 .preview-top .title {
   flex: 1; min-width: 0;
-  font-size: 16px; font-weight: 600;
+  font-size: 15px; font-weight: 600;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .back-btn {
   flex-shrink: 0;
-  padding: 8px 18px;
+  padding: 8px 16px;
   border: 1px solid rgba(30,136,229,0.4);
   border-radius: 8px;
   background: rgba(30,136,229,0.15);
@@ -37,13 +37,42 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .back-btn:active { background: rgba(30,136,229,0.3); }
-.pdf-frame {
-  flex: 1; width: 100%; border: none;
-  background: #fff;
+
+/* 工具栏 */
+.pdf-toolbar {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  padding: 8px 16px;
+  background: #0f2b4a;
+  border-bottom: 1px solid rgba(30,136,229,0.2);
 }
-.loading {
+.tool-btn {
+  padding: 7px 16px;
+  border: 1px solid rgba(30,136,229,0.4);
+  border-radius: 8px;
+  background: rgba(30,136,229,0.12);
+  color: #90caf9;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tool-btn:disabled { opacity: 0.3; cursor: default; }
+.tool-btn:active:not(:disabled) { background: rgba(30,136,229,0.3); }
+.page-info { font-size: 14px; color: #90caf9; white-space: nowrap; }
+
+/* 渲染区 */
+.pdf-stage {
+  flex: 1; overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex; align-items: flex-start; justify-content: center;
+  background: #37474f;
+  padding: 12px;
+}
+.canvas-wrap { background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+canvas { display: block; }
+
+.msg {
   flex: 1; display: flex; align-items: center; justify-content: center;
-  color: #90caf9; font-size: 15px;
+  color: #90caf9; font-size: 15px; text-align: center; padding: 24px;
 }
 .hidden { display: none !important; }
 </style>
@@ -54,9 +83,20 @@ body {
   <div class="title" id="pvTitle">成果附件预览</div>
   <button class="back-btn" onclick="goBack()">← 返回投票</button>
 </div>
-<div class="loading" id="pvLoading">正在加载附件，请稍候…</div>
-<iframe class="pdf-frame hidden" id="pvFrame"></iframe>
 
+<div class="pdf-toolbar">
+  <button class="tool-btn" id="btnPrev" onclick="prevPage()">‹ 上一页</button>
+  <span class="page-info" id="pageInfo">—</span>
+  <button class="tool-btn" id="btnNext" onclick="nextPage()">下一页 ›</button>
+  <button class="tool-btn" id="btnZoomOut" onclick="zoom(-0.15)">-</button>
+  <button class="tool-btn" id="btnZoomIn" onclick="zoom(0.15)">+</button>
+</div>
+
+<div class="pdf-stage" id="pdfStage">
+  <div class="msg" id="pdfMsg">正在加载附件，请稍候…</div>
+</div>
+
+<script src="/assets/pdfjs/pdf.min.js"></script>
 <script>
 (function() {
   var params = new URLSearchParams(location.search);
@@ -64,26 +104,64 @@ body {
   var name = params.get('name') || '';
   if (name) document.getElementById('pvTitle').textContent = name;
 
-  if (!file) {
-    document.getElementById('pvLoading').textContent = '附件不存在或已被移除';
-    return;
+  var msg = document.getElementById('pdfMsg');
+  var stage = document.getElementById('pdfStage');
+
+  if (!file) { msg.textContent = '附件不存在或已被移除'; return; }
+
+  // PDF.js 渲染（Canvas 绘制，兼容所有浏览器，不依赖浏览器内置PDF查看器）
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.js';
+
+  var pdfDoc = null;
+  var pageNum = 1;
+  var scale = 1.0;
+
+  var canvas = document.createElement('canvas');
+  canvas.className = 'canvas-wrap';
+  var wrap = document.createElement('div');
+  wrap.className = 'canvas-wrap';
+  wrap.appendChild(canvas);
+  var ctx = canvas.getContext('2d');
+
+  function renderPage() {
+    if (!pdfDoc) return;
+    pdfDoc.getPage(pageNum).then(function(page) {
+      var viewport = page.getViewport({ scale: scale });
+      var dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(viewport.width * dpr);
+      canvas.height = Math.floor(viewport.height * dpr);
+      canvas.style.width = viewport.width + 'px';
+      canvas.style.height = viewport.height + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      page.render({ canvasContext: ctx, viewport: viewport }).promise.then(function() {
+        document.getElementById('pageInfo').textContent = pageNum + ' / ' + pdfDoc.numPages;
+        document.getElementById('btnPrev').disabled = pageNum <= 1;
+        document.getElementById('btnNext').disabled = pageNum >= pdfDoc.numPages;
+        stage.scrollTop = 0;
+      });
+    });
   }
 
-  var frame = document.getElementById('pvFrame');
-  var loading = document.getElementById('pvLoading');
-  // 通过相对路径走 Node 代理到后端 /api/files/{filename}
-  frame.src = '/api/files/' + file;
-
-  // iframe 加载完成后隐藏 loading（PDF 由浏览器内置查看器渲染，无需下载）
-  frame.onload = function() {
-    loading.classList.add('hidden');
-    frame.classList.remove('hidden');
+  function prevPage() { if (pageNum > 1) { pageNum--; renderPage(); } }
+  function nextPage() { if (pageNum < pdfDoc.numPages) { pageNum++; renderPage(); } }
+  window.prevPage = prevPage;
+  window.nextPage = nextPage;
+  window.zoom = function(delta) {
+    scale = Math.min(3, Math.max(0.4, scale + delta));
+    renderPage();
   };
-  // 兜底：3 秒后无论是否触发 onload 都切换显示
-  setTimeout(function() {
-    loading.classList.add('hidden');
-    frame.classList.remove('hidden');
-  }, 3000);
+
+  // 通过相对路径走 Node 代理到后端 /api/files/{filename}
+  pdfjsLib.getDocument('/api/files/' + file).promise
+    .then(function(doc) {
+      pdfDoc = doc;
+      msg.classList.add('hidden');
+      stage.appendChild(wrap);
+      renderPage();
+    })
+    .catch(function(err) {
+      msg.textContent = '附件加载失败：' + (err && err.message ? err.message : '请重试');
+    });
 })();
 
 function goBack() {
