@@ -45,9 +45,10 @@ function isApiPath(url) {
 }
 
 function proxy(req, res) {
-  // /api/files/ 不剥离前缀（后端 WebConfig 映射为 /api/files/**）
+  // /api/files/ 和 /api/upload 不剥离前缀（后端分别映射为 /api/files/** 与 /api/upload）
   // 其余 /api/ 路径剥离前缀后转发
-  const targetPath = req.url.startsWith('/api/files/')
+  const keepPrefix = req.url.startsWith('/api/files/') || req.url.startsWith('/api/upload');
+  const targetPath = keepPrefix
     ? req.url
     : req.url.startsWith('/api/')
       ? req.url.replace(/^\/api/, '') || '/'
