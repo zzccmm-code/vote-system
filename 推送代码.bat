@@ -1,12 +1,13 @@
 @echo off
 chcp 65001 >nul 2>&1
-title 推送代码到 GitHub
+title 推送代码到 GitHub + Gitee
 
 cd /d "%~dp0"
 
 echo ============================================
-echo   推送代码到 GitHub
-echo   仓库: https://github.com/zzccmm-code/vote-system
+echo   推送代码到 GitHub + Gitee
+echo   仓库1: https://github.com/zzccmm-code/vote-system
+echo   仓库2: https://gitee.com/zzccmmcode/award-vote.git
 echo ============================================
 echo.
 
