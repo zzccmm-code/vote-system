@@ -40,7 +40,7 @@
 
 <div class="banner">
   <h1>国网四川省电力公司科技奖励评审系统</h1>
-  <p>Windows 端 · 安卓平板端 部署与操作手册 v1.1</p>
+  <p>Windows 端 · 安卓平板端 部署与操作手册 v1.9</p>
 </div>
 
 <div class="container">
@@ -58,6 +58,7 @@
     <li><a href="#ch7">系统操作指南</a></li>
     <li><a href="#ch8">常见问题</a></li>
     <li><a href="#ch9">附录 — 地址一览 & 命令速查</a></li>
+    <li><a href="#ch10">版本更新记录 & 代码仓库</a></li>
   </ol>
 </div>
 
@@ -71,10 +72,10 @@
   <h3>核心功能</h3>
   <table>
     <tr><th>模块</th><th>功能</th><th>使用者</th></tr>
-    <tr><td>成果管理</td><td>录入/编辑/删除成果、上传附件、批量导入Excel</td><td>管理员</td></tr>
-    <tr><td>评审表决</td><td>开始投票、结束投票、重置投票</td><td>管理员</td></tr>
-    <tr><td>投票页面</td><td>委员投票（同意/不同意 + 推荐等级）</td><td>评委委员</td></tr>
-    <tr><td>结果展示</td><td>查看每轮得票统计、一键发布、导出Excel</td><td>管理员</td></tr>
+    <tr><td>成果管理</td><td>录入/编辑/删除成果、行内上传PDF附件、批量导入Excel</td><td>管理员</td></tr>
+    <tr><td>评审表决</td><td>开始投票、结束投票、手动设置应参与委员数、完全重置投票</td><td>管理员</td></tr>
+    <tr><td>投票页面</td><td>按推荐等级（一/二/三等奖）分组列表展示，每个项目下拉框选择授奖等级（一等奖/二等奖/三等奖/不授奖/特等奖），点击项目名内嵌查看PDF附件</td><td>评委委员</td></tr>
+    <tr><td>结果展示</td><td>查看每轮得票统计、一键发布、导出统计Excel、导出投票明细（每位专家一个Sheet）</td><td>管理员</td></tr>
   </table>
 
   <h3>系统架构</h3>
@@ -325,20 +326,22 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
   </div>
 
   <h3>6.5 投票操作说明</h3>
-  <p>鸿蒙平板投票页面专为大屏触控优化：</p>
+  <p>鸿蒙平板投票页面专为大屏触控优化，采用<strong>分组列表 + 下拉选等级</strong>模式：</p>
   <table>
     <tr><th>操作</th><th>方式</th></tr>
-    <tr><td>切换成果</td><td>左右滑动屏幕 / 点击底部"上一项""下一项"按钮 / 键盘 ← → 键</td></tr>
-    <tr><td>投票</td><td>点击"同意""不同意"大按钮</td></tr>
-    <tr><td>选择等级</td><td>点击"一等奖""二等奖""三等奖"按钮</td></tr>
-    <tr><td>提交投票</td><td>全部投票完成后，点击底部绿色"提交投票"按钮</td></tr>
-    <tr><td>投票总览</td><td>点击"投票总览"查看所有成果的投票状态</td></tr>
-    <tr><td>键盘快捷键</td><td>1=同意 2=不同意，← → 切换成果</td></tr>
+    <tr><td>进入投票</td><td>输入姓名 → 点击"进入投票"（若该姓名已投过票，会提示"该姓名已投过票，不能重复投票"）</td></tr>
+    <tr><td>切换分组</td><td>点击顶部页签：<strong>推荐一等奖 / 推荐二等奖 / 推荐三等奖</strong>（页签上显示该组项目数量）</td></tr>
+    <tr><td>查看项目附件</td><td>点击项目名称（蓝色带 📄 图标），弹出预览页直接查看 PDF，支持翻页和缩放</td></tr>
+    <tr><td>选择授奖等级</td><td>点击项目右侧下拉框，选择：<strong>一等奖 / 二等奖 / 三等奖 / 不授奖 / 特等奖</strong></td></tr>
+    <tr><td>查看进度</td><td>顶部进度条实时显示已选等级的项目数 / 总项目数</td></tr>
+    <tr><td>投票总览</td><td>点击底部"投票总览"查看全部项目的选择情况</td></tr>
+    <tr><td>提交投票</td><td>确认所有选择后，点击底部绿色"提交投票"按钮，弹出确认框</td></tr>
   </table>
 
   <div class="tip">
-    <p><strong>弃权规则：</strong>平板端已移除“弃权”按钮。提交投票时，凡是<strong>未选择“同意”或“不同意”的成果，将自动计为“弃权”</strong>。Windows 管理端的“结果展示 / 统计导出”中仍保留“弃权票”列，其数值即为上述未投票项的数量。</p>
-    <p><strong>等级选择规则：</strong>只有选择“<strong>同意</strong>”后，一等奖 / 二等奖 / 三等奖按钮才可点击；若选择“<strong>不同意</strong>”（或尚未选择），等级按钮自动置灰禁用，且已选等级会被清除。</p>
+    <p><strong>授奖等级规则：</strong>每个项目由专家通过下拉框选择最终授奖等级。选择后下拉框高亮显示；修改前可重新打开下拉框更换选项。</p>
+    <p><strong>未投票规则：</strong>提交投票时，凡是<strong>未选择授奖等级的项目，将自动计为"未投票"（弃权）</strong>。确认弹窗会提示剩余未选择的项目数量。</p>
+    <p><strong>附件预览：</strong>只有管理员上传了 PDF 附件的项目，名称才会变为蓝色可点击链接；未上传附件的项目名称为普通样式。</p>
   </div>
 
   <h3>6.6 HarmonyOS NEXT 特别说明</h3>
@@ -379,7 +382,7 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
   <div class="step">
     <div class="num">3</div>
     <div class="content">
-      <p><strong>上传附件：</strong>在每条成果的操作列中，点击"上传附件"按钮，选择 PDF 文件上传。上传成功后变为"查看附件"，点击可预览 PDF。</p>
+      <p><strong>上传附件：</strong>在每条成果的操作列中，点击"传附件"按钮，选择 PDF 文件上传。上传成功后按钮变为"附件✓"，再次点击可重新上传替换。平板端评委点击该项目名称即可内嵌查看 PDF。</p>
     </div>
   </div>
 
@@ -390,8 +393,8 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
     <tr><td>编辑</td><td>修改成果信息（含重新上传 PDF）</td></tr>
     <tr><td>删除</td><td>删除单条成果</td></tr>
     <tr><td>批量删除</td><td>勾选多条后点击"批量删除"按钮</td></tr>
-    <tr><td>上传附件</td><td>上传 PDF 附件</td></tr>
-    <tr><td>查看附件</td><td>新窗口打开已上传的 PDF</td></tr>
+    <tr><td>传附件</td><td>为该项目上传 PDF 附件（仅支持 PDF 格式）</td></tr>
+    <tr><td>附件✓</td><td>该项目已上传附件，点击可重新上传替换</td></tr>
   </table>
 
   <h3>7.3 管理员 — 开始 / 结束投票</h3>
@@ -402,7 +405,7 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
   </div>
   <div class="step">
     <div class="num">2</div>
-    <div class="content"><p>开始后，页面显示当前轮次状态与投票进度（已提交人数 / 总人数）。</p></div>
+    <div class="content"><p>开始后，页面显示当前轮次状态与投票进度（已提交人数 / 总人数）。<strong>应参与委员</strong>支持手动输入：在"应参与委员"输入框中填写实际委员人数，点击"保存"即可，提交进度百分比会同步更新。</p></div>
   </div>
   <div class="step">
     <div class="num">3</div>
@@ -410,7 +413,7 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
   </div>
   <div class="step">
     <div class="num">4</div>
-    <div class="content"><p>所有评委完成后点击"结束投票"。如需重投，点击"重置投票"（会清空当前轮投票记录，已发布结果需先撤回）。</p></div>
+    <div class="content"><p>所有评委完成后点击"结束投票"。如需重新开始，点击"重置投票"（完全重置：清空全部投票轮次、记录和结果，不论是否已发布）。</p></div>
   </div>
 
   <h3>7.4 评委 — 投票</h3>
@@ -420,19 +423,19 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
   </div>
   <div class="step">
     <div class="num">2</div>
-    <div class="content"><p>填写投票人姓名（或系统自动获取 IP）</p></div>
+    <div class="content"><p>填写投票人姓名并进入投票（系统自动校验：同一姓名每轮只能投一次，重复姓名会被拒绝）</p></div>
   </div>
   <div class="step">
     <div class="num">3</div>
-    <div class="content"><p>逐条成果选择投票选项：<strong>同意 / 不同意</strong></p></div>
+    <div class="content"><p>按推荐等级分组浏览项目：<strong>推荐一等奖 / 推荐二等奖 / 推荐三等奖</strong>三个页签，点击切换</p></div>
   </div>
   <div class="step">
     <div class="num">4</div>
-    <div class="content"><p>选择推荐等级：<strong>一等奖 / 二等奖 / 三等奖</strong></p></div>
+    <div class="content"><p>对每个项目，点击右侧下拉框选择授奖等级：<strong>一等奖 / 二等奖 / 三等奖 / 不授奖 / 特等奖</strong>；点击项目名称可查看 PDF 附件</p></div>
   </div>
   <div class="step">
     <div class="num">5</div>
-    <div class="content"><p>全部完成后点击提交。每人每轮只能投票一次（同一成果不可重复投票）。</p></div>
+    <div class="content"><p>全部选择完成后点击"提交投票"，在确认弹窗中点击"确认提交"。未选择等级的项目提交后计为未投票（弃权）。</p></div>
   </div>
 
   <h3>7.5 管理员 — 查看结果 & 发布</h3>
@@ -454,13 +457,13 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
     <div class="content"><p>在结果查看页点击"导出Excel"下载统计报表。</p></div>
   </div>
   <div class="step">
-    <div class="num">4</div>
-    <div class="content"><p>可点击"导出统计"下载 Excel 报表。</p></div>
+    <div class="num">5</div>
+    <div class="content"><p><strong>导出投票明细：</strong>在投票管理页点击"导出明细"按钮，下载 <code>投票明细.xlsx</code>。每位专家一个 Sheet，每行包含：序号、成果名称、成果类别、完成单位、完成人、投票选项（同意/不同意/弃权），可查看每位专家的完整投票情况。</p></div>
   </div>
 
   <h3>7.6 重置投票</h3>
-  <p>如果需要重新开始投票，点击"重置"按钮。该操作会<strong>删除当前轮次的所有投票记录和结果</strong>。已发布的结果需要先撤回发布才能重置。</p>
-  <div class="danger"><strong>⚠ 警告：</strong>重置操作不可逆，请确认委员会一致同意后再执行。</div>
+  <p>如果需要重新开始投票，点击"重置投票"按钮，确认后系统将执行<strong>完全重置</strong>：删除全部投票轮次、全部投票记录和全部投票结果——<strong>不论投票是否进行中、结果是否已发布</strong>，系统直接恢复到原始状态，可重新开始新一轮投票。</p>
+  <div class="danger"><strong>⚠ 警告：</strong>完全重置会清空所有轮次的历史投票数据且不可恢复，请务必确认不再需要这些数据后再执行！</div>
 </div>
 
 <!-- ===== 第8章 ===== -->
@@ -507,6 +510,16 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
 
   <h3>Q9：平板端投票页面提示"投票未开始"</h3>
   <p>请管理员先在 Windows 管理端点击"开始投票"。只有投票状态为"进行中"时平板端才能投票。</p>
+
+  <h3>Q10：平板端点击项目名称没有反应或 PDF 显示空白</h3>
+  <ul>
+    <li>确认该项目已上传 PDF 附件（管理端操作列显示"附件✓"），未上传附件的项目名称不可点击</li>
+    <li>预览页采用 PDF.js 渲染，兼容所有主流浏览器（含华为浏览器）；若仍空白，请刷新预览页或检查附件文件是否完好</li>
+    <li>点击项目名称后若浏览器拦截了新窗口，请在浏览器设置中允许弹出窗口</li>
+  </ul>
+
+  <h3>Q11：平板端登录提示"该姓名已投过票，不能重复投票"</h3>
+  <p>系统每轮投票对同一姓名只允许提交一次，防止重复投票。如确需重投（例如换人使用同一平板），请管理员在管理端"重置投票"后重新开始。</p>
 </div>
 
 <!-- ===== 第9章 ===== -->
@@ -518,6 +531,7 @@ netsh advfirewall firewall add rule name="投票系统7003" dir=in action=allow 
     <tr><td>成果管理首页</td><td><code>http://localhost:3000</code></td><td><code>http://[IP]:3000</code></td><td>管理员</td></tr>
     <tr><td>批量导入</td><td><code>http://localhost:3000/import.html</code></td><td><code>http://[IP]:3000/import.html</code></td><td>管理员</td></tr>
     <tr><td>平板投票端（推荐）</td><td><code>http://localhost:3000/tablet-vote.html</code></td><td><code>http://[IP]:3000/tablet-vote.html</code></td><td>评委（安卓/鸿蒙）</td></tr>
+    <tr><td>PDF附件预览页</td><td>—</td><td>由投票页点击项目名自动打开</td><td>评委（安卓/鸿蒙）</td></tr>
     <tr><td>评审表决（旧版）</td><td><code>http://localhost:3000/#/vote</code></td><td><code>http://[IP]:3000/#/vote</code></td><td>评委</td></tr>
     <tr><td>结果展示</td><td><code>http://localhost:3000/#/result-show</code></td><td><code>http://[IP]:3000/#/result-show</code></td><td>管理员</td></tr>
   </table>
@@ -568,9 +582,31 @@ del %USERPROFILE%\vote_db.mv.db</code></pre>
   <div class="warn"><strong>⚠ 注意：</strong>备份和恢复前务必先停止后端服务。</div>
 </div>
 
+<!-- ===== 版本更新记录 ===== -->
+<div class="card">
+  <h2 id="ch10">十、版本更新记录</h2>
+  <table>
+    <tr><th>版本</th><th>更新内容</th></tr>
+    <tr><td>v1.9</td><td>平板端 PDF 附件内嵌预览（PDF.js Canvas 渲染，兼容华为浏览器等无内置 PDF 查看器的设备）；修复附件上传代理路径；eachRoundSituation 接口补充 fileSrc 字段</td></tr>
+    <tr><td>v1.8</td><td>管理端成果列表新增"传附件/附件✓"行内上传按钮；平板端点击项目名弹出预览页查看 PDF；平板端下拉框新增"特等奖"选项</td></tr>
+    <tr><td>v1.7</td><td>平板端全面改版：按推荐等级（一/二/三等奖）分组页签列表显示，每个项目右侧下拉框选择授奖等级（一等奖/二等奖/三等奖/不授奖），移除旧版逐条翻页与同意/不同意按钮</td></tr>
+    <tr><td>v1.6</td><td>新增投票明细导出：Excel 格式，每位专家一个 Sheet，含成果名称/类别/单位/完成人/投票选项</td></tr>
+    <tr><td>v1.5.6</td><td>"重置投票"改为完全重置：删除全部轮次/记录/结果，不再限制运行中或已发布状态</td></tr>
+    <tr><td>v1.5.5</td><td>平板端移除推荐等级按钮；登录增加重复投票检测（同姓名已投票则拦截报错）</td></tr>
+    <tr><td>v1.5.3</td><td>分页支持选择每页条数（默认100条）；"应参与委员"改为手动输入；平板端字号调大；修复数据库重启被重置问题</td></tr>
+  </table>
+
+  <h3>代码仓库</h3>
+  <table>
+    <tr><th>平台</th><th>地址</th><th>推送方式</th></tr>
+    <tr><td>GitHub</td><td><code>https://github.com/zzccmm-code/vote-system</code></td><td rowspan="2"><code>git push origin main</code> 一次同时推送两个仓库（双击"推送代码.bat"）</td></tr>
+    <tr><td>Gitee</td><td><code>https://gitee.com/zzccmmcode/award-vote.git</code></td></tr>
+  </table>
+</div>
+
 <div style="text-align:center;color:#888;font-size:13px;padding:20px 0;">
-  文档版本 1.3 · 最后更新 2026-07-10<br>
-  系统版本：vote-system 1.0.0 · 前端已重写为原生单页管理台（assets/js/admin.js），弃用旧 Vue 产物与 5 个注入脚本
+  文档版本 1.4 · 最后更新 2026-09-05<br>
+  系统版本：vote-system v1.9 · 代码仓库：GitHub（zzccmm-code/vote-system）+ Gitee（zzccmmcode/award-vote）双仓库同步
 </div>
 
 </div>
