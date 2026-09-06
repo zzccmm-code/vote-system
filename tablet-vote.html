@@ -485,12 +485,15 @@ function renderList() {
     var nameHtml = fileSrc
       ? '<div class="proj-name clickable" data-file="' + encodeURIComponent(fileSrc) + '">📄 ' + name + '</div>'
       : '<div class="proj-name">' + name + '</div>';
+    var catAndRank = [];
+    if (detail.achievementCategory) catAndRank.push('类别：' + detail.achievementCategory);
+    if (detail.expertLevel) catAndRank.push('推荐：' + detail.expertLevel);
+    var catRankHtml = catAndRank.length ? '<div class="proj-rank">' + catAndRank.join('　|　') + '</div>' : '';
     html += '<div class="proj-row">' +
       '<div class="proj-info">' +
         nameHtml +
-        (detail.achievementCategory ? '<div class="proj-unit">项目类别：' + detail.achievementCategory + '</div>' : '') +
         (unit ? '<div class="proj-unit">完成单位：' + unit + '</div>' : '') +
-        (detail.expertLevel ? '<div class="proj-rank">推荐等级：' + detail.expertLevel + '</div>' : '') +
+        catRankHtml +
       '</div>' +
       '<select class="level-select' + (selVal ? ' has-value' : '') + '" data-id="' + vid + '">' +
         '<option value=""' + (selVal === '' ? ' selected' : '') + '>请选择</option>' +
