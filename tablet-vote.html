@@ -630,8 +630,7 @@ function showSummary() {
     var v = state.votes[vid];
     var detail = ach.achievementDetail || ach;
     var name = detail.achievementName || ('成果 ' + (i+1));
-    var unit = detail.creationUnits || '';
-    var info = name + (unit ? ' — ' + unit : '');
+    var info = name;
     var lvlTxt = (v && v.voteLevel) ? v.voteLevel : '未选择';
     var color = (v && v.voteLevel) ? '#a5d6a7' : '#ef9a9a';
     html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">' +
