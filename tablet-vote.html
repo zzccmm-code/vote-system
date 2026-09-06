@@ -612,8 +612,16 @@ function doSubmit() {
 
 // ==================== 摘要 ====================
 function showSummary() {
+  // 按推荐等级分组顺序排列：一等奖 → 二等奖 → 三等奖 → 其他
+  var ordered = [];
+  var tabOrder = LEVEL_TABS.slice();
+  if (state.groups['其他'] && state.groups['其他'].length) tabOrder.push('其他');
+  tabOrder.forEach(function(lvl) {
+    (state.groups[lvl] || []).forEach(function(ach) { ordered.push(ach); });
+  });
+
   var html = '';
-  state.achievements.forEach(function(ach, i) {
+  ordered.forEach(function(ach, i) {
     var vid = ach.achievementId || ach.id;
     var v = state.votes[vid];
     var detail = ach.achievementDetail || ach;
