@@ -488,6 +488,7 @@ function renderList() {
     html += '<div class="proj-row">' +
       '<div class="proj-info">' +
         nameHtml +
+        (detail.achievementCategory ? '<div class="proj-unit">项目类别：' + detail.achievementCategory + '</div>' : '') +
         (unit ? '<div class="proj-unit">完成单位：' + unit + '</div>' : '') +
         (detail.expertLevel ? '<div class="proj-rank">推荐等级：' + detail.expertLevel + '</div>' : '') +
       '</div>' +
