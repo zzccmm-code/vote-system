@@ -101,7 +101,22 @@ canvas { display: block; }
 <script src="/assets/pdfjs/pdf.min.js"></script>
 <script>
 (function() {
-  var params = new URLSearchParams(location.search);
+  // 兼容旧内核：手动解析查询参数（不依赖URLSearchParams）
+  var params = (function() {
+    var out = {};
+    var q = location.search.replace(/^\?/, '');
+    if (q) {
+      var parts = q.split('&');
+      for (var i = 0; i < parts.length; i++) {
+        var kv = parts[i].split('=');
+        if (kv[0]) {
+          try { out[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1] || ''); }
+          catch (e2) { out[kv[0]] = kv[1] || ''; }
+        }
+      }
+    }
+    return { get: function(k) { return out.hasOwnProperty(k) ? out[k] : null; } };
+  })();
   var file = params.get('file') || '';
   var name = params.get('name') || '';
   if (name) document.getElementById('pvTitle').textContent = name;

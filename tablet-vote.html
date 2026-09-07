@@ -318,10 +318,24 @@ body {
 <div class="toast" id="toast"></div>
 
 <!-- 版权角标 -->
-<div class="copyright">Copyright 张晨萌</div>
+<div class="copyright">Copyright 张晨萌 · JS-v3</div>
 
 <script>
+// ==================== 全局错误兜底（旧内核诊断：错误直接显示在页面顶部） ====================
+window.onerror = function(msg, src, line, col) {
+  try {
+    var t = document.getElementById('toast');
+    if (t) {
+      t.style.maxWidth = '92%';
+      t.textContent = '脚本错误(' + line + '): ' + msg;
+      t.className = 'toast error show';
+      setTimeout(function() { t.classList.remove('show'); }, 8000);
+    }
+  } catch (e) {}
+};
+
 // ==================== 全局状态 ====================
+var JS_VER = '20260907-v3';
 var API = (function() {
   // 平板端优先使用相对路径（通过Node代理），回退到直连
   var b = window._$base_url;
@@ -354,7 +368,10 @@ function showToast(msg, type) {
 }
 
 function showModal(id) { $(id).classList.remove('hidden'); }
-function hideModal() { $$('.modal-overlay').forEach(function(m) { m.classList.add('hidden'); }); }
+function hideModal() {
+  var ms = document.querySelectorAll('.modal-overlay');
+  for (var i = 0; i < ms.length; i++) { ms[i].classList.add('hidden'); }
+}
 
 // ==================== 登录 ====================
 function doLogin() {
@@ -580,6 +597,7 @@ function updateSubmitBtn() {
 
 // ==================== 提交 ====================
 function confirmSubmit() {
+  try {
   if (state.submitted) return;
   var total = state.achievements.length;
   var voted = Object.keys(state.votes).filter(function(k) {
@@ -595,6 +613,7 @@ function confirmSubmit() {
   }
   $('confirmMsg').textContent = msg;
   showModal('confirmModal');
+  } catch (e) { showToast('打开确认框出错: ' + e.message, 'error'); }
 }
 
 function doSubmit() {
@@ -627,23 +646,26 @@ function doSubmit() {
     );
   });
 
+  function restoreBtn() {
+    $('confirmBtn').disabled = false;
+    $('confirmBtn').textContent = '确认提交';
+  }
   Promise.all(promises)
     .then(function() {
       state.submitted = true;
       updateSubmitBtn();
+      restoreBtn();
       showToast('投票提交成功！', 'success');
     })
     .catch(function(err) {
+      restoreBtn();
       showToast('提交失败: ' + (err.message || '请重试'), 'error');
-    })
-    .finally(function() {
-      $('confirmBtn').disabled = false;
-      $('confirmBtn').textContent = '确认提交';
     });
 }
 
 // ==================== 摘要 ====================
 function showSummary() {
+  try {
   // 按推荐等级分组顺序排列：一等奖 → 二等奖 → 三等奖 → 其他
   var ordered = [];
   var tabOrder = LEVEL_TABS.slice();
@@ -671,6 +693,7 @@ function showSummary() {
   });
   $('summaryList').innerHTML = html || '<p>暂无数据</p>';
   showModal('summaryModal');
+  } catch (e) { showToast('打开总览出错: ' + e.message, 'error'); }
 }
 
 // 自动聚焦
