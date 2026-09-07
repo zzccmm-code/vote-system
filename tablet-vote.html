@@ -115,27 +115,25 @@ body {
 }
 .proj-rank { font-size: 13px; color: #4dd0e1; margin-top: 4px; }
 
-.level-select {
+/* 投票选项按钮（同意/不同意） */
+.opt-btns {
   flex-shrink: 0;
-  width: 130px; padding: 10px 8px;
-  border: 2px solid rgba(30,136,229,0.35);
-  border-radius: 8px;
-  background: rgba(0,0,0,0.35);
-  color: #e3f2fd;
-  font-size: 16px; font-weight: 600;
-  text-align: center;
-  outline: none;
-  appearance: none; -webkit-appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2390caf9' stroke-width='2.5'><path d='M6 9l6 6 6-6'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
+  display: flex; gap: 8px;
 }
-.level-select:focus { border-color: #1e88e5; }
-.level-select option { background: #0d2137; color: #e3f2fd; font-size: 15px; }
-.level-select.has-value {
-  background-color: rgba(30,136,229,0.2);
-  border-color: #1e88e5; color: #fff;
+.opt-btn {
+  padding: 12px 16px;
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  color: #b0bec5;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
+.opt-btn:active { transform: scale(0.95); }
+.opt-btn.selected-agree { background: rgba(76,175,80,0.25); border-color: #4caf50; color: #a5d6a7; }
+.opt-btn.selected-disagree { background: rgba(244,67,54,0.25); border-color: #f44336; color: #ef9a9a; }
 
 /* ===== 底部导航 ===== */
 .nav-bar {
@@ -332,7 +330,7 @@ var state = {
   achievements: [],
   groups: {},          // 等级 → 成果数组
   currentTab: '一等奖',
-  votes: {},           // achievementId → { voteLevel }
+  votes: {},           // achievementId → { voteOption }
   submitted: false
 };
 
@@ -432,6 +430,7 @@ function fetchVoteData() {
         };
       });
       buildGroups();
+      initDefaultVotes();
     });
 }
 
@@ -444,6 +443,30 @@ function buildGroups() {
     else groups['其他'].push(ach);
   });
   state.groups = groups;
+}
+
+// 初始化默认投票：第一个项目需手动选择（不预选），其余项目默认"同意"
+function initDefaultVotes() {
+  // 按分组顺序得到全局第一个项目
+  var tabOrder = LEVEL_TABS.slice();
+  if (state.groups['其他'] && state.groups['其他'].length) tabOrder.push('其他');
+  var first = null;
+  for (var i = 0; i < tabOrder.length && !first; i++) {
+    var g = state.groups[tabOrder[i]] || [];
+    if (g.length) first = g[0];
+  }
+  var firstId = first ? (first.achievementId || first.id) : null;
+
+  state.achievements.forEach(function(ach) {
+    var vid = ach.achievementId || ach.id;
+    if (vid === firstId) {
+      // 第一个项目：清空默认选择，要求手动选择
+      delete state.votes[vid];
+    } else if (!state.votes[vid] || !state.votes[vid].voteOption) {
+      if (!state.votes[vid]) state.votes[vid] = {};
+      state.votes[vid].voteOption = 'agree';
+    }
+  });
 }
 
 // ==================== 渲染 ====================
@@ -480,7 +503,7 @@ function renderList() {
     var name = detail.achievementName || ('成果 ' + vid);
     var unit = detail.creationUnits || '';
     var saved = state.votes[vid];
-    var selVal = (saved && saved.voteLevel) ? saved.voteLevel : '';
+    var opt = (saved && saved.voteOption) ? saved.voteOption : '';
     var fileSrc = detail.fileSrc || '';
     var nameHtml = fileSrc
       ? '<div class="proj-name clickable" data-file="' + encodeURIComponent(fileSrc) + '">📄 ' + name + '</div>'
@@ -495,14 +518,10 @@ function renderList() {
         (unit ? '<div class="proj-unit">完成单位：' + unit + '</div>' : '') +
         catRankHtml +
       '</div>' +
-      '<select class="level-select' + (selVal ? ' has-value' : '') + '" data-id="' + vid + '">' +
-        '<option value=""' + (selVal === '' ? ' selected' : '') + '>请选择</option>' +
-        '<option value="一等奖"' + (selVal === '一等奖' ? ' selected' : '') + '>一等奖</option>' +
-        '<option value="二等奖"' + (selVal === '二等奖' ? ' selected' : '') + '>二等奖</option>' +
-        '<option value="三等奖"' + (selVal === '三等奖' ? ' selected' : '') + '>三等奖</option>' +
-        '<option value="不授奖"' + (selVal === '不授奖' ? ' selected' : '') + '>不授奖</option>' +
-        '<option value="特等奖"' + (selVal === '特等奖' ? ' selected' : '') + '>特等奖</option>' +
-      '</select>' +
+      '<div class="opt-btns">' +
+        '<button class="opt-btn' + (opt === 'agree' ? ' selected-agree' : '') + '" data-id="' + vid + '" data-opt="agree">✓ 同意</button>' +
+        '<button class="opt-btn' + (opt === 'disagree' ? ' selected-disagree' : '') + '" data-id="' + vid + '" data-opt="disagree">✗ 不同意</button>' +
+      '</div>' +
     '</div>';
   });
   $('projList').innerHTML = html;
@@ -510,24 +529,26 @@ function renderList() {
   updateSubmitBtn();
 }
 
-// 项目名称点击 → 打开内嵌预览页查看PDF
+// 事件委托：项目名称点击 → 预览PDF；投票按钮点击 → 互斥选择
 $('projList').addEventListener('click', function(e) {
   var t = e.target;
   if (t.classList && t.classList.contains('proj-name') && t.getAttribute('data-file')) {
     var name = t.textContent.replace(/^📄\s*/, '') || '';
     window.open('/pdf-view.html?file=' + t.getAttribute('data-file') + '&name=' + encodeURIComponent(name), '_blank');
+    return;
   }
-});
-
-// 下拉框变更（事件委托）
-$('projList').addEventListener('change', function(e) {
-  if (e.target && e.target.classList.contains('level-select')) {
-    var sel = e.target;
-    var vid = Number(sel.getAttribute('data-id'));
-    var val = sel.value;
+  if (t.classList && t.classList.contains('opt-btn')) {
+    if (state.submitted) return;
+    var vid = Number(t.getAttribute('data-id'));
+    var opt = t.getAttribute('data-opt');
+    // 同项目内互斥：清除两个按钮的选中态，再选中当前项
+    var btns = t.parentNode.querySelectorAll('.opt-btn');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].classList.remove('selected-agree', 'selected-disagree');
+    }
+    t.classList.add(opt === 'agree' ? 'selected-agree' : 'selected-disagree');
     if (!state.votes[vid]) state.votes[vid] = {};
-    state.votes[vid].voteLevel = val;
-    sel.classList.toggle('has-value', !!val);
+    state.votes[vid].voteOption = opt;
     updateProgress();
     updateSubmitBtn();
   }
@@ -536,7 +557,7 @@ $('projList').addEventListener('change', function(e) {
 function updateProgress() {
   var total = state.achievements.length;
   var voted = Object.keys(state.votes).filter(function(k) {
-    return state.votes[k] && state.votes[k].voteLevel;
+    return state.votes[k] && state.votes[k].voteOption;
   }).length;
   var pct = total > 0 ? Math.round(voted / total * 100) : 0;
   $('progressFill').style.width = pct + '%';
@@ -553,15 +574,15 @@ function confirmSubmit() {
   if (state.submitted) return;
   var total = state.achievements.length;
   var voted = Object.keys(state.votes).filter(function(k) {
-    return state.votes[k] && state.votes[k].voteLevel;
+    return state.votes[k] && state.votes[k].voteOption;
   }).length;
   var msg;
   if (voted === 0) {
-    msg = '您未对任何项目选择授奖等级，全部将计为"未投票"，确认提交吗？';
+    msg = '您尚未对任何项目投票，全部将计为"弃权"，确认提交吗？';
   } else if (voted < total) {
-    msg = '您还有 ' + (total - voted) + ' 个项目未选择等级，将计为"未投票"，确认提交吗？';
+    msg = '您还有 ' + (total - voted) + ' 个项目未投票，将计为"弃权"，确认提交吗？';
   } else {
-    msg = '所有 ' + total + ' 个项目均已选择授奖等级，确认提交吗？';
+    msg = '全部 ' + total + ' 个项目已投票完毕，确认提交吗？';
   }
   $('confirmMsg').textContent = msg;
   showModal('confirmModal');
@@ -574,12 +595,11 @@ function doSubmit() {
   $('confirmBtn').textContent = '提交中...';
 
   var promises = [];
-  // 遍历本轮全部成果：已选择等级的发送 voteLevel，未选择的按弃权计
+  // 遍历本轮全部成果：已选择（同意/不同意）的按所选发送，未选择的按"弃权"计
   state.achievements.forEach(function(ach) {
     var aid = ach.achievementId || ach.id;
     var v = state.votes[aid];
-    var level = (v && v.voteLevel) ? v.voteLevel : '';
-    var option = level ? 'agree' : 'abstain';
+    var option = (v && v.voteOption) ? v.voteOption : 'abstain';
     promises.push(
       fetch(API('/voteRound/push'), {
         method: 'POST',
@@ -589,8 +609,7 @@ function doSubmit() {
           achievementId: Number(aid),
           voterId: state.voterName,
           voterName: state.voterName,
-          voteOption: option,
-          voteLevel: level
+          voteOption: option
         })
       }).then(function(r) { return r.json(); })
         .then(function(d) {
@@ -633,8 +652,9 @@ function showSummary() {
     var info = name + (detail.achievementCategory
       ? '<span style="color:#90caf9;font-size:12px;">（' + detail.achievementCategory + '）</span>'
       : '');
-    var lvlTxt = (v && v.voteLevel) ? v.voteLevel : '未选择';
-    var color = (v && v.voteLevel) ? '#a5d6a7' : '#ef9a9a';
+    var opts = { agree: '✓ 同意', disagree: '✗ 不同意' };
+    var lvlTxt = (v && v.voteOption && opts[v.voteOption]) ? opts[v.voteOption] : '未投票';
+    var color = (v && v.voteOption === 'agree') ? '#a5d6a7' : '#ef9a9a';
     html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">' +
       '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px;">' + (i+1) + '. ' + info + '</span>' +
       '<span style="color:' + color + ';white-space:nowrap;">' + lvlTxt + '</span>' +
