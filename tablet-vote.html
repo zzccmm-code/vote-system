@@ -35,23 +35,6 @@ body {
   border-radius: 6px; padding: 4px 12px; font-size: 13px; color: #90caf9;
 }
 
-/* ===== 进度条 ===== */
-.progress-wrap {
-  flex-shrink: 0;
-  padding: 10px 24px 6px;
-  display: flex; align-items: center;
-}
-.progress-text { margin-left: 10px; }
-.progress-bar {
-  flex: 1; height: 6px; background: rgba(255,255,255,0.1);
-  border-radius: 3px; overflow: hidden;
-}
-.progress-fill {
-  height: 100%; background: linear-gradient(90deg, #42a5f5, #1e88e5);
-  border-radius: 3px; transition: width 0.3s;
-}
-.progress-text { font-size: 14px; color: #90caf9; white-space: nowrap; }
-
 /* ===== 分组页签 ===== */
 .tab-bar {
   flex-shrink: 0;
@@ -268,12 +251,6 @@ body {
       <div class="badge" id="roundBadge" style="margin-right:12px;"></div>
       <div class="badge" id="voterBadge"></div>
     </div>
-  </div>
-
-  <!-- 进度 -->
-  <div class="progress-wrap">
-    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    <div class="progress-text" id="progressText">0 / 0</div>
   </div>
 
   <!-- 分组页签 -->
@@ -519,7 +496,7 @@ function renderList() {
   var list = state.groups[state.currentTab] || [];
   if (!list.length) {
     $('projList').innerHTML = '<div style="text-align:center;color:#90caf9;padding:40px 0;font-size:15px;">该分组暂无项目</div>';
-    updateProgress();
+    updateSubmitBtn();
     return;
   }
   var html = '';
@@ -551,7 +528,6 @@ function renderList() {
     '</div>';
   });
   $('projList').innerHTML = html;
-  updateProgress();
   updateSubmitBtn();
 }
 
@@ -575,20 +551,9 @@ $('projList').addEventListener('click', function(e) {
     t.classList.add(opt === 'agree' ? 'selected-agree' : 'selected-disagree');
     if (!state.votes[vid]) state.votes[vid] = {};
     state.votes[vid].voteOption = opt;
-    updateProgress();
     updateSubmitBtn();
   }
 });
-
-function updateProgress() {
-  var total = state.achievements.length;
-  var voted = Object.keys(state.votes).filter(function(k) {
-    return state.votes[k] && state.votes[k].voteOption;
-  }).length;
-  var pct = total > 0 ? Math.round(voted / total * 100) : 0;
-  $('progressFill').style.width = pct + '%';
-  $('progressText').textContent = voted + ' / ' + total;
-}
 
 function updateSubmitBtn() {
   $('btnSubmit').disabled = state.submitted;
