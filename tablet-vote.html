@@ -39,8 +39,9 @@ body {
 .progress-wrap {
   flex-shrink: 0;
   padding: 10px 24px 6px;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center;
 }
+.progress-text { margin-left: 10px; }
 .progress-bar {
   flex: 1; height: 6px; background: rgba(255,255,255,0.1);
   border-radius: 3px; overflow: hidden;
@@ -54,13 +55,14 @@ body {
 /* ===== 分组页签 ===== */
 .tab-bar {
   flex-shrink: 0;
-  display: flex; gap: 10px; padding: 12px 24px 8px;
+  display: flex; padding: 12px 24px 8px;
   overflow-x: auto; -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 .tab-bar::-webkit-scrollbar { display: none; }
 .tab-btn {
   flex-shrink: 0;
+  margin-right: 10px;
   padding: 10px 20px;
   border: 1px solid rgba(30,136,229,0.3);
   border-radius: 10px;
@@ -89,16 +91,18 @@ body {
   font-size: 16px; font-weight: 600; color: #90caf9;
   margin: 8px 0 10px; letter-spacing: 0.5px;
 }
-.proj-list { display: flex; flex-direction: column; gap: 10px; }
+.proj-list { display: flex; flex-direction: column; }
+.proj-list .proj-row { margin-bottom: 10px; }
+.proj-list .proj-row:last-child { margin-bottom: 0; }
 
 .proj-row {
-  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  display: flex; align-items: center; justify-content: space-between;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(30,136,229,0.2);
   border-radius: 12px;
   padding: 14px 16px;
 }
-.proj-info { flex: 1; min-width: 0; }
+.proj-info { flex: 1; min-width: 0; margin-right: 14px; }
 .proj-name {
   font-size: 18px; font-weight: 600; color: #e3f2fd;
   line-height: 1.4; word-break: break-all;
@@ -118,8 +122,10 @@ body {
 /* 投票选项按钮（同意/不同意，上下排列） */
 .opt-btns {
   flex-shrink: 0;
-  display: flex; flex-direction: column; gap: 8px;
+  display: flex; flex-direction: column;
 }
+.opt-btns .opt-btn { margin-top: 8px; }
+.opt-btns .opt-btn:first-child { margin-top: 0; }
 .opt-btn {
   padding: 12px 16px;
   border: 2px solid rgba(255,255,255,0.15);
@@ -138,10 +144,11 @@ body {
 /* ===== 底部导航 ===== */
 .nav-bar {
   flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; gap: 16px;
+  display: flex; align-items: center; justify-content: center;
   padding: 14px 24px;
   border-top: 1px solid rgba(30,136,229,0.2);
 }
+.nav-bar > button { margin: 0 8px; }
 .nav-btn {
   padding: 12px 28px;
   border: 1px solid rgba(30,136,229,0.3);
@@ -197,7 +204,8 @@ body {
 
 /* ===== 提交确认 ===== */
 .modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0;  /* inset兼容旧内核 */
+  background: rgba(0,0,0,0.7);
   display: flex; align-items: center; justify-content: center; z-index: 999;
 }
 .modal-box {
@@ -207,9 +215,10 @@ body {
 }
 .modal-box h2 { font-size: 20px; margin-bottom: 12px; }
 .modal-box p { color: #90caf9; font-size: 14px; margin-bottom: 24px; }
-.modal-actions { display: flex; gap: 12px; justify-content: center; }
+.modal-actions { display: flex; justify-content: center; }
 .modal-actions button {
   padding: 10px 24px; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+  margin: 0 6px;
 }
 .modal-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #b0bec5; }
 .modal-confirm { background: #43a047; border: none; color: #fff; }
@@ -255,8 +264,8 @@ body {
   <!-- 顶部栏 -->
   <div class="top-bar">
     <h1>国网四川省电力公司科技奖励投票系统</h1>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div class="badge" id="roundBadge"></div>
+    <div style="display:flex;align-items:center;">
+      <div class="badge" id="roundBadge" style="margin-right:12px;"></div>
       <div class="badge" id="voterBadge"></div>
     </div>
   </div>

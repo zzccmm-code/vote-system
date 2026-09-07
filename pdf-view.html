@@ -15,11 +15,12 @@ body {
   overflow: hidden;
 }
 .preview-top {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 10px 16px;
   background: #0f2b4a;
   border-bottom: 1px solid rgba(30,136,229,0.3);
 }
+.preview-top .title { margin-right: 12px; }
 .preview-top .title {
   flex: 1; min-width: 0;
   font-size: 15px; font-weight: 600;
@@ -40,11 +41,12 @@ body {
 
 /* 工具栏 */
 .pdf-toolbar {
-  display: flex; align-items: center; justify-content: center; gap: 14px;
+  display: flex; align-items: center; justify-content: center;
   padding: 8px 16px;
   background: #0f2b4a;
   border-bottom: 1px solid rgba(30,136,229,0.2);
 }
+.pdf-toolbar > * { margin: 0 7px; }
 .tool-btn {
   padding: 7px 16px;
   border: 1px solid rgba(30,136,229,0.4);
