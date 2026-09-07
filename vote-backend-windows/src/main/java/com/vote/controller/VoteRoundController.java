@@ -110,6 +110,14 @@ public class VoteRoundController {
         return Result.ok(voteRoundService.hasVoterVoted(voterName));
     }
 
+    /** 清除指定专家在当前轮次的全部投票记录（重新投票覆盖旧记录用） */
+    @PostMapping("/clearVoter")
+    public Result<String> clearVoter(
+            @RequestParam(value = "roundId", required = false) Long roundId,
+            @RequestParam String voterName) {
+        return Result.ok(voteRoundService.clearVoterVotes(roundId, voterName));
+    }
+
     /** 导出投票明细Excel：每个专家一个sheet */
     @PostMapping("/exportVoteDetail")
     public ResponseEntity<byte[]> exportVoteDetail(

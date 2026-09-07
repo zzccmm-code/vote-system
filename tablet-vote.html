@@ -358,17 +358,17 @@ function doLogin() {
   $('loginBtn').disabled = true;
   $('loginBtn').textContent = '验证中...';
 
-  // 先检查是否已投票
+  // 先检查是否已投票（允许重新登录投票：重新提交后以最新一次投票为准）
   fetch(API('/voteRound/checkVoter?voterName=' + encodeURIComponent(name)))
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d && d.data === true) {
-        showToast('该姓名已投过票，不能重复投票', 'error');
-        $('loginBtn').disabled = false;
-        $('loginBtn').textContent = '进入投票';
-        return Promise.reject(new Error('ALREADY_VOTED'));
+        state.relogin = true;
+        showToast('该姓名已投过票，重新提交将以本次投票为准', 'info');
+      } else {
+        state.relogin = false;
       }
-      // 未投票，继续加载数据
+      // 继续加载数据
       $('loginBtn').textContent = '加载中...';
       return fetchVoteData();
     })
@@ -576,6 +576,9 @@ function confirmSubmit() {
   } else {
     msg = '全部 ' + total + ' 个项目已投票完毕，确认提交吗？';
   }
+  if (state.relogin) {
+    msg += '（检测到您此前已投过票，本次提交将覆盖之前的投票记录）';
+  }
   $('confirmMsg').textContent = msg;
   showModal('confirmModal');
   } catch (e) { showToast('打开确认框出错: ' + e.message, 'error'); }
@@ -587,44 +590,54 @@ function doSubmit() {
   $('confirmBtn').disabled = true;
   $('confirmBtn').textContent = '提交中...';
 
-  var promises = [];
-  // 遍历本轮全部成果：已选择（同意/不同意）的按所选发送，未选择的按"弃权"计
-  state.achievements.forEach(function(ach) {
-    var aid = ach.achievementId || ach.id;
-    var v = state.votes[aid];
-    var option = (v && v.voteOption) ? v.voteOption : 'abstain';
-    promises.push(
-      fetch(API('/voteRound/push'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roundId: state.roundId,
-          achievementId: Number(aid),
-          voterId: state.voterName,
-          voterName: state.voterName,
-          voteOption: option
-        })
-      }).then(function(r) { return r.json(); })
+  // 若该专家此前已投过票（重新登录场景），先清除旧投票记录，再提交本次投票
+  var preClear = state.relogin
+    ? fetch(API('/voteRound/clearVoter?roundId=' + state.roundId + '&voterName=' + encodeURIComponent(state.voterName)), { method: 'POST' })
+        .then(function(r) { return r.json(); })
         .then(function(d) {
-          if (d.code !== 200) throw new Error(d.msg || '提交失败');
+          if (d.code !== 200) throw new Error(d.msg || '清除旧记录失败');
+          state.relogin = false;
         })
-    );
-  });
+    : Promise.resolve();
 
-  function restoreBtn() {
-    $('confirmBtn').disabled = false;
-    $('confirmBtn').textContent = '确认提交';
-  }
-  Promise.all(promises)
+  preClear
+    .then(function() {
+      var promises = [];
+      // 遍历本轮全部成果：已选择（同意/不同意）的按所选发送，未选择的按"弃权"计
+      state.achievements.forEach(function(ach) {
+        var aid = ach.achievementId || ach.id;
+        var v = state.votes[aid];
+        var option = (v && v.voteOption) ? v.voteOption : 'abstain';
+        promises.push(
+          fetch(API('/voteRound/push'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              roundId: state.roundId,
+              achievementId: Number(aid),
+              voterId: state.voterName,
+              voterName: state.voterName,
+              voteOption: option
+            })
+          }).then(function(r) { return r.json(); })
+            .then(function(d) {
+              if (d.code !== 200) throw new Error(d.msg || '提交失败');
+            })
+        );
+      });
+      return Promise.all(promises);
+    })
     .then(function() {
       state.submitted = true;
       updateSubmitBtn();
-      restoreBtn();
       showToast('投票提交成功！', 'success');
     })
     .catch(function(err) {
-      restoreBtn();
       showToast('提交失败: ' + (err.message || '请重试'), 'error');
+    })
+    .then(function() {
+      $('confirmBtn').disabled = false;
+      $('confirmBtn').textContent = '确认提交';
     });
 }
 

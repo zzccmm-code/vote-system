@@ -312,6 +312,53 @@ public class VoteRoundService {
         return voteRecordMapper.selectCount(wrapper) > 0;
     }
 
+    /**
+     * 清除指定专家在指定轮次的全部投票记录，并重算受影响成果的统计
+     * 用于"重新登录后重新投票，以最新一次投票结果为准"的场景
+     */
+    @Transactional
+    public String clearVoterVotes(Long roundId, String voterName) {
+        VoteRound round = roundId != null ? voteRoundMapper.selectById(roundId) : getCurrentRound();
+        if (round == null) throw new IllegalArgumentException("没有进行中的投票轮次");
+
+        // 查该专家本轮全部记录
+        List<VoteRecord> records = voteRecordMapper.selectList(
+            new QueryWrapper<VoteRecord>().eq("round_id", round.getId())
+                                          .eq("voter_name", voterName));
+        if (records.isEmpty()) return "无历史投票记录";
+
+        // 受影响的成果集合
+        java.util.Set<Long> achIds = new java.util.LinkedHashSet<>();
+        for (VoteRecord r : records) achIds.add(r.getAchievementId());
+
+        // 删除该专家本轮全部记录
+        QueryWrapper<VoteRecord> dw = new QueryWrapper<>();
+        dw.eq("round_id", round.getId()).eq("voter_name", voterName);
+        voteRecordMapper.delete(dw);
+
+        // 逐个重算受影响成果的统计（基于剩余记录聚合，保证与明细一致）
+        for (Long aid : achIds) {
+            List<VoteRecord> rest = voteRecordMapper.selectList(
+                new QueryWrapper<VoteRecord>().eq("round_id", round.getId())
+                                              .eq("achievement_id", aid));
+            int agree = 0, disagree = 0, abstain = 0;
+            for (VoteRecord r : rest) {
+                if ("agree".equals(r.getVoteOption())) agree++;
+                else if ("disagree".equals(r.getVoteOption())) disagree++;
+                else abstain++;
+            }
+            LambdaUpdateWrapper<VoteResult> uw = new LambdaUpdateWrapper<>();
+            uw.eq(VoteResult::getRoundId, round.getId())
+              .eq(VoteResult::getAchievementId, aid)
+              .set(VoteResult::getAgree, agree)
+              .set(VoteResult::getDisagree, disagree)
+              .set(VoteResult::getAbstain, abstain)
+              .set(VoteResult::getTotalVoters, rest.size());
+            voteResultMapper.update(null, uw);
+        }
+        return "已清除 " + voterName + " 的 " + records.size() + " 条历史投票记录";
+    }
+
     /** 导出投票明细Excel：每个专家一个sheet */
     public ResponseEntity<byte[]> exportVoteDetail(Long roundId) throws Exception {
         if (roundId == null) {
