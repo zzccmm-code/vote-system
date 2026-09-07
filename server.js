@@ -139,9 +139,15 @@ http.createServer((req, res) => {
       fs.createReadStream(path.join(ROOT, 'index.html')).pipe(res);
       return;
     }
+    // HTML 页面禁用缓存，保证平板端每次都能加载最新页面
+    const noCache = (ext === '.html' || ext === '.htm' || ext === '.js' || ext === '.css' || ext === '') ? {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    } : {};
     res.writeHead(200, Object.assign({
       'Content-Type': MIME[ext] || 'application/octet-stream'
-    }, corsHeaders(req)));
+    }, noCache, corsHeaders(req)));
     res.end(data);
   });
 }).listen(PORT, () => {
