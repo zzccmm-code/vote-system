@@ -444,9 +444,23 @@
       $('resultWrap').innerHTML = '<div class="state">' + ICON.empty + '<div>该轮次暂无投票结果</div></div>';
       return;
     }
+    // 最终授奖判定：同意占比>=66.67%维持推荐等级，否则降一级（一等奖→二等奖→三等奖→不授奖）
+    var DEMOTE = { '一等奖': '二等奖', '二等奖': '三等奖', '三等奖': '不授奖' };
     var rows = list.map(function (v, i) {
-      var lvl = v.voteLevel
-        ? '<span class="tag tag-level">' + esc(v.voteLevel) + '</span>' : '<span class="tag tag-none">—</span>';
+      var ratio = (v.totalVoters > 0) ? (v.agree * 100 / v.totalVoters) : null;
+      var finalAward, faCls = '';
+      if (ratio === null || !v.expertLevel) {
+        finalAward = '—';
+      } else if (ratio >= 66.67) {
+        finalAward = v.expertLevel;
+        faCls = 'tag-level';
+      } else {
+        finalAward = DEMOTE[v.expertLevel] || '不授奖';
+        faCls = 'tag-demote';
+      }
+      var faTag = finalAward === '—'
+        ? '<span class="tag tag-none">—</span>'
+        : '<span class="tag ' + faCls + '">' + esc(finalAward) + (faCls === 'tag-demote' ? '（降级）' : '') + '</span>';
       return '<tr>' +
         '<td class="col-idx center">' + (i + 1) + '</td>' +
         '<td>' + esc(v.achievementName || '') + '</td>' +
@@ -459,7 +473,7 @@
         '<td class="center">' + (v.abstain || 0) + '</td>' +
         '<td class="center">' + (v.totalVoters || 0) + '</td>' +
         '<td class="center">' + (v.agreeRatio || '0%') + '</td>' +
-        '<td>' + lvl + '</td>' +
+        '<td>' + faTag + '</td>' +
       '</tr>';
     }).join('');
     $('resultWrap').innerHTML =

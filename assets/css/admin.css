@@ -255,6 +255,7 @@ table.data tbody tr:last-child td { border-bottom: none; }
 }
 .tag-cat { background: var(--accent-soft); color: #9ec5ff; border-color: rgba(30, 136, 229, 0.3); }
 .tag-level { background: var(--green-soft); color: #a5d6a7; border-color: rgba(67, 160, 71, 0.3); }
+.tag-demote { background: rgba(255, 171, 64, 0.15); color: #ffb74d; border-color: rgba(255, 171, 64, 0.35); }
 .tag-none { background: rgba(255, 255, 255, 0.05); color: var(--text-mute); border-color: var(--border); }
 
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
