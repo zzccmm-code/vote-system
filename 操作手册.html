@@ -129,7 +129,9 @@
         <li>Oracle JDK 17：<code>https://www.oracle.com/java/technologies/downloads/#java17</code></li>
         <li>Eclipse Temurin：<code>https://adoptium.net/download/</code></li>
       </ul>
-      <p>推荐下载 <strong>MSI 安装包</strong>，双击安装即可。安装完成后打开"命令提示符"输入 <code>java -version</code>，看到版本号（如 17.0.x）即表示成功。</p>
+      <p>推荐下载 <strong>MSI 安装包</strong>（文件名类似 microsoft-jdk-17.0.x-windows-x64.msi，约 170MB），双击安装。安装时在功能选择页面，确保 <strong>"Set JAVA_HOME variable"</strong> 和 <strong>"Add to PATH"</strong> 都设为"整个功能安装到本地硬盘"。</p>
+      <p>安装完成后打开"命令提示符"输入 <code>java -version</code>，看到版本号（如 17.0.x）即表示成功。</p>
+      <div class="tip"><strong>免安装版（ZIP）用户</strong>：下载解压到 <code>C:\jdk-17</code> 后需手动配置环境变量：右键"此电脑" → 属性 → 高级系统设置 → 环境变量 → 系统变量新建 <code>JAVA_HOME = C:\jdk-17</code>，再编辑 Path 新增 <code>%JAVA_HOME%\bin</code>，确定保存后重新打开命令提示符验证。</div>
     </div>
   </div>
 
