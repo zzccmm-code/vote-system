@@ -446,20 +446,23 @@
     }
     // 最终授奖判定（用分数精确比较，避免小数精度导致边界误判，如2/3=66.67%）：
     // 1.推荐一等奖：占比>=2/3(66.67%) → 一等奖，否则 → 二等奖
-    // 2.推荐二等奖：占比>=1/2(50%) → 二等奖，否则 → 三等奖
-    // 3.推荐三等奖：占比>=1/2(50%) → 三等奖，否则 → 不授奖
+    // 2.推荐二等奖：占比>1/2(50%) → 二等奖，占比<=1/2 → 三等奖
+    // 3.推荐三等奖：占比>1/2(50%) → 三等奖，占比<=1/2 → 不授奖
     // 4.推荐复议：不显示最终授奖
-    // 判定公式：agree * den >= totalVoters * num  等价于  agree/totalVoters >= num/den
+    // 一等奖用 >= 比较；二等奖/三等奖用 > 严格比较（恰好50%时降级）
+    // 判定公式：agree * den 与 totalVoters * num 比较等价于 agree/totalVoters 与 num/den 比较
     var RULES = {
-      '一等奖': { num: 2, den: 3, passAward: '一等奖', failAward: '二等奖' },
-      '二等奖': { num: 1, den: 2, passAward: '二等奖', failAward: '三等奖' },
-      '三等奖': { num: 1, den: 2, passAward: '三等奖', failAward: '不授奖' }
+      '一等奖': { num: 2, den: 3, strict: false, passAward: '一等奖', failAward: '二等奖' },
+      '二等奖': { num: 1, den: 2, strict: true,  passAward: '二等奖', failAward: '三等奖' },
+      '三等奖': { num: 1, den: 2, strict: true,  passAward: '三等奖', failAward: '不授奖' }
     };
     var rows = list.map(function (v, i) {
       var ratio = (v.totalVoters > 0) ? (v.agree * 100 / v.totalVoters) : null;
       var rule = RULES[v.expertLevel];
       var finalAward, faCls = '';
-      var passed = rule && ratio !== null && (v.agree * rule.den >= v.totalVoters * rule.num);
+      var passed = rule && ratio !== null && (rule.strict
+        ? (v.agree * rule.den > v.totalVoters * rule.num)
+        : (v.agree * rule.den >= v.totalVoters * rule.num));
       if (!rule || ratio === null) {
         finalAward = '—';
       } else if (passed) {
