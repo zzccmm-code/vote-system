@@ -253,7 +253,7 @@ public class AchievementService {
     private static final Set<String> VALID_CATEGORIES = new HashSet<>(Arrays.asList("专利奖", "科技进步奖", "技术发明奖"));
 
     /** 专家推荐等级可选值 */
-    private static final Set<String> VALID_LEVELS = new HashSet<>(Arrays.asList("一等奖", "二等奖", "三等奖", "不推荐"));
+    private static final Set<String> VALID_LEVELS = new HashSet<>(Arrays.asList("一等奖", "二等奖", "三等奖", "不推荐", "复议"));
 
     /**
      * 下载 Excel 导入模板
@@ -313,7 +313,7 @@ public class AchievementService {
         // 填写说明
         Row noteRow = sheet.createRow(3);
         Cell noteCell = noteRow.createCell(0);
-        noteCell.setCellValue("说明：带*为必填；成果类别可选：专利奖/科技进步奖/技术发明奖；专家推荐等级可选：一等奖/二等奖/三等奖/不推荐（可留空）");
+        noteCell.setCellValue("说明：带*为必填；成果类别可选：专利奖/科技进步奖/技术发明奖；专家推荐等级可选：一等奖/二等奖/三等奖/不推荐/复议（可留空）");
         noteCell.setCellStyle(noteStyle);
         sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(3, 3, 0, 5));
 
@@ -417,7 +417,7 @@ public class AchievementService {
                     if (level != null && !level.trim().isEmpty()) {
                         level = level.trim();
                         if (!VALID_LEVELS.contains(level)) {
-                            errors.add(buildError(i + 1, "专家推荐等级 '" + level + "' 无效，可选：一等奖/二等奖/三等奖/不推荐"));
+                            errors.add(buildError(i + 1, "专家推荐等级 '" + level + "' 无效，可选：一等奖/二等奖/三等奖/不推荐/复议"));
                             continue;
                         }
                         a.setExpertLevel(level);
