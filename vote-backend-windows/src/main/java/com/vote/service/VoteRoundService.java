@@ -83,10 +83,15 @@ public class VoteRoundService {
         if (req.getRuleJson() != null) round.setRuleJson(req.getRuleJson());
         voteRoundMapper.insert(round);
 
-        // 为已提交的成果初始化投票结果记录
+        // 为本轮对应轮次的成果初始化投票结果记录（成果按轮次隔离管理）
         LambdaQueryWrapper<Achievement> aw = new LambdaQueryWrapper<>();
-        aw.eq(Achievement::getStatus, 1);
+        aw.eq(Achievement::getStatus, 1)
+          .eq(Achievement::getRoundNum, nextRoundNum);
         List<Achievement> achievements = achievementMapper.selectList(aw);
+        if (achievements.isEmpty()) {
+            voteRoundMapper.deleteById(round.getId());
+            throw new IllegalArgumentException("第 " + nextRoundNum + " 轮没有成果数据，请先在成果管理页面选择第 " + nextRoundNum + " 轮并导入成果");
+        }
         for (Achievement a : achievements) {
             VoteResult vr = new VoteResult();
             vr.setRoundId(round.getId());

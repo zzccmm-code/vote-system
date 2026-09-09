@@ -34,6 +34,21 @@
     <section id="view-manage" class="view panel">
       <div class="toolbar">
         <div class="field">
+          <label>投票轮次</label>
+          <select class="select" id="roundSel" style="min-width:110px;">
+            <option value="1" selected>第1轮</option>
+            <option value="2">第2轮</option>
+            <option value="3">第3轮</option>
+            <option value="4">第4轮</option>
+            <option value="5">第5轮</option>
+            <option value="6">第6轮</option>
+            <option value="7">第7轮</option>
+            <option value="8">第8轮</option>
+            <option value="9">第9轮</option>
+            <option value="10">第10轮</option>
+          </select>
+        </div>
+        <div class="field">
           <label>成果类别</label>
           <select class="select" id="fCategory">
             <option value="">全部</option>
@@ -66,7 +81,7 @@
           重置
         </button>
         <div class="spacer"></div>
-        <a class="btn btn-ghost" href="import.html" style="text-decoration:none;">
+        <a class="btn btn-ghost" href="import.html" id="btnGoImport" style="text-decoration:none;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
           导入数据
         </a>

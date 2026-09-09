@@ -35,13 +35,15 @@ public class AchievementController {
             @RequestParam(required = false, defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) String achievementCategory,
             @RequestParam(required = false) String expertLevel,
-            @RequestParam(required = false) String achievementName) {
+            @RequestParam(required = false) String achievementName,
+            @RequestParam(required = false) Integer roundNum) {
         AchievementPageReq req = new AchievementPageReq();
         req.setPageNum(pageNum);
         req.setPageSize(pageSize);
         req.setAchievementCategory(achievementCategory);
         req.setExpertLevel(expertLevel);
         req.setAchievementName(achievementName);
+        req.setRoundNum(roundNum);
         return Result.ok(achievementService.page(req));
     }
 
@@ -66,6 +68,7 @@ public class AchievementController {
             @RequestParam(required = false, defaultValue = "1") Integer status,
             @RequestParam(required = false) Integer orderNum,
             @RequestParam(required = false) String evalResult,
+            @RequestParam(required = false) Integer roundNum,
             @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
 
         Achievement achievement = new Achievement();
@@ -79,6 +82,7 @@ public class AchievementController {
         achievement.setStatus(status);
         achievement.setOrderNum(orderNum);
         achievement.setEvalResult(evalResult);
+        achievement.setRoundNum(roundNum);
 
         achievementService.add(achievement, file);
         return Result.ok("新增成功");
@@ -175,11 +179,13 @@ public class AchievementController {
     /**
      * 批量导入成果（Excel）
      * POST /achievement/import
-     * form-data: file=xxx.xlsx
+     * form-data: file=xxx.xlsx, roundNum=轮次(1-10，默认1)
      */
     @PostMapping("/import")
-    public Result<Map<String, Object>> batchImport(@RequestParam("file") MultipartFile file) throws IOException {
-        return Result.ok(achievementService.batchImport(file));
+    public Result<Map<String, Object>> batchImport(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "roundNum", required = false, defaultValue = "1") Integer roundNum) throws IOException {
+        return Result.ok(achievementService.batchImport(file, roundNum));
     }
 
     /** 数据迁移：将 extraInfo 中的完成人数据复制到 completionPerson */

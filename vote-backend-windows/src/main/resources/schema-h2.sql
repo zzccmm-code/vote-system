@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS achievement (
   file_src             VARCHAR(500),
   status               INT          NOT NULL DEFAULT 0,
   order_num            INT,
+  round_num            INT DEFAULT 1,
   eval_result          VARCHAR(50),
   create_time          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   update_time          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -23,6 +24,10 @@ CREATE TABLE IF NOT EXISTS achievement (
 
 -- [v1.4.3] 新增“完成人”字段：兼容性迁移（H2 每次启动均执行，IF NOT EXISTS 保证幂等）
 ALTER TABLE achievement ADD COLUMN IF NOT EXISTS completion_person VARCHAR(300);
+
+-- [轮次管理] 成果所属投票轮次（1-10），旧数据默认归入第1轮（H2 每次启动均执行，幂等）
+ALTER TABLE achievement ADD COLUMN IF NOT EXISTS round_num INT DEFAULT 1;
+UPDATE achievement SET round_num = 1 WHERE round_num IS NULL;
 
 -- 投票轮次表
 CREATE TABLE IF NOT EXISTS vote_round (

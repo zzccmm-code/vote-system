@@ -61,6 +61,9 @@ public class AchievementService {
      */
     public PageResult<Achievement> page(AchievementPageReq req) {
         LambdaQueryWrapper<Achievement> wrapper = new LambdaQueryWrapper<>();
+        if (req.getRoundNum() != null) {
+            wrapper.eq(Achievement::getRoundNum, req.getRoundNum());
+        }
         if (StringUtils.hasText(req.getAchievementCategory())) {
             wrapper.eq(Achievement::getAchievementCategory, req.getAchievementCategory());
         }
@@ -88,6 +91,9 @@ public class AchievementService {
         }
         if (achievement.getStatus() == null) {
             achievement.setStatus(1);
+        }
+        if (achievement.getRoundNum() == null) {
+            achievement.setRoundNum(1);
         }
         achievementMapper.insert(achievement);
     }
@@ -332,9 +338,12 @@ public class AchievementService {
      * 批量导入成果
      * @return 导入结果 Map：total（总数）、success（成功数）、fail（失败数）、skipped（重复跳过数）、errors（错误详情列表）、skippedErrors（重复跳过详情列表）
      */
-    public Map<String, Object> batchImport(MultipartFile file) throws IOException {
+    public Map<String, Object> batchImport(MultipartFile file, Integer roundNum) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("请选择要上传的 Excel 文件");
+        }
+        if (roundNum == null || roundNum < 1 || roundNum > 10) {
+            roundNum = 1;
         }
 
         String filename = file.getOriginalFilename();
@@ -342,10 +351,11 @@ public class AchievementService {
             throw new IllegalArgumentException("仅支持 .xlsx 或 .xls 格式的 Excel 文件");
         }
 
-        // 先查询库中已有成果名称，用于去重
+        // 先查询库中已有成果名称，用于去重（同轮次内去重，不同轮次允许同名成果）
         Set<String> existingNames = new HashSet<>();
         LambdaQueryWrapper<Achievement> nameWrapper = new LambdaQueryWrapper<>();
-        nameWrapper.select(Achievement::getAchievementName);
+        nameWrapper.select(Achievement::getAchievementName)
+                   .eq(Achievement::getRoundNum, roundNum);
         List<Achievement> existing = achievementMapper.selectList(nameWrapper);
         for (Achievement a : existing) {
             if (a.getAchievementName() != null && !a.getAchievementName().isEmpty()) {
@@ -442,6 +452,7 @@ public class AchievementService {
                     }
 
                     a.setStatus(1); // 默认已提交
+                    a.setRoundNum(roundNum); // 归入指定轮次
                     batch.add(a);
                     success++;
                     existingNames.add(name); // 同一批次内也去重

@@ -42,6 +42,9 @@ public class Achievement {
     /** 排序号 */
     private Integer orderNum;
 
+    /** 所属投票轮次（1-10），成果按轮次隔离管理 */
+    private Integer roundNum;
+
     /** 最终评审结果 */
     private String evalResult;
 

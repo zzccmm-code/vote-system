@@ -63,7 +63,7 @@
     category: '', level: '', name: '',
     total: 0, records: [],
     selected: {},          // id -> true
-    curRound: null
+    curRound: 1            // 当前操作的投票轮次（1-10），成果按轮次隔离
   };
 
   var ICON = {
@@ -84,6 +84,7 @@
 
     post('/achievement/page', {
       pageNum: S.page, pageSize: S.size,
+      roundNum: S.curRound,
       achievementCategory: S.category || null,
       expertLevel: S.level || null,
       achievementName: S.name || null
@@ -283,6 +284,8 @@
       if (extra) fd.append('extraInfo', extra);
       fd.append('status', 1);
       if (fileSrc) fd.append('fileSrc', fileSrc);
+      // 新增时归入当前所选轮次；编辑时轮次归属不变
+      if (!editId) fd.append('roundNum', S.curRound);
 
       var path = editId ? '/achievement/update' : '/achievement/add';
       if (editId) fd.append('id', editId);
@@ -574,7 +577,19 @@
     $('fCategory').value = ''; $('fLevel').value = ''; $('fName').value = '';
     S.category = ''; S.level = ''; S.name = ''; S.page = 1; loadList();
   });
+  // 轮次切换：重新加载当前轮次的成果列表
+  $('roundSel').addEventListener('change', function () {
+    S.curRound = Number(this.value); S.page = 1;
+    S.category = ''; S.level = ''; S.name = '';
+    $('fCategory').value = ''; $('fLevel').value = ''; $('fName').value = '';
+    loadList();
+  });
   $('btnAdd').addEventListener('click', function () { openForm(null); });
+  // 导入数据：携带当前轮次，导入页自动选中该轮
+  $('btnGoImport').addEventListener('click', function (e) {
+    e.preventDefault();
+    location.href = 'import.html?round=' + S.curRound;
+  });
 
   $('bbDelete').addEventListener('click', batchDelete);
   $('bbClear').addEventListener('click', function () { clearSelection(); document.querySelectorAll('.row-cb').forEach(function (c) { c.checked = false; }); });

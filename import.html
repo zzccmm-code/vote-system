@@ -118,6 +118,22 @@
 
   <div class="card" id="uploadCard">
     <h2><span class="icon">📤</span> 上传 Excel 文件</h2>
+    <div style="margin-bottom:16px; display:flex; align-items:center; gap:10px;">
+      <label for="roundSel" style="font-weight:600; color:#1565c0;">导入到轮次：</label>
+      <select id="roundSel" class="btn btn-outline" style="padding:8px 12px; font-size:14px;">
+        <option value="1" selected>第1轮</option>
+        <option value="2">第2轮</option>
+        <option value="3">第3轮</option>
+        <option value="4">第4轮</option>
+        <option value="5">第5轮</option>
+        <option value="6">第6轮</option>
+        <option value="7">第7轮</option>
+        <option value="8">第8轮</option>
+        <option value="9">第9轮</option>
+        <option value="10">第10轮</option>
+      </select>
+      <span class="hint">各轮次成果相互独立，开始投票时使用对应轮次的成果</span>
+    </div>
     <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
       <div class="icon-upload">📁</div>
       <p><strong>点击选择文件</strong> 或将 Excel 文件拖拽到此处</p>
@@ -162,6 +178,15 @@
 <script>
   var SELECTED_FILE = null;
   var API_BASE = window._$base_url || 'http://localhost:7003';
+
+  // 从 URL 参数读取轮次（管理端跳转带 ?round=N），自动选中
+  (function initRound() {
+    var m = location.search.match(/[?&]round=(\d+)/);
+    if (m) {
+      var sel = document.getElementById('roundSel');
+      if (sel) sel.value = m[1];
+    }
+  })();
 
   function downloadTemplate() {
     var a = document.createElement('a');
@@ -208,9 +233,11 @@
     document.getElementById('importBtn').disabled = true;
     document.getElementById('progressBar').style.width = '30%';
 
-    var fd = new FormData(); fd.append('file', SELECTED_FILE);
+    var roundSel = document.getElementById('roundSel');
+    var roundNum = roundSel ? Number(roundSel.value) : 1;
+    var fd = new FormData(); fd.append('file', SELECTED_FILE); fd.append('roundNum', roundNum);
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', API_BASE + '/achievement/import', true);
+    xhr.open('POST', API_BASE + '/achievement/import?roundNum=' + roundNum, true);
     xhr.upload.onprogress = function(e) {
       if (e.lengthComputable) document.getElementById('progressBar').style.width = (30+(e.loaded/e.total)*40)+'%';
     };
