@@ -417,7 +417,7 @@
       if (!list.length) { $('rRound').innerHTML = '<option value="">（暂无轮次）</option>'; return; }
       $('rRound').innerHTML = list.map(function (r) {
         var label = '第 ' + (r.roundNum || r.id) + ' 轮' + (r.status ? '（' + r.status + '）' : '');
-        return '<option value="' + r.id + '">' + esc(label) + '</option>';
+        return '<option value="' + r.id + '" data-roundnum="' + (r.roundNum || r.id) + '">' + esc(label) + '</option>';
       }).join('');
       loadResult();
     }).catch(function (err) {
@@ -523,18 +523,22 @@
   }
 
   function exportVoteDetail() {
-    var rid = (S.curRound && S.curRound.id) ? S.curRound.id : '';
+    var sel = $('rRound');
+    var rid = sel.value;
+    if (!rid) { toast('请先选择轮次', 'error'); return; }
+    // 从选中项取轮次号，用于文件名"投票明细-第N轮"
+    var roundNum = sel.options[sel.selectedIndex].getAttribute('data-roundnum') || '';
     fetch('/voteRound/exportVoteDetail', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roundId: rid || null })
+      body: JSON.stringify({ roundId: Number(rid) })
     }).then(function (r) {
       if (!r.ok) throw new Error('导出失败');
       return r.blob();
     }).then(function (blob) {
       var a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = '投票明细.xlsx';
+      a.download = roundNum ? ('投票明细-第' + roundNum + '轮.xlsx') : '投票明细.xlsx';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
       toast('导出成功', 'success');
