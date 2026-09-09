@@ -98,9 +98,49 @@ public class VoteResultService {
     }
 
     /**
+     * [轮次管理] 同步轮次成果：检查指定轮次是否有新增成果（投票开始后补录），
+     * 为缺失的成果补建投票结果记录，确保平板端每次刷新都能看到当前轮次的全部项目
+     */
+    private void syncRoundAchievements(Long roundId) {
+        VoteRound round = voteRoundMapper.selectById(roundId);
+        if (round == null || !"running".equals(round.getStatus())) return;
+
+        // 该轮已有的成果集合
+        Set<Long> existIds = voteResultMapper.selectList(
+                        new LambdaQueryWrapper<VoteResult>().eq(VoteResult::getRoundId, roundId))
+                .stream().map(VoteResult::getAchievementId).collect(Collectors.toSet());
+
+        // 该轮次下所有已提交成果
+        List<Achievement> achievements = achievementMapper.selectList(
+                new LambdaQueryWrapper<Achievement>()
+                        .eq(Achievement::getRoundNum, round.getRoundNum())
+                        .eq(Achievement::getStatus, 1));
+
+        // 补建缺失的投票结果记录
+        for (Achievement a : achievements) {
+            if (!existIds.contains(a.getId())) {
+                VoteResult vr = new VoteResult();
+                vr.setRoundId(roundId);
+                vr.setAchievementId(a.getId());
+                vr.setAgree(0);
+                vr.setDisagree(0);
+                vr.setAbstain(0);
+                vr.setTotalVoters(0);
+                vr.setIsPublished(0);
+                voteResultMapper.insert(vr);
+            }
+        }
+    }
+
+    /**
      * 每轮得票情况（按成果汇总，含同意票数、占比）
+     * [轮次管理] 查询指定轮次前自动同步：若该轮新增了成果（投票开始后补录），补建缺失的投票结果记录，
+     * 保证平板端每次刷新都显示当前轮次的全部项目
      */
     public List<RoundSituationVO> eachRoundSituation(EachRoundReq req) {
+        if (req.getRoundId() != null) {
+            syncRoundAchievements(req.getRoundId());
+        }
         LambdaQueryWrapper<VoteResult> wrapper = new LambdaQueryWrapper<>();
         if (req.getRoundId() != null) {
             wrapper.eq(VoteResult::getRoundId, req.getRoundId());
