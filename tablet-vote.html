@@ -322,7 +322,8 @@ var API = (function() {
   return function(path) { return b.replace(/\/+$/, '') + path; };
 })();
 
-var LEVEL_TABS = ['一等奖', '二等奖', '三等奖'];
+// 页签优先级顺序（含复议/不推荐），页签按实际存在的等级动态生成
+var LEVEL_TABS = ['一等奖', '二等奖', '三等奖', '不推荐', '复议'];
 
 var state = {
   voterName: '',
@@ -439,7 +440,9 @@ function fetchVoteData() {
 
 // 按推荐等级分组
 function buildGroups() {
-  var groups = { '一等奖': [], '二等奖': [], '三等奖': [], '其他': [] };
+  var groups = {};
+  LEVEL_TABS.forEach(function(lvl) { groups[lvl] = []; });
+  groups['其他'] = [];
   state.achievements.forEach(function(ach) {
     var lvl = (ach.achievementDetail && ach.achievementDetail.expertLevel) || '';
     if (groups[lvl] !== undefined) groups[lvl].push(ach);
@@ -448,11 +451,20 @@ function buildGroups() {
   state.groups = groups;
 }
 
+// 当前轮次实际有项目的分组，按优先级排序（页签/默认投票/总览共用此顺序）
+function getTabOrder() {
+  var order = [];
+  LEVEL_TABS.forEach(function(lvl) {
+    if (state.groups[lvl] && state.groups[lvl].length) order.push(lvl);
+  });
+  if (state.groups['其他'] && state.groups['其他'].length) order.push('其他');
+  return order;
+}
+
 // 初始化默认投票：第一个项目需手动选择（不预选），其余项目默认"同意"
 function initDefaultVotes() {
   // 按分组顺序得到全局第一个项目
-  var tabOrder = LEVEL_TABS.slice();
-  if (state.groups['其他'] && state.groups['其他'].length) tabOrder.push('其他');
+  var tabOrder = getTabOrder();
   var first = null;
   for (var i = 0; i < tabOrder.length && !first; i++) {
     var g = state.groups[tabOrder[i]] || [];
@@ -475,8 +487,12 @@ function initDefaultVotes() {
 // ==================== 渲染 ====================
 function renderTabs() {
   var html = '';
-  var tabs = LEVEL_TABS.slice();
-  if (state.groups['其他'] && state.groups['其他'].length) tabs.push('其他');
+  // 只显示当前轮次实际存在的等级页签
+  var tabs = getTabOrder();
+  // 当前页签若在本轮不存在，自动切到第一个有项目的组
+  if (tabs.indexOf(state.currentTab) === -1 && tabs.length) {
+    state.currentTab = tabs[0];
+  }
   tabs.forEach(function(lvl) {
     var n = state.groups[lvl] ? state.groups[lvl].length : 0;
     html += '<button class="tab-btn' + (state.currentTab === lvl ? ' active' : '') +
@@ -644,11 +660,9 @@ function doSubmit() {
 // ==================== 摘要 ====================
 function showSummary() {
   try {
-  // 按推荐等级分组顺序排列：一等奖 → 二等奖 → 三等奖 → 其他
+  // 按当前轮次实际存在的等级分组顺序排列（含复议等）
   var ordered = [];
-  var tabOrder = LEVEL_TABS.slice();
-  if (state.groups['其他'] && state.groups['其他'].length) tabOrder.push('其他');
-  tabOrder.forEach(function(lvl) {
+  getTabOrder().forEach(function(lvl) {
     (state.groups[lvl] || []).forEach(function(ach) { ordered.push(ach); });
   });
 
